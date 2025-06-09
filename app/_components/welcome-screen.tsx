@@ -15,7 +15,7 @@ export default function WelcomeScreen({onSelect}: {onSelect: (item: string) => v
   return (
     <div className="flex flex-col gap-2 w-full">
       <h1 className="text-3xl font-semibold">How can I help you?</h1>
-      <div className="flex gap-2">
+      <div className="flex gap-2 max-sm:justify-around w-full">
         {welcomeScreen.tabs.map((tab, i) => (
           <Button
             key={tab.title}
@@ -23,7 +23,7 @@ export default function WelcomeScreen({onSelect}: {onSelect: (item: string) => v
             onClick={() =>
               activeTab === i ? setActiveTab(-1) : setActiveTab(i)
             }
-            className="rounded-full"
+            className="sm:rounded-full max-sm:flex-col max-sm:size-16"
           >
             <tab.icon />
             {tab.title}

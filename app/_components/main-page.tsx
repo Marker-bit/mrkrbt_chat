@@ -12,13 +12,16 @@ export default function MainPage() {
   const ref = useRef<AutosizeTextAreaRef>(null);
 
   return (
-    <div className="flex flex-col h-dvh">
+    <div
+      className="flex flex-col h-svh"
+      style={{ minHeight: "calc(100svh + env(safe-area-inset-top))" }}
+    >
       <div
         className="flex grow items-center justify-center w-full"
         style={{ paddingBottom: `${height}px` }}
       >
         <div
-          className="data-[empty=false]:scale-105 data-[empty=false]:opacity-0 transition w-full max-w-3xl p-2"
+          className="data-[empty=false]:scale-95 data-[empty=false]:opacity-0 transition w-full max-w-3xl p-2"
           data-empty={empty}
         >
           <WelcomeScreen

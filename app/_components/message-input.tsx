@@ -36,10 +36,10 @@ export default function MessageInput({
   }, [bounds.height, setHeight])
 
   return (
-    <div className="w-full absolute bottom-0 left-0 px-2">
-      <div className="border-8 border-accent border-b-0 p-4 w-full max-w-3xl mx-auto rounded-3xl rounded-b-none flex flex-col gap-2" ref={measureRef}>
+    <div className="w-full fixed bottom-0 left-0 px-2">
+      <div className="border-8 border-accent border-b-0 p-4 w-full max-w-3xl mx-auto rounded-3xl rounded-b-none flex flex-col gap-2 backdrop-blur-md" ref={measureRef}>
         <AutosizeTextarea
-          className="w-full resize-none outline-0 border-0"
+          className="w-full resize-none outline-0 border-0 bg-transparent"
           placeholder="Type a message..."
           maxHeight={240}
           value={value}
