@@ -5,6 +5,10 @@ import WelcomeScreen from "./welcome-screen";
 import MessageInput from "./message-input";
 import { AutosizeTextAreaRef } from "@/components/ui/autosize-textarea";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { ModeToggle } from "./mode-toggle";
+import { Button } from "@/components/ui/button";
+import { Settings2Icon } from "lucide-react";
+import Link from "next/link";
 
 export default function MainPage() {
   const [value, setValue] = useState("");
@@ -17,7 +21,17 @@ export default function MainPage() {
       className="flex flex-col h-svh"
       style={{ minHeight: "calc(100svh + env(safe-area-inset-top))" }}
     >
-      <SidebarTrigger className="-ml-1 absolute top-4 left-4" />
+      <div className="absolute top-4 left-4 p-1 flex gap-1 border bg-background rounded-md">
+        <SidebarTrigger />
+      </div>
+      <div className="absolute top-4 right-4 p-1 flex gap-1 border bg-background rounded-md">
+        <ModeToggle />
+        <Button variant="ghost" size="icon" className="size-7" asChild>
+          <Link href="/settings">
+            <Settings2Icon />
+          </Link>
+        </Button>
+      </div>
       <div
         className="flex grow items-center justify-center w-full overflow-scroll"
         style={{ paddingBottom: `${height}px` }}
