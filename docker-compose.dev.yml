@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_USER: test
       POSTGRES_PASSWORD: example
-      POSTGRES_DB: rj
+      POSTGRES_DB: chat
     ports:
       - 5433:5432
     volumes:
