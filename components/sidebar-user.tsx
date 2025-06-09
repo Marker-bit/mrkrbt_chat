@@ -11,8 +11,6 @@ export default function SidebarUser() {
   const {
     data: session,
     isPending, //loading state
-    error, //error object
-    refetch, //refetch the session
   } = authClient.useSession();
 
   if (isPending || !session) {

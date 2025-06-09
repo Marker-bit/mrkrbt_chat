@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Sidebar,
   SidebarContent,
@@ -7,14 +9,15 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem
+  SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Button } from "./ui/button";
+import { useRouter } from "next/navigation";
 import SidebarUser from "./sidebar-user";
+import { Button } from "./ui/button";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const router = useRouter();
   return (
     <Sidebar variant="floating" {...props}>
       <SidebarHeader>
@@ -27,11 +30,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarMenuItem className="px-4">
-          <Button className="w-full" asChild>
-            <Link href="/">New Chat</Link>
-          </Button>
-        </SidebarMenuItem>
+        <SidebarGroup>
+          <SidebarMenu className="gap-2">
+            <SidebarMenuItem>
+              <Button
+                className="w-full"
+                onClick={() => {
+                  router.replace("/");
+                  router.refresh();
+                }}
+              >
+                New Chat
+              </Button>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
         <SidebarGroup>
           <SidebarGroupLabel>Today</SidebarGroupLabel>
           <SidebarMenu className="gap-2">
