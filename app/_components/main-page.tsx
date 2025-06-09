@@ -17,7 +17,7 @@ export default function MainPage() {
       style={{ minHeight: "calc(100svh + env(safe-area-inset-top))" }}
     >
       <div
-        className="flex grow items-center justify-center w-full"
+        className="flex grow items-center justify-center w-full overflow-scroll"
         style={{ paddingBottom: `${height}px` }}
       >
         <div

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Fira_Code, Inter } from "next/font/google";
 import "./globals.css";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
 
 const mainFont = Inter({
   subsets: ["latin"],
@@ -26,8 +28,18 @@ export default function RootLayout({
       <body
         className={`${mainFont.className} ${codeFont.variable} antialiased`}
       >
-        
-        {children}
+        <SidebarProvider
+          style={
+            {
+              "--sidebar-width": "19rem",
+            } as React.CSSProperties
+          }
+        >
+          <AppSidebar />
+          <SidebarInset>
+            {children}
+          </SidebarInset>
+        </SidebarProvider>
       </body>
     </html>
   );
