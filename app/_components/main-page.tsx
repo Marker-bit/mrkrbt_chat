@@ -4,6 +4,7 @@ import React, { useMemo, useRef, useState } from "react";
 import WelcomeScreen from "./welcome-screen";
 import MessageInput from "./message-input";
 import { AutosizeTextAreaRef } from "@/components/ui/autosize-textarea";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function MainPage() {
   const [value, setValue] = useState("");
@@ -16,6 +17,7 @@ export default function MainPage() {
       className="flex flex-col h-svh"
       style={{ minHeight: "calc(100svh + env(safe-area-inset-top))" }}
     >
+      <SidebarTrigger className="-ml-1 absolute top-4 left-4" />
       <div
         className="flex grow items-center justify-center w-full overflow-scroll"
         style={{ paddingBottom: `${height}px` }}
