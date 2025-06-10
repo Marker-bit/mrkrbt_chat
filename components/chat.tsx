@@ -6,7 +6,7 @@ import { fetchWithErrorHandlers } from "@/lib/fetch";
 import { MODELS } from "@/lib/models";
 import { cn, convertFileArrayToFileList, fetcher } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
-import { Loader2Icon } from "lucide-react";
+import { DownloadIcon, Loader2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -18,6 +18,8 @@ import { getChatHistoryPaginationKey } from "./chat-list";
 import MessageButtons from "./message-buttons";
 import MessageInput from "./message-input";
 import { MessageReasoning } from "./reasoning";
+import { Button } from "./ui/button";
+import Link from "next/link";
 
 export default function Chat({
   isMain = false,
@@ -167,20 +169,51 @@ export default function Chat({
                     }
                   })}
                 </div>
-                <div>
-                  {message.experimental_attachments
-                    ?.filter(
-                      (attachment) =>
-                        attachment.contentType &&
-                        attachment.contentType.startsWith("image/")
-                    )
-                    .map((attachment, index) => (
-                      <img
+                <div className="flex gap-2">
+                  {message.experimental_attachments?.map(
+                    (attachment, index) => (
+                      <div
+                        className="border rounded-xl flex gap-2 items-center p-2 group/attachment"
                         key={`${message.id}-${index}`}
-                        src={attachment.url}
-                        alt={attachment.name}
-                      />
-                    ))}
+                      >
+                        {attachment.contentType &&
+                          attachment.contentType.startsWith("image/") && (
+                            <div className="bg-accent aspect-square shrink-0 rounded-lg overflow-hidden relative">
+                              <img
+                                src={attachment.url}
+                                alt={attachment.name}
+                                className="size-10 object-cover"
+                              />
+                              <a
+                                href={attachment.url}
+                                target="_blank"
+                                download={attachment.name}
+                                className="absolute inset-0 bg-accent/80 opacity-0 group-hover/attachment:opacity-100 flex items-center justify-center"
+                              >
+                                <DownloadIcon className="size-4" />
+                              </a>
+                            </div>
+                          )}
+                        <div className="min-w-0 gap-0.5 truncate text-[13px] font-medium">
+                          {attachment.name}
+                        </div>
+                        {!(
+                          attachment.contentType &&
+                          attachment.contentType.startsWith("image/")
+                        ) && (
+                          <Button variant="ghost" size="icon" asChild>
+                            <Link
+                              href={attachment.url}
+                              target="_blank"
+                              download={attachment.name}
+                            >
+                              <DownloadIcon className="size-4" />
+                            </Link>
+                          </Button>
+                        )}
+                      </div>
+                    )
+                  )}
                 </div>
                 <MessageButtons
                   chatId={id}
