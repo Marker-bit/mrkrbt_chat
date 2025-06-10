@@ -128,7 +128,7 @@ export default function Chat({
                   <MemoizedMarkdown id={id} content={message.content} />
                   {/* {message.content} */}
                 </div>
-                <MessageButtons reload={reload} setMessages={setMessages} message={message} />
+                <MessageButtons chatId={id} reload={reload} setMessages={setMessages} message={message} />
               </div>
             ))}
             {chatState === "loading" && !sentMessage && (
