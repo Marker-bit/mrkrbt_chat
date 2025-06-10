@@ -102,7 +102,7 @@ export async function POST(req: Request) {
     message: requestBody.message,
   });
 
-  await saveMessages(chat.id, messages);
+  await saveMessages(chat.id, messages, "loading");
 
   try {
     const result = streamText({
@@ -129,17 +129,21 @@ export async function POST(req: Request) {
               responseMessages: response.messages,
             });
 
-            await saveMessages(chat.id, [
-              ...messages,
-              {
-                id: assistantId,
-                role: assistantMessage.role,
-                parts: assistantMessage.parts,
-                content: assistantMessage.content,
-                // attachments: assistantMessage.experimental_attachments ?? [],
-                createdAt: new Date(),
-              },
-            ]);
+            await saveMessages(
+              chat.id,
+              [
+                ...messages,
+                {
+                  id: assistantId,
+                  role: assistantMessage.role,
+                  parts: assistantMessage.parts,
+                  content: assistantMessage.content,
+                  // attachments: assistantMessage.experimental_attachments ?? [],
+                  createdAt: new Date(),
+                },
+              ],
+              "complete"
+            );
           } catch (_) {
             console.error("Failed to save chat");
           }
@@ -147,9 +151,14 @@ export async function POST(req: Request) {
       },
     });
 
-    await db.update(account).set({
-      messagesSent: currentAccount.messagesSent + 1,
-    }).where(eq(account.id, currentAccount.id));
+    result.consumeStream();
+
+    await db
+      .update(account)
+      .set({
+        messagesSent: currentAccount.messagesSent + 1,
+      })
+      .where(eq(account.id, currentAccount.id));
 
     return result.toDataStreamResponse();
   } catch (error) {

@@ -20,3 +20,5 @@ export function getTrailingMessageId({
 
   return trailingMessage.id;
 }
+
+export const fetcher = (url: string) => fetch(url).then(res => res.json())

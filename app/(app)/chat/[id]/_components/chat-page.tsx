@@ -25,7 +25,7 @@ export default function ChatPage({id, chat, selectedModelId, apiKeys}: {id: stri
           </Link>
         </Button>
       </div>
-      <Chat selectedModelId={selectedModelId} id={id} initialMessages={chat.messages} apiKeys={apiKeys} />
+      <Chat selectedModelId={selectedModelId} id={id} initialMessages={chat.messages} apiKeys={apiKeys} state={chat.state} />
     </div>
   );
 }

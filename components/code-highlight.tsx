@@ -15,7 +15,6 @@ export const CodeHighlight = ({
 }: CodeHighlightProps) => {
   const code = String(children);
   const language = className?.match(/language-(\w+)/)?.[1];
-  console.log(language, code)
 
   const isInline = node ? isInlineCode(node) : false;
 

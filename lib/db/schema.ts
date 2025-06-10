@@ -83,4 +83,5 @@ export const chat = pgTable("chat", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   messages: json("messages").notNull().default([]).$type<Message[]>(),
+  state: text("state").notNull().default("complete").$type<"loading" | "complete">(),
 });

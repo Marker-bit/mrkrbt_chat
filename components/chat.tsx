@@ -1,9 +1,9 @@
 import { MemoizedMarkdown } from "@/components/memoized-markdown";
 import { AutosizeTextAreaRef } from "@/components/ui/autosize-textarea";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, fetcher } from "@/lib/utils";
 import { Message, useChat } from "@ai-sdk/react";
-import { useMemo, useOptimistic, useRef, useState } from "react";
+import { useEffect, useMemo, useOptimistic, useRef, useState } from "react";
 import MessageInput from "./message-input";
 import WelcomeScreen from "../app/(app)/_components/welcome-screen";
 import { ChatSDKError } from "@/lib/errors";
@@ -11,6 +11,9 @@ import { toast } from "sonner";
 import { fetchWithErrorHandlers } from "@/lib/fetch";
 import ApiKeyDialog from "./api-key-dialog";
 import { MODELS } from "@/lib/models";
+import { Loader2Icon } from "lucide-react";
+import useSWR from "swr";
+import { useRouter } from "next/navigation";
 
 export default function Chat({
   isMain = false,
@@ -18,16 +21,27 @@ export default function Chat({
   initialMessages,
   selectedModelId,
   apiKeys,
+  state,
 }: {
   isMain?: boolean;
   id: string;
   initialMessages?: Message[];
   selectedModelId: string;
   apiKeys: Record<string, string>;
+  state: "loading" | "complete";
 }) {
   const [height, setHeight] = useState(0);
   const ref = useRef<AutosizeTextAreaRef>(null);
-  const { messages, append, input, setInput, status, stop, reload } = useChat({
+  const {
+    messages,
+    setMessages,
+    append,
+    input,
+    setInput,
+    status,
+    stop,
+    reload,
+  } = useChat({
     credentials: "include",
     experimental_throttle: 50,
     generateId: () => crypto.randomUUID(),
@@ -43,16 +57,29 @@ export default function Chat({
       if (error instanceof ChatSDKError) {
         toast.error(error.message);
       } else {
-        toast.error("Unknown error")
+        toast.error("Unknown error");
       }
     },
   });
+
+  const { data: chatState } = useSWR(`/api/state/${id}`, (url) => state === "loading" ? fetcher(url) : "complete", {
+    refreshInterval: 1000,
+  });
+
   const empty = useMemo(() => input === "", [input]);
   const [open, setOpen] = useState(false);
   const selectedModel = useMemo(
     () => MODELS.find((model) => model.id === selectedModelId),
     [selectedModelId]
   );
+  const [sentMessage, setSentMessage] = useState(false);
+  const router = useRouter()
+
+  useEffect(() => {
+    if (chatState === "complete" && !sentMessage) {
+      router.refresh()
+    }
+  }, [chatState, sentMessage]);
 
   return (
     <>
@@ -78,7 +105,7 @@ export default function Chat({
       ) : (
         <div className="flex justify-center grow w-full pt-14 gap-4 overflow-auto">
           <div
-            className="flex flex-col w-full max-w-3xl h-fit"
+            className="flex flex-col w-full max-w-3xl h-fit gap-4"
             style={{ paddingBottom: `${height + 10}px` }}
           >
             {messages.map((message) => (
@@ -96,6 +123,17 @@ export default function Chat({
                 {/* {message.content} */}
               </div>
             ))}
+            {(chatState === "loading" && !sentMessage) && (
+              <div className="border p-2 rounded-xl flex items-center gap-2">
+                <Loader2Icon className="animate-spin size-4" />
+                <div className="flex flex-col">
+                  <div className="font-semibold">Loading response...</div>
+                  <div className="text-xs text-muted-foreground">
+                    It will be ready once the network finishes processing.
+                  </div>
+                </div>
+              </div>
+            )}
             {/* {error && (
               <>
                 <div>An error occurred.</div>
@@ -108,7 +146,14 @@ export default function Chat({
         </div>
       )}
 
-      <ApiKeyDialog providerId="openrouter" apiKeys={apiKeys} modelName={selectedModel?.title!} open={open} setOpen={setOpen} providerName="OpenRouter" />
+      <ApiKeyDialog
+        providerId="openrouter"
+        apiKeys={apiKeys}
+        modelName={selectedModel?.title!}
+        open={open}
+        setOpen={setOpen}
+        providerName="OpenRouter"
+      />
 
       <MessageInput
         setApiKeysOpen={setOpen}
@@ -128,6 +173,7 @@ export default function Chat({
             window.history.replaceState({}, "", `/chat/${id}`);
           }
           if (message.trim() === "" || status !== "ready") return;
+          setSentMessage(true);
           append({ role: "user", content: message.trim() });
         }}
       />
