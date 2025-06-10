@@ -65,4 +65,19 @@ export const MODELS: Model[] = [
     providers: [buildOpenRouterProvider("deepseek/r1-0528")],
     icon: Gemini,
   },
+  {
+    id: "deepseek-r1-qwen",
+    title: "DeepSeek R1",
+    additionalTitle: "Qwen Distilled",
+    features: ["reasoning"],
+    providers: [buildOpenRouterProvider("deepseek/deepseek-r1-distill-qwen-7b")],
+    icon: Gemini,
+  },
+  {
+    id: "qwen3",
+    title: "Qwen 3",
+    features: ["reasoning"],
+    providers: [buildOpenRouterProvider("qwen/qwen3-32b")],
+    icon: Gemini,
+  },
 ];

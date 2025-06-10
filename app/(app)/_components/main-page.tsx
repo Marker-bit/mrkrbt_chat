@@ -24,7 +24,7 @@ export default function MainPage({selectedModelId, apiKeys}: {selectedModelId: s
           </Link>
         </Button>
       </div>
-      <Chat apiKeys={apiKeys} selectedModelId={selectedModelId} id={crypto.randomUUID()} isMain />
+      <Chat state="complete" apiKeys={apiKeys} selectedModelId={selectedModelId} id={crypto.randomUUID()} isMain />
     </div>
   );
 }
