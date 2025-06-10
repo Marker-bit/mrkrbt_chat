@@ -6,6 +6,7 @@ import NavTabs from "./tabs";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import SignOutButton from "./_components/sign-out-button";
 
 export default async function Layout({
   children,
@@ -16,7 +17,7 @@ export default async function Layout({
   if (!session) {
     return redirect("/auth");
   }
-  
+
   return (
     <div className="flex flex-col h-dvh items-center">
       <div className="w-full max-w-[1200px] px-4 py-8">
@@ -29,7 +30,7 @@ export default async function Layout({
           </Button>
           <div className="flex gap-2 items-center">
             <ModeToggle />
-            <Button variant="ghost">Sign out</Button>
+            <SignOutButton />
           </div>
         </div>
         <NavTabs />
