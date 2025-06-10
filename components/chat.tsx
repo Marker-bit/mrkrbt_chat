@@ -12,9 +12,11 @@ import { fetchWithErrorHandlers } from "@/lib/fetch";
 import ApiKeyDialog from "./api-key-dialog";
 import { MODELS } from "@/lib/models";
 import { Loader2Icon } from "lucide-react";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import { useRouter } from "next/navigation";
 import MessageButtons from "./message-buttons";
+import { unstable_serialize } from "swr/infinite";
+import { getChatHistoryPaginationKey } from "./chat-list";
 
 export default function Chat({
   isMain = false,
@@ -54,6 +56,12 @@ export default function Chat({
       message: body.messages.at(-1),
       selectedChatModel: "gemini-2.5-flash",
     }),
+    onFinish: () => {
+      mutate(unstable_serialize(getChatHistoryPaginationKey));
+      if (isMain) {
+        router.push(`/chat/${id}`);
+      }
+    },
     onError: (error) => {
       if (error instanceof ChatSDKError) {
         toast.error(error.message);

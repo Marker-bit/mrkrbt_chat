@@ -14,6 +14,9 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { mutate } from "swr";
+import { unstable_serialize } from "swr/infinite";
+import { getChatHistoryPaginationKey } from "./chat-list";
 
 export default function MessageButtons({
   message,
@@ -50,11 +53,12 @@ export default function MessageButtons({
       setBranchLoading(false);
     } else {
       router.push(`/chat/${res.chatId}`);
+      mutate(unstable_serialize(getChatHistoryPaginationKey));
     }
   };
 
   return (
-    <div className="flex gap-1 items-center opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition">
+    <div className="flex gap-1 items-center opacity-0 group-hover:opacity-100 transition">
       <Tooltip>
         <TooltipTrigger asChild>
           <Button

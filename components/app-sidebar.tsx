@@ -5,20 +5,20 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem,
+  SidebarMenuItem
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import ChatList from "./chat-list";
 import SidebarUser from "./sidebar-user";
 import { Button } from "./ui/button";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const router = useRouter();
+
   return (
     <Sidebar variant="floating" {...props}>
       <SidebarHeader>
@@ -46,13 +46,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
-        <SidebarGroup>
-          <SidebarGroupContent>
+        {/* <SidebarGroupContent>
             <div className="px-2 text-muted-foreground w-full flex flex-row justify-center items-center text-sm gap-2 select-none">
               There are no conversations yet.
             </div>
-          </SidebarGroupContent>
-          {/* <SidebarGroupLabel>Today</SidebarGroupLabel>
+          </SidebarGroupContent> */}
+        <ChatList />
+        {/* <SidebarGroupLabel>Today</SidebarGroupLabel>
           <SidebarMenu className="gap-2">
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
@@ -76,7 +76,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu> */}
-        </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
         <SidebarUser />
