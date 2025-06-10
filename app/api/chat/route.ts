@@ -9,12 +9,13 @@ import {
 import { PostRequestBody, postRequestBodySchema } from "./schema";
 import { ChatSDKError } from "@/lib/errors";
 import { db } from "@/lib/db/drizzle";
-import { chat as chatTable } from "@/lib/db/schema";
+import { account, chat as chatTable, user } from "@/lib/db/schema";
 import { auth } from "@/lib/auth";
 import { cookies, headers } from "next/headers";
 import { saveMessages } from "@/lib/db/queries";
 import { getTrailingMessageId } from "@/lib/utils";
 import { MODELS } from "@/lib/models";
+import { eq } from "drizzle-orm";
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
@@ -35,6 +36,14 @@ export async function POST(req: Request) {
     requestBody = postRequestBodySchema.parse(json);
   } catch (e) {
     return new ChatSDKError("bad_request:api").toResponse();
+  }
+
+  const currentAccount = await db.query.account.findFirst({
+    where: (account, { eq }) => eq(account.userId, session.user.id),
+  });
+
+  if (!currentAccount) {
+    return new ChatSDKError("unauthorized:api").toResponse();
   }
 
   const modelToRun = MODELS.find(
@@ -137,6 +146,10 @@ export async function POST(req: Request) {
         }
       },
     });
+
+    await db.update(account).set({
+      messagesSent: currentAccount.messagesSent + 1,
+    }).where(eq(account.id, currentAccount.id));
 
     return result.toDataStreamResponse();
   } catch (error) {

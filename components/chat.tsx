@@ -42,6 +42,8 @@ export default function Chat({
     onError: (error) => {
       if (error instanceof ChatSDKError) {
         toast.error(error.message);
+      } else {
+        toast.error("Unknown error")
       }
     },
   });

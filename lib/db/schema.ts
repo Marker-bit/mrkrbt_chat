@@ -59,6 +59,7 @@ export const account = pgTable("account", {
   password: text("password"),
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at").notNull(),
+  messagesSent: integer("messages_sent").$default(() => 0).notNull(),
 });
 
 export const verification = pgTable("verification", {
@@ -78,6 +79,8 @@ export const chat = pgTable("chat", {
   id: text("id").primaryKey(),
   createdAt: timestamp("created_at").$defaultFn(() => new Date()),
   updatedAt: timestamp("updated_at").$defaultFn(() => new Date()),
-  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
   messages: json("messages").notNull().default([]).$type<Message[]>(),
 });
