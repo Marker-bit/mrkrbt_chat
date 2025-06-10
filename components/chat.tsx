@@ -2,26 +2,49 @@ import { MemoizedMarkdown } from "@/components/memoized-markdown";
 import { AutosizeTextAreaRef } from "@/components/ui/autosize-textarea";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useChat } from "@ai-sdk/react";
-import { useMemo, useRef, useState } from "react";
+import { Message, useChat } from "@ai-sdk/react";
+import { useMemo, useOptimistic, useRef, useState } from "react";
 import MessageInput from "./message-input";
 import WelcomeScreen from "../app/_components/welcome-screen";
+import { ChatSDKError } from "@/lib/errors";
+import { toast } from "sonner";
+import { fetchWithErrorHandlers } from "@/lib/fetch";
+import ApiKeyDialog from "./api-key-dialog";
+import { MODELS } from "@/lib/models";
 
 export default function Chat({
   isMain = false,
   id,
+  initialMessages,
+  selectedModelId,
 }: {
   isMain?: boolean;
   id: string;
+  initialMessages?: Message[];
+  selectedModelId: string;
 }) {
   const [height, setHeight] = useState(0);
   const ref = useRef<AutosizeTextAreaRef>(null);
-  const { messages, append, input, setInput, status, stop, reload, error } =
-    useChat({
-      credentials: "include",
-      experimental_throttle: 50,
-    });
+  const { messages, append, input, setInput, status, stop, reload } = useChat({
+    credentials: "include",
+    experimental_throttle: 50,
+    generateId: () => crypto.randomUUID(),
+    initialMessages,
+    fetch: fetchWithErrorHandlers,
+    sendExtraMessageFields: true,
+    experimental_prepareRequestBody: (body) => ({
+      id,
+      message: body.messages.at(-1),
+      selectedChatModel: "gemini-2.5-flash",
+    }),
+    onError: (error) => {
+      if (error instanceof ChatSDKError) {
+        toast.error(error.message);
+      }
+    },
+  });
   const empty = useMemo(() => input === "", [input]);
+  const [open, setOpen] = useState(false);
 
   return (
     <>
@@ -65,23 +88,25 @@ export default function Chat({
                 {/* {message.content} */}
               </div>
             ))}
-            {error && (
+            {/* {error && (
               <>
                 <div>An error occurred.</div>
                 <Button type="button" onClick={() => reload()}>
                   Retry
                 </Button>
               </>
-            )}
+            )} */}
           </div>
         </div>
       )}
 
+      <ApiKeyDialog open={open} setOpen={setOpen} providerName="OpenRouter" />
+
       <MessageInput
+        selectedModelId={selectedModelId}
         stop={stop}
         status={status}
         value={input}
-        reload={reload}
         setValue={(value) => setInput(value)}
         ref={ref}
         setHeight={setHeight}

@@ -1,4 +1,4 @@
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import MainPage from "./_components/main-page";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -12,5 +12,7 @@ export default async function Home() {
     return redirect("/auth");
   }
 
-  return <MainPage />;
+  const cookiesInfo = await cookies();
+
+  return <MainPage selectedModelId={cookiesInfo.get("selectedModelId")?.value || "gemini-2.5-flash"} />;
 }

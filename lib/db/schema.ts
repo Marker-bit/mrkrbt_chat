@@ -1,9 +1,11 @@
+import { Message } from "ai";
 import {
   integer,
   text,
   boolean,
   pgTable,
   timestamp,
+  json,
 } from "drizzle-orm/pg-core";
 
 // export const todo = pgTable("todo", {
@@ -70,4 +72,12 @@ export const verification = pgTable("verification", {
   updatedAt: timestamp("updated_at").$defaultFn(
     () => /* @__PURE__ */ new Date()
   ),
+});
+
+export const chat = pgTable("chat", {
+  id: text("id").primaryKey(),
+  createdAt: timestamp("created_at").$defaultFn(() => new Date()),
+  updatedAt: timestamp("updated_at").$defaultFn(() => new Date()),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  messages: json("messages").notNull().default([]).$type<Message[]>(),
 });

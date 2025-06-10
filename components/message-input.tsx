@@ -4,6 +4,7 @@ import {
 } from "@/components/ui/autosize-textarea";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
+import { MODELS } from "@/lib/models";
 import {
   ArrowUpIcon,
   ChevronUpIcon,
@@ -11,7 +12,7 @@ import {
   RotateCwIcon,
   SquareIcon,
 } from "lucide-react";
-import { RefObject, useEffect } from "react";
+import { RefObject, useEffect, useMemo, useOptimistic } from "react";
 import useMeasure from "react-use-measure";
 
 export default function MessageInput({
@@ -22,7 +23,7 @@ export default function MessageInput({
   onSubmit,
   status,
   stop,
-  reload,
+  selectedModelId,
 }: {
   value: string;
   setValue: (value: string) => void;
@@ -31,7 +32,7 @@ export default function MessageInput({
   onSubmit?: (message: string) => void;
   status: "submitted" | "streaming" | "ready" | "error";
   stop: () => void;
-  reload: () => void;
+  selectedModelId: string;
 }) {
   const [measureRef, bounds] = useMeasure();
 
@@ -46,6 +47,19 @@ export default function MessageInput({
       }
     }
   };
+  
+  const availableChatModels = MODELS;
+
+  const [optimisticModelId, setOptimisticModelId] =
+    useOptimistic(selectedModelId);
+
+  const selectedChatModel = useMemo(
+    () =>
+      availableChatModels.find(
+        (chatModel) => chatModel.id === optimisticModelId,
+      ),
+    [optimisticModelId, availableChatModels],
+  );
 
   useEffect(() => {
     setHeight?.(bounds.height);

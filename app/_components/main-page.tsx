@@ -7,7 +7,7 @@ import Link from "next/link";
 import { ModeToggle } from "../../components/mode-toggle";
 import Chat from "../../components/chat";
 
-export default function MainPage() {
+export default function MainPage({selectedModelId}: {selectedModelId: string}) {
   return (
     <div
       className="flex flex-col h-svh"
@@ -24,7 +24,7 @@ export default function MainPage() {
           </Link>
         </Button>
       </div>
-      <Chat id={crypto.randomUUID()} isMain />
+      <Chat selectedModelId={selectedModelId} id={crypto.randomUUID()} isMain />
     </div>
   );
 }

@@ -6,8 +6,9 @@ import { Settings2Icon } from "lucide-react";
 import Link from "next/link";
 import { ModeToggle } from "@/components/mode-toggle";
 import Chat from "@/components/chat";
+import { Chat as ChatType } from "@/lib/db/db-types";
 
-export default function ChatPage({id}: {id: string}) {
+export default function ChatPage({id, chat, selectedModelId}: {id: string; chat: ChatType; selectedModelId: string}) {
   return (
     <div
       className="flex flex-col h-svh"
@@ -24,7 +25,7 @@ export default function ChatPage({id}: {id: string}) {
           </Link>
         </Button>
       </div>
-      <Chat id={id} />
+      <Chat selectedModelId={selectedModelId} id={id} initialMessages={chat.messages} />
     </div>
   );
 }
