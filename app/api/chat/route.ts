@@ -165,7 +165,7 @@ export async function POST(req: Request) {
                   role: assistantMessage.role,
                   parts: assistantMessage.parts,
                   content: assistantMessage.content,
-                  // attachments: assistantMessage.experimental_attachments ?? [],
+                  experimental_attachments: assistantMessage.experimental_attachments,
                   createdAt: new Date(),
                   modelId: requestBody.selectedChatModel,
                 },

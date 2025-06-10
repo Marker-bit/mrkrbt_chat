@@ -5,14 +5,20 @@ import {
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
 import {
+  AlertCircleIcon,
   ArrowUpIcon,
   ChevronUpIcon,
   GlobeIcon,
-  SquareIcon
+  Paperclip,
+  PaperclipIcon,
+  PlusIcon,
+  SquareIcon,
+  XIcon,
 } from "lucide-react";
 import { RefObject, useEffect } from "react";
 import useMeasure from "react-use-measure";
 import ModelPopover from "./model-popover";
+import { formatBytes, useFileUpload } from "@/hooks/use-file-upload";
 
 export default function MessageInput({
   value,
@@ -23,7 +29,8 @@ export default function MessageInput({
   status,
   stop,
   selectedModelId,
-  setApiKeysOpen
+  setApiKeysOpen,
+  setFiles
 }: {
   value: string;
   setValue: (value: string) => void;
@@ -33,8 +40,16 @@ export default function MessageInput({
   status: "submitted" | "streaming" | "ready" | "error";
   stop: () => void;
   selectedModelId: string;
-  setApiKeysOpen: (open: boolean) => void
+  setApiKeysOpen: (open: boolean) => void;
+  setFiles: (files: File[]) => void
 }) {
+  const [{ files, errors }, { openFileDialog, removeFile, getInputProps, clearFiles }] =
+    useFileUpload({
+      multiple: true,
+      maxFiles: 5,
+      maxSize: 5 * 1024 * 1024, // 5MB
+      accept: "*",
+    });
   const [measureRef, bounds] = useMeasure();
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -48,7 +63,11 @@ export default function MessageInput({
       }
     }
   };
-  
+
+  useEffect(() => {
+    setFiles(files.map((file) => file.file as File));
+  }, [files]);
+
   // const availableChatModels = MODELS;
 
   // const [optimisticModelId, setOptimisticModelId] =
@@ -72,6 +91,70 @@ export default function MessageInput({
         className="border-8 border-accent border-b-0 p-4 w-full max-w-3xl mx-auto rounded-3xl rounded-b-none flex flex-col gap-2 backdrop-blur-lg bg-background/50"
         ref={measureRef}
       >
+        <input
+          {...getInputProps()}
+          className="sr-only"
+          aria-label="Upload file"
+        />
+
+        {files.length > 0 && (
+          <div className="flex gap-2 flex-wrap">
+            {files.map((file) => (
+              <div
+                key={file.id}
+                className="bg-background flex items-center justify-between gap-2 rounded-lg border p-2 pe-3"
+              >
+                <div className="flex items-center gap-3 overflow-hidden">
+                  {file.file.type.startsWith("image") && (
+                    <div className="bg-accent aspect-square shrink-0 rounded">
+                      <img
+                        src={file.preview}
+                        alt={file.file.name}
+                        className="size-10 rounded-[inherit] object-cover"
+                      />
+                    </div>
+                  )}
+
+                  <div className="flex min-w-0 flex-col gap-0.5">
+                    <p className="truncate text-[13px] font-medium">
+                      {file.file.name}
+                    </p>
+                    <p className="text-muted-foreground text-xs">
+                      {formatBytes(file.file.size)}
+                    </p>
+                  </div>
+                </div>
+
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="text-muted-foreground/80 hover:text-foreground -me-2 size-8 hover:bg-transparent"
+                  onClick={() => removeFile(file.id)}
+                  aria-label="Remove file"
+                >
+                  <XIcon aria-hidden="true" />
+                </Button>
+              </div>
+            ))}
+            <Button
+              onClick={openFileDialog}
+              variant="outline"
+              className="h-auto flex"
+            >
+              <PlusIcon className="size-4" />
+            </Button>
+          </div>
+        )}
+
+        {errors.length > 0 && (
+          <div
+            className="text-red-700 dark:text-red-300 flex items-center gap-1 text-xs bg-red-500/20 rounded px-2 py-1"
+            role="alert"
+          >
+            <AlertCircleIcon className="size-3 shrink-0" />
+            <span>{errors[0]}</span>
+          </div>
+        )}
         <AutosizeTextarea
           className="w-full resize-none outline-0 border-0 bg-transparent"
           placeholder="Type a message..."
@@ -98,16 +181,29 @@ export default function MessageInput({
             <Button
               size="icon"
               onClick={() => {
+                openFileDialog();
+              }}
+            >
+              <PaperclipIcon />
+            </Button>
+            <Button
+              size="icon"
+              onClick={() => {
                 if (status === "streaming") {
                   stop();
                 } else {
                   onSubmit?.(value);
                   setValue("");
+                  clearFiles()
                 }
               }}
-              disabled={status === "ready" ? value.trim() === "" : status === "submitted"}
+              disabled={
+                status === "ready"
+                  ? value.trim() === ""
+                  : status === "submitted"
+              }
             >
-              {(status === 'submitted' || status === 'streaming') ? (
+              {status === "submitted" || status === "streaming" ? (
                 <SquareIcon className="size-5" />
               ) : (
                 <ArrowUpIcon className="size-5" />

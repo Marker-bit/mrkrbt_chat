@@ -22,3 +22,11 @@ export function getTrailingMessageId({
 }
 
 export const fetcher = (url: string) => fetch(url).then(res => res.json())
+
+export const convertFileArrayToFileList = (fileArray: File[]) => {
+  const dataTransfer = new DataTransfer();
+  fileArray.forEach(file => {
+    dataTransfer.items.add(file);
+  });
+  return dataTransfer.files;
+}

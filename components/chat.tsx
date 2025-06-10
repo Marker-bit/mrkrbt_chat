@@ -4,7 +4,7 @@ import { Message } from "@/lib/db/db-types";
 import { ChatSDKError } from "@/lib/errors";
 import { fetchWithErrorHandlers } from "@/lib/fetch";
 import { MODELS } from "@/lib/models";
-import { cn, fetcher } from "@/lib/utils";
+import { cn, convertFileArrayToFileList, fetcher } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { Loader2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -41,6 +41,7 @@ export default function Chat({
     setMessages,
     append,
     input,
+    handleSubmit,
     setInput,
     status,
     stop,
@@ -60,7 +61,7 @@ export default function Chat({
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
       if (isMain) {
-        router.push(`/chat/${id}`, {scroll: false});
+        router.push(`/chat/${id}`, { scroll: false });
       }
     },
     onError: (error) => {
@@ -88,6 +89,7 @@ export default function Chat({
   );
   const [sentMessage, setSentMessage] = useState(false);
   const router = useRouter();
+  const [files, setFiles] = useState<File[]>([]);
 
   useEffect(() => {
     if (chatState === "complete" && !sentMessage && !isMain) {
@@ -165,6 +167,21 @@ export default function Chat({
                     }
                   })}
                 </div>
+                <div>
+                  {message.experimental_attachments
+                    ?.filter(
+                      (attachment) =>
+                        attachment.contentType &&
+                        attachment.contentType.startsWith("image/")
+                    )
+                    .map((attachment, index) => (
+                      <img
+                        key={`${message.id}-${index}`}
+                        src={attachment.url}
+                        alt={attachment.name}
+                      />
+                    ))}
+                </div>
                 <MessageButtons
                   chatId={id}
                   reload={reload}
@@ -206,6 +223,7 @@ export default function Chat({
       />
 
       <MessageInput
+        setFiles={setFiles}
         setApiKeysOpen={setOpen}
         selectedModelId={selectedModelId}
         stop={stop}
@@ -224,7 +242,12 @@ export default function Chat({
           }
           if (message.trim() === "" || status !== "ready") return;
           setSentMessage(true);
-          append({ role: "user", content: message.trim() });
+          append({
+            role: "user",
+            content: message.trim(),
+            // @ts-expect-error
+            experimental_attachments: convertFileArrayToFileList(files),
+          });
         }}
       />
     </>
