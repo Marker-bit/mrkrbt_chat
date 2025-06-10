@@ -14,6 +14,7 @@ import { MODELS } from "@/lib/models";
 import { Loader2Icon } from "lucide-react";
 import useSWR from "swr";
 import { useRouter } from "next/navigation";
+import MessageButtons from "./message-buttons";
 
 export default function Chat({
   isMain = false,
@@ -62,9 +63,13 @@ export default function Chat({
     },
   });
 
-  const { data: chatState } = useSWR(`/api/state/${id}`, (url) => state === "loading" ? fetcher(url) : "complete", {
-    refreshInterval: 1000,
-  });
+  const { data: chatState } = useSWR(
+    `/api/state/${id}`,
+    (url) => (state === "loading" ? fetcher(url) : "complete"),
+    {
+      refreshInterval: 1000,
+    }
+  );
 
   const empty = useMemo(() => input === "", [input]);
   const [open, setOpen] = useState(false);
@@ -73,11 +78,11 @@ export default function Chat({
     [selectedModelId]
   );
   const [sentMessage, setSentMessage] = useState(false);
-  const router = useRouter()
+  const router = useRouter();
 
   useEffect(() => {
     if (chatState === "complete" && !sentMessage) {
-      router.refresh()
+      router.refresh();
     }
   }, [chatState, sentMessage]);
 
@@ -109,21 +114,24 @@ export default function Chat({
             style={{ paddingBottom: `${height + 10}px` }}
           >
             {messages.map((message) => (
-              <div
-                key={message.id}
-                className={cn(
-                  "px-4 py-2 prose dark:prose-invert prose-code:bg-secondary prose-code:text-primary before:content-none! after:content-none!",
-                  message.role === "user"
-                    ? "self-end bg-secondary rounded-xl"
-                    : ""
-                )}
-              >
-                {/* {message.role === "user" ? "User: " : "AI: "} */}
-                <MemoizedMarkdown id={id} content={message.content} />
-                {/* {message.content} */}
+              <div key={message.id} className={cn("flex flex-col gap-2 group", message.role === "user" && "ml-auto items-end")}>
+                <div
+                  key={message.id}
+                  className={cn(
+                    "px-4 py-2 prose dark:prose-invert prose-code:bg-secondary prose-code:text-primary before:content-none! after:content-none!",
+                    message.role === "user"
+                      ? "bg-secondary rounded-xl"
+                      : ""
+                  )}
+                >
+                  {/* {message.role === "user" ? "User: " : "AI: "} */}
+                  <MemoizedMarkdown id={id} content={message.content} />
+                  {/* {message.content} */}
+                </div>
+                <MessageButtons reload={reload} setMessages={setMessages} message={message} />
               </div>
             ))}
-            {(chatState === "loading" && !sentMessage) && (
+            {chatState === "loading" && !sentMessage && (
               <div className="border p-2 rounded-xl flex items-center gap-2">
                 <Loader2Icon className="animate-spin size-4" />
                 <div className="flex flex-col">
