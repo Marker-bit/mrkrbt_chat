@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronDownIcon, Loader2Icon } from "lucide-react";
+import { BrainIcon, ChevronDownIcon, Loader2Icon } from "lucide-react";
 import { MemoizedMarkdown } from "./memoized-markdown";
 
 interface MessageReasoningProps {
@@ -37,11 +37,12 @@ export function MessageReasoning({
     <div className="flex flex-col">
       {isLoading ? (
         <div className="flex flex-row gap-2 items-center">
+          <Loader2Icon className="animate-spin size-4" />
           <div className="font-medium">Reasoning</div>
-          <Loader2Icon className="animate-spin" />
         </div>
       ) : (
         <div className="flex flex-row gap-2 items-center">
+          <BrainIcon className="size-4" />
           <div className="font-medium">Reasoned for a few seconds</div>
           <button
             data-testid="message-reasoning-toggle"

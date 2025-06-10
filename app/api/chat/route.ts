@@ -1,21 +1,21 @@
-import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db/drizzle";
+import { saveMessages } from "@/lib/db/queries";
+import { account, chat as chatTable } from "@/lib/db/schema";
+import { ChatSDKError } from "@/lib/errors";
+import { createProvider, MODELS } from "@/lib/models";
+import { getTrailingMessageId } from "@/lib/utils";
 import {
   appendClientMessage,
   appendResponseMessages,
+  LanguageModel,
   smoothStream,
   streamText,
 } from "ai";
-import { PostRequestBody, postRequestBodySchema } from "./schema";
-import { ChatSDKError } from "@/lib/errors";
-import { db } from "@/lib/db/drizzle";
-import { account, chat as chatTable, user } from "@/lib/db/schema";
-import { auth } from "@/lib/auth";
-import { cookies, headers } from "next/headers";
-import { saveMessages } from "@/lib/db/queries";
-import { getTrailingMessageId } from "@/lib/utils";
-import { MODELS } from "@/lib/models";
 import { eq } from "drizzle-orm";
+import { cookies, headers } from "next/headers";
+import { PostRequestBody, postRequestBodySchema } from "./schema";
+import { generateTitleFromUserMessage } from "@/lib/actions";
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
@@ -50,12 +50,6 @@ export async function POST(req: Request) {
     (model) => model.id === requestBody.selectedChatModel
   )!;
 
-  const chosenProvider = modelToRun.providers[0];
-
-  if (!chosenProvider) {
-    return new ChatSDKError("not_found:stream").toResponse();
-  }
-
   const cookiesInfo = await cookies();
 
   const apiKeys = cookiesInfo.get("apiKeys")?.value;
@@ -64,21 +58,33 @@ export async function POST(req: Request) {
     return new ChatSDKError("unauthorized:provider").toResponse();
   }
 
-  let providerApiKey: string;
-  try {
-    const parsedApiKeys = JSON.parse(apiKeys);
-    providerApiKey = parsedApiKeys[chosenProvider.id];
+  let keys: any;
 
-    if (!providerApiKey) {
-      return new ChatSDKError("unauthorized:provider").toResponse();
-    }
+  try {
+    keys = JSON.parse(apiKeys);
   } catch (e) {
     return new ChatSDKError("unauthorized:provider").toResponse();
   }
 
-  const openrouter = createOpenRouter({
-    apiKey: providerApiKey,
-  });
+  let providerData: { id: string; apiKey: string; modelName: string } | null =
+    null;
+
+  for (const provider in modelToRun.providers) {
+    if (provider in keys) {
+      const providerApiKey = keys[provider];
+
+      providerData = {
+        id: provider,
+        apiKey: providerApiKey,
+        modelName: modelToRun.providers[provider],
+      };
+      break;
+    }
+  }
+
+  if (!providerData) {
+    return new ChatSDKError("unauthorized:provider").toResponse();
+  }
 
   let chat = await db.query.chat.findFirst({
     where: (chat, { eq }) => eq(chat.id, requestBody.id),
@@ -89,12 +95,19 @@ export async function POST(req: Request) {
   }
 
   if (!chat) {
-    chat = (
-      await db
-        .insert(chatTable)
-        .values({ id: requestBody.id, userId: session.user.id, messages: [] })
-        .returning()
-    )[0];
+    const title = await generateTitleFromUserMessage({
+      message: requestBody.message,
+      apiKeys: keys,
+    });
+    [chat] = await db
+      .insert(chatTable)
+      .values({
+        id: requestBody.id,
+        userId: session.user.id,
+        messages: [],
+        title,
+      })
+      .returning();
   }
 
   const messages = appendClientMessage({
@@ -104,9 +117,23 @@ export async function POST(req: Request) {
 
   await saveMessages(chat.id, messages, "loading");
 
+  const provider = createProvider(providerData.id, providerData.apiKey);
+
+  if (!provider) {
+    return new ChatSDKError("unauthorized:provider").toResponse();
+  }
+
+  let model: LanguageModel;
+
+  try {
+    model = provider.chat(providerData.modelName);
+  } catch (e) {
+    return new ChatSDKError("unauthorized:provider").toResponse();
+  }
+
   try {
     const result = streamText({
-      model: openrouter.chat(chosenProvider.modelName),
+      model,
       system: "You are a helpful assistant.",
       messages,
       experimental_transform: smoothStream({ chunking: "word" }),
@@ -160,7 +187,15 @@ export async function POST(req: Request) {
       })
       .where(eq(account.id, currentAccount.id));
 
-    return result.toDataStreamResponse();
+    console.log(result);
+
+    return result.toDataStreamResponse({
+      sendReasoning: true,
+      getErrorMessage: (err) => {
+        console.error(err);
+        return "Something went wrong. Please try again later.";
+      },
+    });
   } catch (error) {
     return new ChatSDKError("bad_request:stream").toResponse();
   }

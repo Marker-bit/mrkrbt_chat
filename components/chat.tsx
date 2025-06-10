@@ -137,8 +137,6 @@ export default function Chat({
                     message.role === "user" ? "bg-secondary rounded-xl" : ""
                   )}
                 >
-                  {JSON.stringify(message.parts)}
-                  {/* {message.role === "user" ? "User: " : "AI: "} */}
                   {message.parts.map((part, index) => {
                     // text parts:
                     if (part.type === "text") {
@@ -166,7 +164,6 @@ export default function Chat({
                       );
                     }
                   })}
-                  {/* {message.content} */}
                 </div>
                 <MessageButtons
                   chatId={id}

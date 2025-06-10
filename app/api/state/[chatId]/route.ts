@@ -5,11 +5,18 @@ import { and, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
-export async function GET(request: Request, { params }: { params: { chatId: string } }) {
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ chatId: string }> }
+) {
+  const { chatId } = await params;
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
-  const res = await db.select({state: chat.state}).from(chat).where(and(eq(chat.id, params.chatId), eq(chat.userId, session.user.id)));
+  const res = await db
+    .select({ state: chat.state })
+    .from(chat)
+    .where(and(eq(chat.id, chatId), eq(chat.userId, session.user.id)));
   return NextResponse.json(res.length === 0 ? null : res[0].state);
 }

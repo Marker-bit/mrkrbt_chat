@@ -1,5 +1,8 @@
 import Gemini from "@/components/icons/gemini";
-import { openrouter, OpenRouterProvider } from "@openrouter/ai-sdk-provider";
+import {
+  createOpenRouter
+} from "@openrouter/ai-sdk-provider";
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 
 type Feature = "image" | "search" | "attachments" | "reasoning";
 
@@ -15,15 +18,18 @@ type Model = {
 export const PROVIDERS = [
   {
     title: "OpenRouter",
-    id: "openrouter"
+    id: "openrouter",
   },
   {
     title: "Google Generative AI",
-    id: "google"
-  }
-]
+    id: "google",
+  },
+];
 
-export const DEFAULT_API_KEYS_COOKIE = PROVIDERS.reduce((acc, provider) => ({ ...acc, [provider.id]: "" }), {})
+export const DEFAULT_API_KEYS_COOKIE = PROVIDERS.reduce(
+  (acc, provider) => ({ ...acc, [provider.id]: "" }),
+  {}
+);
 
 export const MODELS: Model[] = [
   {
@@ -31,6 +37,7 @@ export const MODELS: Model[] = [
     title: "Gemini 2.5 Flash",
     features: ["image", "search", "attachments"],
     providers: {
+      google: "models/gemini-2.5-flash-preview-05-20",
       openrouter: "google/gemini-2.5-flash-preview-05-20",
     },
     icon: Gemini,
@@ -84,3 +91,21 @@ export const MODELS: Model[] = [
     icon: Gemini,
   },
 ];
+
+export const PROVIDERS_TITLEGEN_MAP: Record<string, string> = {
+  openrouter: "google/gemini-2.0-flash-001",
+  google: "models/gemini-2.0-flash-lite"
+}
+
+export function createProvider(providerId: string, apiKey: string) {
+  switch (providerId) {
+    case "openrouter":
+      return createOpenRouter({ apiKey });
+
+    case "google":
+      return createGoogleGenerativeAI({ apiKey });
+    
+    default:
+      break;
+  }
+}

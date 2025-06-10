@@ -1,10 +1,10 @@
-import type { Chat } from '@/lib/db/db-types';
+import type { Chat } from "@/lib/db/db-types";
 import {
   SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
-} from './ui/sidebar';
-import Link from 'next/link';
+} from "./ui/sidebar";
+import Link from "next/link";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,9 +14,10 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from './ui/dropdown-menu';
-import { memo } from 'react';
-import { MoreHorizontalIcon, PinIcon, TrashIcon } from 'lucide-react';
+} from "./ui/dropdown-menu";
+import { memo } from "react";
+import { MoreHorizontalIcon, PinIcon, TrashIcon } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 const PureChatItem = ({
   chat,
@@ -31,12 +32,21 @@ const PureChatItem = ({
 }) => {
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild isActive={isActive}>
-        <Link href={`/chat/${chat.id}`} onClick={() => setOpenMobile(false)}>
-          {/* <span>{chat.title}</span> */}
-          <span>A</span>
-        </Link>
-      </SidebarMenuButton>
+      <Tooltip delayDuration={500}>
+        <TooltipTrigger asChild>
+          <SidebarMenuButton asChild isActive={isActive}>
+            <Link
+              href={`/chat/${chat.id}`}
+              onClick={() => setOpenMobile(false)}
+            >
+              <span>{chat.title}</span>
+              {/* <span>A</span> */}
+            </Link>
+          </SidebarMenuButton>
+        </TooltipTrigger>
+
+        <TooltipContent>{chat.title}</TooltipContent>
+      </Tooltip>
 
       <DropdownMenu modal={true}>
         <DropdownMenuTrigger asChild>
@@ -86,9 +96,7 @@ const PureChatItem = ({
               </DropdownMenuSubContent>
             </DropdownMenuPortal>
           </DropdownMenuSub> */}
-          <DropdownMenuItem
-            onSelect={() => onDelete(chat.id)}
-          >
+          <DropdownMenuItem onSelect={() => onDelete(chat.id)}>
             <PinIcon />
             <span>Pin chat</span>
           </DropdownMenuItem>
@@ -97,7 +105,7 @@ const PureChatItem = ({
             className="text-destructive focus:bg-destructive/15 focus:dark:bg-destructive focus:text-destructive dark:text-red-500"
             onSelect={() => onDelete(chat.id)}
           >
-            <TrashIcon className='dark:text-red-500' />
+            <TrashIcon className="dark:text-red-500" />
             <span>Delete</span>
           </DropdownMenuItem>
         </DropdownMenuContent>

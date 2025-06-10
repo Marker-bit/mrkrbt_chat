@@ -5,6 +5,8 @@ import { auth } from "./auth";
 import { db } from "./db/drizzle";
 import { and } from "drizzle-orm";
 import { chat } from "./db/schema";
+import { generateText, LanguageModel, Provider, UIMessage } from "ai";
+import { createProvider, PROVIDERS_TITLEGEN_MAP } from "./models";
 
 export async function setApiKeysAsCookie(
   apiKeys: Record<string, string>
@@ -38,4 +40,40 @@ export async function branchOffChat(
     state: "complete",
   });
   return { chatId: newId };
+}
+
+export async function generateTitleFromUserMessage({
+  message,
+  apiKeys
+}: {
+  message: UIMessage;
+  apiKeys: Record<string, string>;
+}) {
+  let model: LanguageModel | null = null;
+  for (const provider in PROVIDERS_TITLEGEN_MAP) {
+    if (apiKeys[provider] === undefined) {
+      continue;
+    }
+    const newP = createProvider(provider, apiKeys[provider]);
+    if (newP) {
+      model = newP.chat(PROVIDERS_TITLEGEN_MAP[provider]);
+      break;
+    }
+  }
+
+  if (!model) {
+    return "Unnamed"
+  }
+
+  const { text: title } = await generateText({
+    model,
+    system: `\n
+    - you will generate a short title based on the first message a user begins a conversation with
+    - ensure it is not more than 80 characters long
+    - the title should be a summary of the user's message
+    - do not use quotes or colons`,
+    prompt: JSON.stringify(message),
+  });
+
+  return title;
 }
