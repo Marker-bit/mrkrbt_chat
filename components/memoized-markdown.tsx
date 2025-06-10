@@ -1,6 +1,5 @@
 "use client";
 
-import rehypeShiki from "@shikijs/rehype";
 import { marked } from "marked";
 import { memo, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
@@ -15,9 +14,9 @@ const MemoizedMarkdownBlock = memo(
   ({ content }: { content: string }) => {
     return (
       <ReactMarkdown
-        // components={{
-        //   code: CodeHighlight
-        // }}
+        components={{
+          code: CodeHighlight
+        }}
       >
         {content}
       </ReactMarkdown>

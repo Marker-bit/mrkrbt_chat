@@ -19,6 +19,7 @@ export default function Chat({
   const { messages, append, input, setInput, status, stop, reload, error } =
     useChat({
       credentials: "include",
+      experimental_throttle: 50,
     });
   const empty = useMemo(() => input === "", [input]);
 
@@ -53,7 +54,7 @@ export default function Chat({
               <div
                 key={message.id}
                 className={cn(
-                  "px-4 py-2 prose dark:prose-invert",
+                  "px-4 py-2 prose dark:prose-invert prose-code:bg-secondary prose-code:text-primary before:content-none! after:content-none!",
                   message.role === "user"
                     ? "self-end bg-secondary rounded-xl"
                     : ""
