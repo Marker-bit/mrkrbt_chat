@@ -1,4 +1,4 @@
-import { Message } from "ai";
+import { Message } from "./db-types";
 import { db } from "./drizzle";
 import { chat } from "./schema";
 import { eq } from "drizzle-orm";

@@ -167,6 +167,7 @@ export async function POST(req: Request) {
                   content: assistantMessage.content,
                   // attachments: assistantMessage.experimental_attachments ?? [],
                   createdAt: new Date(),
+                  modelId: requestBody.selectedChatModel,
                 },
               ],
               "complete"
@@ -186,8 +187,6 @@ export async function POST(req: Request) {
         messagesSent: currentAccount.messagesSent + 1,
       })
       .where(eq(account.id, currentAccount.id));
-
-    console.log(result);
 
     return result.toDataStreamResponse({
       sendReasoning: true,

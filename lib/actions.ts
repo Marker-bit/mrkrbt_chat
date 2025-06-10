@@ -15,6 +15,13 @@ export async function setApiKeysAsCookie(
   cookieStore.set("apiKeys", JSON.stringify(apiKeys));
 }
 
+export async function saveChatModelAsCookie(
+  modelId: string
+): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.set("selectedModelId", modelId);
+}
+
 export async function branchOffChat(
   chatId: string,
   messageId: string

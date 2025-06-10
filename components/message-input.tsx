@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { RefObject, useEffect } from "react";
 import useMeasure from "react-use-measure";
+import ModelPopover from "./model-popover";
 
 export default function MessageInput({
   value,
@@ -68,7 +69,7 @@ export default function MessageInput({
   return (
     <div className="w-full absolute bottom-0 left-0 px-2">
       <div
-        className="border-8 border-accent border-b-0 p-4 w-full max-w-3xl mx-auto rounded-3xl rounded-b-none flex flex-col gap-2 backdrop-blur-md bg-background/20"
+        className="border-8 border-accent border-b-0 p-4 w-full max-w-3xl mx-auto rounded-3xl rounded-b-none flex flex-col gap-2 backdrop-blur-lg bg-background/50"
         ref={measureRef}
       >
         <AutosizeTextarea
@@ -82,10 +83,7 @@ export default function MessageInput({
         />
         <div className="flex justify-between w-full items-center">
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm">
-              <div>Gemini 2.5 Flash</div>
-              <ChevronUpIcon className="size-4" />
-            </Button>
+            <ModelPopover selectedModelId={selectedModelId} />
             <Toggle
               aria-label="Toggle search"
               variant="outline"

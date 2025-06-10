@@ -1,22 +1,22 @@
 import { MemoizedMarkdown } from "@/components/memoized-markdown";
 import { AutosizeTextAreaRef } from "@/components/ui/autosize-textarea";
-import { Button } from "@/components/ui/button";
-import { cn, fetcher } from "@/lib/utils";
-import { Message, useChat } from "@ai-sdk/react";
-import { useEffect, useMemo, useOptimistic, useRef, useState } from "react";
-import MessageInput from "./message-input";
-import WelcomeScreen from "../app/(app)/_components/welcome-screen";
+import { Message } from "@/lib/db/db-types";
 import { ChatSDKError } from "@/lib/errors";
-import { toast } from "sonner";
 import { fetchWithErrorHandlers } from "@/lib/fetch";
-import ApiKeyDialog from "./api-key-dialog";
 import { MODELS } from "@/lib/models";
+import { cn, fetcher } from "@/lib/utils";
+import { useChat } from "@ai-sdk/react";
 import { Loader2Icon } from "lucide-react";
-import useSWR, { mutate } from "swr";
 import { useRouter } from "next/navigation";
-import MessageButtons from "./message-buttons";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
+import useSWR, { mutate } from "swr";
 import { unstable_serialize } from "swr/infinite";
+import WelcomeScreen from "../app/(app)/_components/welcome-screen";
+import ApiKeyDialog from "./api-key-dialog";
 import { getChatHistoryPaginationKey } from "./chat-list";
+import MessageButtons from "./message-buttons";
+import MessageInput from "./message-input";
 import { MessageReasoning } from "./reasoning";
 
 export default function Chat({
@@ -55,12 +55,12 @@ export default function Chat({
     experimental_prepareRequestBody: (body) => ({
       id,
       message: body.messages.at(-1),
-      selectedChatModel: "qwen3",
+      selectedChatModel: selectedModelId,
     }),
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
       if (isMain) {
-        router.push(`/chat/${id}`);
+        router.push(`/chat/${id}`, {scroll: false});
       }
     },
     onError: (error) => {
@@ -122,7 +122,7 @@ export default function Chat({
             className="flex flex-col w-full max-w-3xl h-fit gap-4"
             style={{ paddingBottom: `${height + 10}px` }}
           >
-            {messages.map((message) => (
+            {messages.map((message, msgIndex) => (
               <div
                 key={message.id}
                 className={cn(
@@ -156,7 +156,7 @@ export default function Chat({
                           key={index}
                           isLoading={
                             status === "streaming" &&
-                            messages.length - 1 === index
+                            messages.length - 1 === msgIndex
                           }
                           messageId={message.id}
                           reasoning={part.reasoning}

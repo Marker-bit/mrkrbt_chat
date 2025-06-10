@@ -1,4 +1,3 @@
-import { Message } from "ai";
 import {
   integer,
   text,
@@ -7,6 +6,7 @@ import {
   timestamp,
   json,
 } from "drizzle-orm/pg-core";
+import { Message } from "./db-types";
 
 // export const todo = pgTable("todo", {
 //   id: integer("id").primaryKey(),
