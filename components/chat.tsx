@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { Message, useChat } from "@ai-sdk/react";
 import { useMemo, useOptimistic, useRef, useState } from "react";
 import MessageInput from "./message-input";
-import WelcomeScreen from "../app/_components/welcome-screen";
+import WelcomeScreen from "../app/(app)/_components/welcome-screen";
 import { ChatSDKError } from "@/lib/errors";
 import { toast } from "sonner";
 import { fetchWithErrorHandlers } from "@/lib/fetch";
@@ -17,11 +17,13 @@ export default function Chat({
   id,
   initialMessages,
   selectedModelId,
+  apiKeys,
 }: {
   isMain?: boolean;
   id: string;
   initialMessages?: Message[];
   selectedModelId: string;
+  apiKeys: Record<string, string>;
 }) {
   const [height, setHeight] = useState(0);
   const ref = useRef<AutosizeTextAreaRef>(null);
@@ -45,6 +47,10 @@ export default function Chat({
   });
   const empty = useMemo(() => input === "", [input]);
   const [open, setOpen] = useState(false);
+  const selectedModel = useMemo(
+    () => MODELS.find((model) => model.id === selectedModelId),
+    [selectedModelId]
+  );
 
   return (
     <>
@@ -100,9 +106,10 @@ export default function Chat({
         </div>
       )}
 
-      <ApiKeyDialog open={open} setOpen={setOpen} providerName="OpenRouter" />
+      <ApiKeyDialog providerId="openrouter" apiKeys={apiKeys} modelName={selectedModel?.title!} open={open} setOpen={setOpen} providerName="OpenRouter" />
 
       <MessageInput
+        setApiKeysOpen={setOpen}
         selectedModelId={selectedModelId}
         stop={stop}
         status={status}
@@ -111,6 +118,10 @@ export default function Chat({
         ref={ref}
         setHeight={setHeight}
         onSubmit={(message) => {
+          if (!apiKeys["openrouter"]) {
+            setOpen(true);
+            return;
+          }
           if (messages.length === 0) {
             window.history.replaceState({}, "", `/chat/${id}`);
           }

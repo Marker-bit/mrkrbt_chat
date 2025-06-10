@@ -46,17 +46,29 @@ export async function POST(req: Request) {
   if (!chosenProvider) {
     return new ChatSDKError("not_found:stream").toResponse();
   }
-  
+
   const cookiesInfo = await cookies();
 
-  const openRouterApiKey = cookiesInfo.get("openrouter-api-key")?.value;
+  const apiKeys = cookiesInfo.get("apiKeys")?.value;
 
-  if (!openRouterApiKey) {
+  if (!apiKeys) {
+    return new ChatSDKError("unauthorized:provider").toResponse();
+  }
+
+  let providerApiKey: string;
+  try {
+    const parsedApiKeys = JSON.parse(apiKeys);
+    providerApiKey = parsedApiKeys[chosenProvider.id];
+
+    if (!providerApiKey) {
+      return new ChatSDKError("unauthorized:provider").toResponse();
+    }
+  } catch (e) {
     return new ChatSDKError("unauthorized:provider").toResponse();
   }
 
   const openrouter = createOpenRouter({
-    apiKey: openRouterApiKey,
+    apiKey: providerApiKey,
   });
 
   let chat = await db.query.chat.findFirst({
@@ -83,47 +95,51 @@ export async function POST(req: Request) {
 
   await saveMessages(chat.id, messages);
 
-  const result = streamText({
-    model: openrouter.chat(chosenProvider.modelName),
-    system: "You are a helpful assistant.",
-    messages,
-    experimental_transform: smoothStream({ chunking: "word" }),
-    experimental_generateMessageId: () => crypto.randomUUID(),
-    onFinish: async ({ response }) => {
-      if (session.user?.id) {
-        try {
-          const assistantId = getTrailingMessageId({
-            messages: response.messages.filter(
-              (message) => message.role === "assistant"
-            ),
-          });
+  try {
+    const result = streamText({
+      model: openrouter.chat(chosenProvider.modelName),
+      system: "You are a helpful assistant.",
+      messages,
+      experimental_transform: smoothStream({ chunking: "word" }),
+      experimental_generateMessageId: () => crypto.randomUUID(),
+      onFinish: async ({ response }) => {
+        if (session.user?.id) {
+          try {
+            const assistantId = getTrailingMessageId({
+              messages: response.messages.filter(
+                (message) => message.role === "assistant"
+              ),
+            });
 
-          if (!assistantId) {
-            throw new Error("No assistant message found!");
+            if (!assistantId) {
+              throw new Error("No assistant message found!");
+            }
+
+            const [, assistantMessage] = appendResponseMessages({
+              messages: [requestBody.message],
+              responseMessages: response.messages,
+            });
+
+            await saveMessages(chat.id, [
+              ...messages,
+              {
+                id: assistantId,
+                role: assistantMessage.role,
+                parts: assistantMessage.parts,
+                content: assistantMessage.content,
+                // attachments: assistantMessage.experimental_attachments ?? [],
+                createdAt: new Date(),
+              },
+            ]);
+          } catch (_) {
+            console.error("Failed to save chat");
           }
-
-          const [, assistantMessage] = appendResponseMessages({
-            messages: [requestBody.message],
-            responseMessages: response.messages,
-          });
-
-          await saveMessages(chat.id, [
-            ...messages,
-            {
-              id: assistantId,
-              role: assistantMessage.role,
-              parts: assistantMessage.parts,
-              content: assistantMessage.content,
-              // attachments: assistantMessage.experimental_attachments ?? [],
-              createdAt: new Date(),
-            },
-          ]);
-        } catch (_) {
-          console.error("Failed to save chat");
         }
-      }
-    },
-  });
+      },
+    });
 
-  return result.toDataStreamResponse();
+    return result.toDataStreamResponse();
+  } catch (error) {
+    return new ChatSDKError("bad_request:stream").toResponse();
+  }
 }

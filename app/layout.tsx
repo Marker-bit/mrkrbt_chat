@@ -1,14 +1,8 @@
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 import type { Metadata } from "next";
 import { Fira_Code, Inter } from "next/font/google";
 import "./globals.css";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
-import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/sonner";
 
 const mainFont = Inter({
   subsets: ["latin"],
@@ -41,16 +35,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Toaster />
-          <SidebarProvider
-            style={
-              {
-                "--sidebar-width": "19rem",
-              } as React.CSSProperties
-            }
-          >
-            <AppSidebar />
-            <SidebarInset>{children}</SidebarInset>
-          </SidebarProvider>
+          {children}
         </ThemeProvider>
       </body>
     </html>

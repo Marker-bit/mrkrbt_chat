@@ -13,6 +13,20 @@ export default async function Home() {
   }
 
   const cookiesInfo = await cookies();
+  let apiKeys: Record<string, string>;
+  try {
+    apiKeys = JSON.parse(cookiesInfo.get("apiKeys")?.value || "{}");
+  } catch {
+    apiKeys = {};
+    cookiesInfo.set("apiKeys", JSON.stringify(apiKeys));
+  }
 
-  return <MainPage selectedModelId={cookiesInfo.get("selectedModelId")?.value || "gemini-2.5-flash"} />;
+  return (
+    <MainPage
+      selectedModelId={
+        cookiesInfo.get("selectedModelId")?.value || "gemini-2.5-flash"
+      }
+      apiKeys={apiKeys}
+    />
+  );
 }

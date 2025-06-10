@@ -4,15 +4,13 @@ import {
 } from "@/components/ui/autosize-textarea";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
-import { MODELS } from "@/lib/models";
 import {
   ArrowUpIcon,
   ChevronUpIcon,
   GlobeIcon,
-  RotateCwIcon,
-  SquareIcon,
+  SquareIcon
 } from "lucide-react";
-import { RefObject, useEffect, useMemo, useOptimistic } from "react";
+import { RefObject, useEffect } from "react";
 import useMeasure from "react-use-measure";
 
 export default function MessageInput({
@@ -24,6 +22,7 @@ export default function MessageInput({
   status,
   stop,
   selectedModelId,
+  setApiKeysOpen
 }: {
   value: string;
   setValue: (value: string) => void;
@@ -33,6 +32,7 @@ export default function MessageInput({
   status: "submitted" | "streaming" | "ready" | "error";
   stop: () => void;
   selectedModelId: string;
+  setApiKeysOpen: (open: boolean) => void
 }) {
   const [measureRef, bounds] = useMeasure();
 
@@ -48,18 +48,18 @@ export default function MessageInput({
     }
   };
   
-  const availableChatModels = MODELS;
+  // const availableChatModels = MODELS;
 
-  const [optimisticModelId, setOptimisticModelId] =
-    useOptimistic(selectedModelId);
+  // const [optimisticModelId, setOptimisticModelId] =
+  //   useOptimistic(selectedModelId);
 
-  const selectedChatModel = useMemo(
-    () =>
-      availableChatModels.find(
-        (chatModel) => chatModel.id === optimisticModelId,
-      ),
-    [optimisticModelId, availableChatModels],
-  );
+  // const selectedChatModel = useMemo(
+  //   () =>
+  //     availableChatModels.find(
+  //       (chatModel) => chatModel.id === optimisticModelId,
+  //     ),
+  //   [optimisticModelId, availableChatModels],
+  // );
 
   useEffect(() => {
     setHeight?.(bounds.height);
@@ -81,7 +81,7 @@ export default function MessageInput({
           onKeyDown={handleKeyDown}
         />
         <div className="flex justify-between w-full items-center">
-          <div className="flex gap-2 items-stretch">
+          <div className="flex gap-2">
             <Button variant="ghost" size="sm">
               <div>Gemini 2.5 Flash</div>
               <ChevronUpIcon className="size-4" />

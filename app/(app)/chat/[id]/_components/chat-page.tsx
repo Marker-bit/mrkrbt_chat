@@ -8,7 +8,7 @@ import { ModeToggle } from "@/components/mode-toggle";
 import Chat from "@/components/chat";
 import { Chat as ChatType } from "@/lib/db/db-types";
 
-export default function ChatPage({id, chat, selectedModelId}: {id: string; chat: ChatType; selectedModelId: string}) {
+export default function ChatPage({id, chat, selectedModelId, apiKeys}: {id: string; chat: ChatType; selectedModelId: string, apiKeys: Record<string, string>}) {
   return (
     <div
       className="flex flex-col h-svh"
@@ -25,7 +25,7 @@ export default function ChatPage({id, chat, selectedModelId}: {id: string; chat:
           </Link>
         </Button>
       </div>
-      <Chat selectedModelId={selectedModelId} id={id} initialMessages={chat.messages} />
+      <Chat selectedModelId={selectedModelId} id={id} initialMessages={chat.messages} apiKeys={apiKeys} />
     </div>
   );
 }
