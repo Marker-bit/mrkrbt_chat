@@ -5,6 +5,7 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
+  SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
@@ -46,7 +47,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenu>
         </SidebarGroup>
         <SidebarGroup>
-          <SidebarGroupLabel>Today</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <div className="px-2 text-muted-foreground w-full flex flex-row justify-center items-center text-sm gap-2 select-none">
+              There are no conversations yet.
+            </div>
+          </SidebarGroupContent>
+          {/* <SidebarGroupLabel>Today</SidebarGroupLabel>
           <SidebarMenu className="gap-2">
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
@@ -69,27 +75,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </a>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            {/* {data.navMain.map((item) => (
-              <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton asChild>
-                  <a href={item.url} className="font-medium">
-                    {item.title}
-                  </a>
-                </SidebarMenuButton>
-                {item.items?.length ? (
-                  <SidebarMenuSub className="ml-0 border-l-0 px-1.5">
-                    {item.items.map((item) => (
-                      <SidebarMenuSubItem key={item.title}>
-                        <SidebarMenuSubButton asChild isActive={item.isActive}>
-                          <a href={item.url}>{item.title}</a>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    ))}
-                  </SidebarMenuSub>
-                ) : null}
-              </SidebarMenuItem>
-            ))} */}
-          </SidebarMenu>
+          </SidebarMenu> */}
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>

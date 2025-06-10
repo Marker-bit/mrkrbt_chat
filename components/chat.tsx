@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { useMemo, useRef, useState } from "react";
 import MessageInput from "./message-input";
-import WelcomeScreen from "./welcome-screen";
+import WelcomeScreen from "../app/_components/welcome-screen";
 
 export default function Chat({
   isMain = false,

@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Settings2Icon } from "lucide-react";
 import Link from "next/link";
-import { ModeToggle } from "../../components/mode-toggle";
-import Chat from "../../components/chat";
+import { ModeToggle } from "@/components/mode-toggle";
+import Chat from "@/components/chat";
 
-export default function MainPage() {
+export default function ChatPage({id}: {id: string}) {
   return (
     <div
       className="flex flex-col h-svh"
@@ -24,7 +24,7 @@ export default function MainPage() {
           </Link>
         </Button>
       </div>
-      <Chat id={crypto.randomUUID()} isMain />
+      <Chat id={id} />
     </div>
   );
 }
