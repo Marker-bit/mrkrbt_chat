@@ -1,13 +1,14 @@
 import { cookies } from "next/headers";
 import KeysForm from "./keys-form";
+import { DEFAULT_API_KEYS_COOKIE } from "@/lib/models";
 
 export default async function Page() {
   const cookiesInfo = await cookies();
   let apiKeys: Record<string, string>;
   try {
-    apiKeys = JSON.parse(cookiesInfo.get("apiKeys")?.value || "{}");
+    apiKeys = JSON.parse(cookiesInfo.get("apiKeys")?.value || "");
   } catch {
-    apiKeys = {};
+    apiKeys = DEFAULT_API_KEYS_COOKIE;
     cookiesInfo.set("apiKeys", JSON.stringify(apiKeys));
   }
 

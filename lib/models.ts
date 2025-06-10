@@ -8,36 +8,31 @@ type Model = {
   title: string;
   additionalTitle?: string;
   features: Feature[];
-  providers: {
-    id: "openrouter";
-    title: string;
-    modelName: string;
-  }[];
+  providers: Record<string, string>;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
 };
 
-const buildOpenRouterProvider = (
-  modelName: string
-): {
-  id: "openrouter";
-  title: string;
-  modelName: string;
-} => {
-  return {
-    id: "openrouter",
+export const PROVIDERS = [
+  {
     title: "OpenRouter",
-    modelName,
-  };
-};
+    id: "openrouter"
+  },
+  {
+    title: "Google Generative AI",
+    id: "google"
+  }
+]
+
+export const DEFAULT_API_KEYS_COOKIE = PROVIDERS.reduce((acc, provider) => ({ ...acc, [provider.id]: "" }), {})
 
 export const MODELS: Model[] = [
   {
     id: "gemini-2.5-flash",
     title: "Gemini 2.5 Flash",
     features: ["image", "search", "attachments"],
-    providers: [
-      buildOpenRouterProvider("google/gemini-2.5-flash-preview-05-20"),
-    ],
+    providers: {
+      openrouter: "google/gemini-2.5-flash-preview-05-20",
+    },
     icon: Gemini,
   },
   {
@@ -45,16 +40,18 @@ export const MODELS: Model[] = [
     title: "Gemini 2.5 Flash",
     additionalTitle: "Thinking",
     features: ["image", "search", "attachments"],
-    providers: [
-      buildOpenRouterProvider("google/gemini-2.5-flash-preview-05-20:thinking"),
-    ],
+    providers: {
+      openrouter: "google/gemini-2.5-flash-preview-05-20:thinking",
+    },
     icon: Gemini,
   },
   {
     id: "gemini-2.5-pro",
     title: "Gemini 2.5 Pro",
     features: ["image", "search", "attachments", "reasoning"],
-    providers: [buildOpenRouterProvider("google/gemini-2.5-pro-preview-05-20")],
+    providers: {
+      openrouter: "google/gemini-2.5-pro-preview-05-20",
+    },
     icon: Gemini,
   },
   {
@@ -62,7 +59,9 @@ export const MODELS: Model[] = [
     title: "DeepSeek R1",
     additionalTitle: "0528",
     features: ["reasoning"],
-    providers: [buildOpenRouterProvider("deepseek/r1-0528")],
+    providers: {
+      openrouter: "deepseek/r1-0528",
+    },
     icon: Gemini,
   },
   {
@@ -70,14 +69,18 @@ export const MODELS: Model[] = [
     title: "DeepSeek R1",
     additionalTitle: "Qwen Distilled",
     features: ["reasoning"],
-    providers: [buildOpenRouterProvider("deepseek/deepseek-r1-distill-qwen-7b")],
+    providers: {
+      openrouter: "deepseek/deepseek-r1-distill-qwen-7b",
+    },
     icon: Gemini,
   },
   {
     id: "qwen3",
     title: "Qwen 3",
     features: ["reasoning"],
-    providers: [buildOpenRouterProvider("qwen/qwen3-32b")],
+    providers: {
+      openrouter: "qwen/qwen3-32b",
+    },
     icon: Gemini,
   },
 ];

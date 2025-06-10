@@ -4,6 +4,7 @@ import { and } from "drizzle-orm";
 import { cookies, headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import ChatPage from "./_components/chat-page";
+import { DEFAULT_API_KEYS_COOKIE } from "@/lib/models";
 
 export default async function Home({
   params,
@@ -32,9 +33,9 @@ export default async function Home({
   const cookiesInfo = await cookies();
   let apiKeys: Record<string, string>;
   try {
-    apiKeys = JSON.parse(cookiesInfo.get("apiKeys")?.value || "{}");
+    apiKeys = JSON.parse(cookiesInfo.get("apiKeys")?.value || "");
   } catch {
-    apiKeys = {};
+    apiKeys = DEFAULT_API_KEYS_COOKIE;
     cookiesInfo.set("apiKeys", JSON.stringify(apiKeys));
   }
 

@@ -2,6 +2,7 @@ import { cookies, headers } from "next/headers";
 import MainPage from "./_components/main-page";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { DEFAULT_API_KEYS_COOKIE } from "@/lib/models";
 
 export default async function Home() {
   const session = await auth.api.getSession({
@@ -15,9 +16,9 @@ export default async function Home() {
   const cookiesInfo = await cookies();
   let apiKeys: Record<string, string>;
   try {
-    apiKeys = JSON.parse(cookiesInfo.get("apiKeys")?.value || "{}");
+    apiKeys = JSON.parse(cookiesInfo.get("apiKeys")?.value || "");
   } catch {
-    apiKeys = {};
+    apiKeys = DEFAULT_API_KEYS_COOKIE;
     cookiesInfo.set("apiKeys", JSON.stringify(apiKeys));
   }
 
