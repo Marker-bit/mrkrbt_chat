@@ -21,5 +21,11 @@ export const auth = betterAuth({
     deleteUser: {
       enabled: true,
     },
+    additionalFields: {
+      favouriteModels: {
+        type: "string[]",
+        defaultValue: []
+      },
+    },
   },
 });

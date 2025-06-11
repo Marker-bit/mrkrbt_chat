@@ -28,6 +28,7 @@ export const user = pgTable("user", {
   updatedAt: timestamp("updated_at")
     .$defaultFn(() => /* @__PURE__ */ new Date())
     .notNull(),
+ favouriteModels: text('favourite_models').array().default([])
 });
 
 export const session = pgTable("session", {

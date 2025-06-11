@@ -9,13 +9,15 @@ import {
   MODELS,
   PROVIDERS,
 } from "@/lib/models";
-import { cn } from "@/lib/utils";
+import { cn, fetcher } from "@/lib/utils";
 import {
   BrainCogIcon,
   CheckIcon,
   ChevronLeftIcon,
   ChevronUpIcon,
   FilterIcon,
+  PinIcon,
+  PinOffIcon,
   RouteIcon,
   SearchIcon,
   Tally1Icon,
@@ -40,6 +42,9 @@ import {
 } from "./ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import useSWR from "swr";
+import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 
 export default function ModelPopover({
   selectedModelData,
@@ -53,27 +58,41 @@ export default function ModelPopover({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [selectedFeatures, setSelectedFeatures] = useState<FeatureId[]>([]);
   const [search, setSearch] = useState("");
+  const {
+    data: favouriteModels,
+    isLoading,
+    mutate,
+  } = useSWR<string[]>("/api/favourite-models", fetcher, { fallbackData: [] });
 
-  let favouriteModels = MODELS.slice(0, 6);
+  // let favouriteModels = MODELS.slice(0, 6);
 
-  let filteredModels = MODELS;
+  let filteredModels = MODELS.filter((model) =>
+    favouriteModels ? !favouriteModels?.includes(model.id) : true
+  );
+  let filteredFavouriteModels = favouriteModels!.map(
+    (model) => MODELS.find((m) => m.id === model)!
+  );
 
   if (selectedFeatures.length > 0) {
     filteredModels = filteredModels.filter((model) =>
       selectedFeatures.some((feature) => model.features.includes(feature))
     );
-    favouriteModels = favouriteModels.filter((model) =>
-      selectedFeatures.some((feature) => model.features.includes(feature))
-    );
+    if (filteredFavouriteModels) {
+      filteredFavouriteModels = filteredFavouriteModels.filter((model) =>
+        selectedFeatures.some((feature) => model.features.includes(feature))
+      );
+    }
   }
 
   if (search) {
     filteredModels = filteredModels.filter((model) =>
       model.title.toLowerCase().includes(search.toLowerCase())
     );
-    favouriteModels = favouriteModels.filter((model) =>
-      model.title.toLowerCase().includes(search.toLowerCase())
-    );
+    if (filteredFavouriteModels) {
+      filteredFavouriteModels = filteredFavouriteModels.filter((model) =>
+        model.title.toLowerCase().includes(search.toLowerCase())
+      );
+    }
   }
 
   const [optimisticModelData, setOptimisticModelData] =
@@ -150,6 +169,27 @@ export default function ModelPopover({
     [optimisticModelData, PROVIDERS]
   );
 
+  const setPinned = async (pinned: boolean, modelId: string) => {
+    const updatePromise = authClient.updateUser({
+      favouriteModels: pinned
+        ? [...favouriteModels!, modelId]
+        : favouriteModels!.filter((model) => model !== modelId),
+    });
+
+    toast.promise(updatePromise, {
+      loading: "Saving...",
+      success: () => {
+        mutate(() =>
+          pinned
+            ? [...favouriteModels!, modelId]
+            : favouriteModels!.filter((model) => model !== modelId)
+        );
+        return "Saved successfully";
+      },
+      error: "Failed to save",
+    });
+  };
+
   return (
     <>
       <Popover open={open} onOpenChange={setOpen}>
@@ -189,68 +229,143 @@ export default function ModelPopover({
             />
           </div>
           {big ? (
-            <div className="grid grid-cols-5 auto-rows-[160px] gap-2 p-2 grow overflow-auto">
-              {filteredModels.map((model) => (
-                <Button
-                  key={model.id + "-big"}
-                  variant="outline"
-                  className="flex flex-col gap-2 text-start hover:bg-accent h-full"
-                  onClick={() => setModel(model.id)}
-                >
-                  <model.icon className="size-8" />
-                  <div className="flex flex-col text-center">
-                    <div className="font-bold">{model.model}</div>
-                    <div className="text-sm">{model.version}</div>
-                    {model.additionalTitle && (
-                      <div className="text-primary-foreground text-xs">
-                        ({model.additionalTitle})
+            <div className="flex flex-col gap-2 overflow-y-auto grow p-4">
+              <div className="text-primary-foreground text-lg flex gap-2 items-center">
+                <PinIcon className="size-4" />
+                Favorites
+              </div>
+              <div className="grid grid-cols-5 auto-rows-[160px] gap-2">
+                {filteredFavouriteModels.map((model) => (
+                  <div
+                    className="h-full w-full relative group"
+                    key={model.id + "-big"}
+                  >
+                    <Button
+                      variant="outline"
+                      className="flex flex-col gap-2 text-start hover:bg-accent w-full h-full relative"
+                      onClick={() => setModel(model.id)}
+                    >
+                      <model.icon className="size-8" />
+                      <div className="flex flex-col text-center">
+                        <div className="font-bold">{model.model}</div>
+                        <div className="text-sm">{model.version}</div>
+                        {model.additionalTitle && (
+                          <div className="text-primary-foreground text-xs">
+                            ({model.additionalTitle})
+                          </div>
+                        )}
                       </div>
-                    )}
+                      <div className="flex flex-wrap gap-2 items-center justify-center mt-auto">
+                        {model.features.map((feature) => {
+                          const realFeature = FEATURES.find(
+                            (f) => f.id === feature
+                          );
+                          return (
+                            realFeature?.displayInModels && (
+                              <FeatureIcon key={feature} id={feature} />
+                            )
+                          );
+                        })}
+                      </div>
+                    </Button>
+                    <div className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 z-10 translate-y-[20%] transition bg-background p-1 rounded-xl pointer-events-none group-hover:pointer-events-auto">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="rounded-xl"
+                        onClick={() => setPinned(false, model.id)}
+                      >
+                        <PinOffIcon />
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex flex-wrap gap-2 items-center justify-center mt-auto">
-                    {model.features.map((feature) => {
-                      const realFeature = FEATURES.find(
-                        (f) => f.id === feature
-                      );
-                      return (
-                        realFeature?.displayInModels && (
-                          <FeatureIcon key={feature} id={feature} />
-                        )
-                      );
-                    })}
+                ))}
+              </div>
+              <div className="text-primary-foreground text-lg">Others</div>
+              <div className="grid grid-cols-5 auto-rows-[160px] gap-2">
+                {filteredModels.map((model) => (
+                  <div
+                    className="h-full w-full relative group"
+                    key={model.id + "-big"}
+                  >
+                    <Button
+                      variant="outline"
+                      className="flex flex-col gap-2 text-start hover:bg-accent w-full h-full relative"
+                      onClick={() => setModel(model.id)}
+                    >
+                      <model.icon className="size-8" />
+                      <div className="flex flex-col text-center">
+                        <div className="font-bold">{model.model}</div>
+                        <div className="text-sm">{model.version}</div>
+                        {model.additionalTitle && (
+                          <div className="text-primary-foreground text-xs">
+                            ({model.additionalTitle})
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-2 items-center justify-center mt-auto">
+                        {model.features.map((feature) => {
+                          const realFeature = FEATURES.find(
+                            (f) => f.id === feature
+                          );
+                          return (
+                            realFeature?.displayInModels && (
+                              <FeatureIcon key={feature} id={feature} />
+                            )
+                          );
+                        })}
+                      </div>
+                    </Button>
+                    <div className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 z-10 translate-y-[20%] transition bg-background p-1 rounded-xl pointer-events-none group-hover:pointer-events-auto">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="rounded-xl"
+                        onClick={() => setPinned(true, model.id)}
+                      >
+                        <PinIcon />
+                      </Button>
+                    </div>
                   </div>
-                </Button>
-              ))}
+                ))}
+              </div>
             </div>
           ) : (
             <div className="flex flex-col gap-1 p-2 grow overflow-auto">
-              {favouriteModels.map((model) => (
-                <Button
-                  key={model.id}
-                  variant="ghost"
-                  className="justify-start text-start hover:bg-accent h-12"
-                  onClick={() => setModel(model.id)}
-                >
-                  <model.icon className="text-primary size-4" />
-                  {model.title}
-                  {model.additionalTitle && ` (${model.additionalTitle})`}
-                  <div className="ml-auto flex gap-2 items-center">
-                    {model.features.map((feature) => {
-                      const realFeature = FEATURES.find(
-                        (f) => f.id === feature
-                      );
-                      return (
-                        realFeature?.displayInModels && (
-                          <FeatureIcon key={feature} id={feature} />
-                        )
-                      );
-                    })}
-                    {selectedModelData.modelId === model.id && (
-                      <CheckIcon className="size-4" />
-                    )}
-                  </div>
-                </Button>
-              ))}
+              {isLoading || !favouriteModels ? (
+                <></>
+              ) : (
+                favouriteModels.map((modelId) => {
+                  const model = MODELS.find((m) => m.id === modelId)!;
+                  return (
+                    <Button
+                      key={model.id}
+                      variant="ghost"
+                      className="justify-start text-start hover:bg-accent h-12"
+                      onClick={() => setModel(model.id)}
+                    >
+                      <model.icon className="text-primary size-4" />
+                      {model.title}
+                      {model.additionalTitle && ` (${model.additionalTitle})`}
+                      <div className="ml-auto flex gap-2 items-center">
+                        {model.features.map((feature) => {
+                          const realFeature = FEATURES.find(
+                            (f) => f.id === feature
+                          );
+                          return (
+                            realFeature?.displayInModels && (
+                              <FeatureIcon key={feature} id={feature} />
+                            )
+                          );
+                        })}
+                        {selectedModelData.modelId === model.id && (
+                          <CheckIcon className="size-4" />
+                        )}
+                      </div>
+                    </Button>
+                  );
+                })
+              )}
             </div>
           )}
 
@@ -368,9 +483,9 @@ export default function ModelPopover({
                           );
                         }
                       )}
-                    {optimisticModelData.options.provider === provider.id && (
+                      {optimisticModelData.options.provider === provider.id && (
                         <CheckIcon className="size-4" />
-                    )}
+                      )}
                     </div>
                   </DropdownMenuItem>
                 );
