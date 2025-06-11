@@ -20,9 +20,17 @@ import {
 } from "react";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { MODELS } from "@/lib/models";
+import { FEATURES, MODELS } from "@/lib/models";
 import { cn } from "@/lib/utils";
 import { saveChatModelAsCookie } from "@/lib/actions";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import FeatureIcon from "./feature-icon";
 
 export default function ModelPopover({
   selectedModelId,
@@ -32,20 +40,39 @@ export default function ModelPopover({
   const [open, setOpen] = useState(false);
   const [big, setBig] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+  const [search, setSearch] = useState("");
 
-  const favouriteModels = MODELS.slice(0, 6);
+  let favouriteModels = MODELS.slice(0, 6);
 
-  const availableChatModels = MODELS;
+  let filteredModels = MODELS;
+
+  if (selectedFeatures.length > 0) {
+    filteredModels = filteredModels.filter(
+      (model) =>
+        selectedFeatures.some((feature) => model.features.includes(feature))
+    );
+    favouriteModels = favouriteModels.filter(
+      (model) =>
+        selectedFeatures.some((feature) => model.features.includes(feature))
+    );
+  }
+
+  if (search) {
+    filteredModels = filteredModels.filter((model) =>
+      model.title.toLowerCase().includes(search.toLowerCase())
+    );
+    favouriteModels = favouriteModels.filter((model) =>
+      model.title.toLowerCase().includes(search.toLowerCase())
+    );
+  }
 
   const [optimisticModelId, setOptimisticModelId] =
     useOptimistic(selectedModelId);
 
   const selectedChatModel = useMemo(
-    () =>
-      availableChatModels.find(
-        (chatModel) => chatModel.id === optimisticModelId
-      ),
-    [optimisticModelId, availableChatModels]
+    () => MODELS.find((chatModel) => chatModel.id === optimisticModelId),
+    [optimisticModelId, MODELS]
   );
 
   const setModel = (modelId: string) => {
@@ -86,11 +113,18 @@ export default function ModelPopover({
               type="text"
               placeholder="Search models..."
               className="w-full outline-none text-sm"
+              value={search}
+              onChange={(e) => {
+                if (search.length === 0) {
+                  setBig(true)
+                }
+                setSearch(e.target.value)
+              }}
             />
           </div>
           {big ? (
             <div className="grid grid-cols-5 auto-rows-[160px] gap-2 p-2 grow overflow-auto">
-              {MODELS.map((model) => (
+              {filteredModels.map((model) => (
                 <Button
                   key={model.id + "-big"}
                   variant="outline"
@@ -108,39 +142,16 @@ export default function ModelPopover({
                     )}
                   </div>
                   <div className="flex flex-wrap gap-2 items-center justify-center mt-auto">
-                    {model.features.map((feature) =>
-                      feature === "image" ? (
-                        <div
-                          key={feature}
-                          className="p-1 rounded-md bg-teal-500/30 text-teal-500"
-                        >
-                          <EyeIcon className="size-4" />
-                        </div>
-                      ) : feature === "search" ? (
-                        <div
-                          key={feature}
-                          className="p-1 rounded-md bg-blue-500/30 text-blue-500"
-                        >
-                          <GlobeIcon className="size-4" />
-                        </div>
-                      ) : feature === "attachments" ? (
-                        <div
-                          key={feature}
-                          className="p-1 rounded-md bg-indigo-500/30 text-indigo-500"
-                        >
-                          <FileTextIcon className="size-4" />
-                        </div>
-                      ) : (
-                        feature === "reasoning" && (
-                          <div
-                            key={feature}
-                            className="p-1 rounded-md bg-indigo-500/30 text-indigo-500"
-                          >
-                            <BrainIcon className="size-4" />
-                          </div>
+                    {model.features.map((feature) => {
+                      const realFeature = FEATURES.find(
+                        (f) => f.id === feature
+                      );
+                      return (
+                        realFeature?.displayInModels && (
+                          <FeatureIcon key={feature} id={feature} />
                         )
-                      )
-                    )}
+                      );
+                    })}
                   </div>
                 </Button>
               ))}
@@ -157,47 +168,21 @@ export default function ModelPopover({
                   <model.icon className="text-primary size-4" />
                   {model.title}
                   {model.additionalTitle && ` (${model.additionalTitle})`}
-                  {selectedModelId === model.id ? (
-                    <div className="ml-auto">
-                      <CheckIcon className="size-4" />
-                    </div>
-                  ) : (
-                    <div className="ml-auto flex gap-2 items-center">
-                      {model.features.map((feature) =>
-                        feature === "image" ? (
-                          <div
-                            key={feature}
-                            className="p-1 rounded-md bg-teal-500/30 text-teal-500"
-                          >
-                            <EyeIcon className="size-4" />
-                          </div>
-                        ) : feature === "search" ? (
-                          <div
-                            key={feature}
-                            className="p-1 rounded-md bg-blue-500/30 text-blue-500"
-                          >
-                            <GlobeIcon className="size-4" />
-                          </div>
-                        ) : feature === "attachments" ? (
-                          <div
-                            key={feature}
-                            className="p-1 rounded-md bg-indigo-500/30 text-indigo-500"
-                          >
-                            <FileTextIcon className="size-4" />
-                          </div>
-                        ) : (
-                          feature === "reasoning" && (
-                            <div
-                              key={feature}
-                              className="p-1 rounded-md bg-indigo-500/30 text-indigo-500"
-                            >
-                              <BrainIcon className="size-4" />
-                            </div>
-                          )
+                  <div className="ml-auto flex gap-2 items-center">
+                    {model.features.map((feature) => {
+                      const realFeature = FEATURES.find(
+                        (f) => f.id === feature
+                      );
+                      return (
+                        realFeature?.displayInModels && (
+                          <FeatureIcon key={feature} id={feature} />
                         )
-                      )}
-                    </div>
-                  )}
+                      );
+                    })}
+                    {selectedModelId === model.id && (
+                      <CheckIcon className="size-4" />
+                    )}
+                  </div>
                 </Button>
               ))}
             </div>
@@ -217,9 +202,57 @@ export default function ModelPopover({
                 </>
               )}
             </Button>
-            <Button variant="ghost" size="icon">
-              <FilterIcon />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative">
+                  <FilterIcon />
+                  {selectedFeatures.length > 0 && (
+                    <div className="absolute top-0 right-0 h-2 w-2 bg-primary rounded-full" />
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                side="right"
+                align="end"
+                sideOffset={20}
+                className="w-64"
+              >
+                {selectedFeatures.length > 0 && (
+                  <>
+                    <DropdownMenuItem
+                      onClick={(evt) => {
+                        evt.preventDefault();
+                        setSelectedFeatures([]);
+                      }}
+                    >
+                      Clear filters
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
+                {FEATURES.map((feature) => (
+                  <DropdownMenuItem
+                    key={feature.id}
+                    onClick={(evt) => {
+                      evt.preventDefault();
+                      setSelectedFeatures((prev) =>
+                        prev.includes(feature.id)
+                          ? prev.filter((id) => id !== feature.id)
+                          : [...prev, feature.id]
+                      );
+                    }}
+                  >
+                    <FeatureIcon className="mr-2" id={feature.id} />
+                    {feature.name}
+                    {selectedFeatures.includes(feature.id) && (
+                      <div className="ml-auto">
+                        <CheckIcon className="size-4" />
+                      </div>
+                    )}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </PopoverContent>
       </Popover>

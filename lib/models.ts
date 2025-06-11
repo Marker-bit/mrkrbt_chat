@@ -5,8 +5,7 @@ import {
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import Qwen from "@/components/icons/qwen";
 import DeepSeek from "@/components/icons/deepseek";
-
-type Feature = "image" | "search" | "attachments" | "reasoning";
+import { Brain, Eye, FileText, Globe, Settings2, ZapIcon } from "lucide-react";
 
 type Model = {
   id: string;
@@ -14,7 +13,7 @@ type Model = {
   model: string;
   version: string;
   additionalTitle?: string;
-  features: Feature[];
+  features: string[];
   providers: Record<string, string>;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
 };
@@ -35,13 +34,54 @@ export const DEFAULT_API_KEYS_COOKIE = PROVIDERS.reduce(
   {}
 );
 
+export const FEATURES: { id: string; icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; displayInModels: boolean; color: string; name: string; description?: string }[] = [
+  {
+    id: "fast",
+    icon: ZapIcon,
+    displayInModels: false,
+    color: "#fcd34d",
+    name: "Fast"
+  },
+  {
+    id: "vision",
+    icon: Eye,
+    displayInModels: true,
+    color: "#14b8a6",
+    name: "Vision",
+    description: "Supports image uploads and analysis"
+  },
+  {
+    id: "pdfs",
+    icon: FileText,
+    displayInModels: true,
+    color: "#6366f1",
+    name: "PDFs",
+    description: "Supports PDF uploads and analysis"
+  },
+  {
+    id: "reasoning",
+    icon: Brain,
+    displayInModels: true,
+    color: "#a855f7",
+    name: "Reasoning",
+    description: "Has reasoning capabilities"
+  },
+  {
+    id: "effort-control",
+    icon: Settings2,
+    displayInModels: false,
+    color: "#d946ef",
+    name: "Effort Control"
+  },
+]
+
 export const MODELS: Model[] = [
   {
     id: "gemini-2.5-flash",
     title: "Gemini 2.5 Flash",
     model: "Gemini",
     version: "2.5 Flash",
-    features: ["image", "search", "attachments"],
+    features: ["vision", "pdfs"],
     providers: {
       google: "models/gemini-2.5-flash-preview-05-20",
       openrouter: "google/gemini-2.5-flash-preview-05-20",
@@ -54,7 +94,7 @@ export const MODELS: Model[] = [
     model: "Gemini",
     version: "2.5 Flash",
     additionalTitle: "Thinking",
-    features: ["image", "search", "attachments"],
+    features: ["vision", "pdfs", "reasoning"],
     providers: {
       openrouter: "google/gemini-2.5-flash-preview-05-20:thinking",
     },
@@ -65,7 +105,7 @@ export const MODELS: Model[] = [
     title: "Gemini 2.5 Pro",
     model: "Gemini",
     version: "2.5 Pro",
-    features: ["image", "search", "attachments", "reasoning"],
+    features: ["vision", "pdfs", "reasoning", "effort-control"],
     providers: {
       openrouter: "google/gemini-2.5-pro-preview-05-06",
     },

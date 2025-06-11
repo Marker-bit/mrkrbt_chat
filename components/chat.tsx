@@ -103,10 +103,6 @@ export default function Chat({
 
   const empty = useMemo(() => input === "", [input]);
   const [open, setOpen] = useState(false);
-  const selectedModel = useMemo(
-    () => MODELS.find((model) => model.id === selectedModelId),
-    [selectedModelId]
-  );
   const [sentMessage, setSentMessage] = useState(false);
   const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
