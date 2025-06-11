@@ -77,21 +77,35 @@ export async function POST(req: Request) {
   let providerData: { id: string; apiKey: string; modelName: string } | null =
     null;
 
-  for (const provider in modelToRun.providers) {
-    if (provider in keys) {
-      const providerApiKey = keys[provider];
+  const chosenProvider = requestBody.selectedChatModel.options.provider;
 
-      providerData = {
-        id: provider,
-        apiKey: providerApiKey,
-        modelName: modelToRun.providers[provider],
-      };
-      break;
+  if (
+    chosenProvider &&
+    chosenProvider in keys &&
+    keys[chosenProvider].length > 0
+  ) {
+    providerData = {
+      id: chosenProvider,
+      apiKey: keys[chosenProvider],
+      modelName: modelToRun.providers[chosenProvider].modelName,
+    };
+  } else {
+    for (const provider in modelToRun.providers) {
+      if (provider in keys) {
+        const providerApiKey = keys[provider];
+
+        providerData = {
+          id: provider,
+          apiKey: providerApiKey,
+          modelName: modelToRun.providers[provider].modelName,
+        };
+        break;
+      }
     }
-  }
 
-  if (!providerData) {
-    return new ChatSDKError("unauthorized:provider").toResponse();
+    if (!providerData) {
+      return new ChatSDKError("unauthorized:provider").toResponse();
+    }
   }
 
   let chat = await db.query.chat.findFirst({
@@ -118,7 +132,7 @@ export async function POST(req: Request) {
       .returning();
   }
 
-  let messages: Message[]
+  let messages: Message[];
 
   if (!requestBody.retryMessageId) {
     messages = appendClientMessage({
@@ -126,7 +140,9 @@ export async function POST(req: Request) {
       message: requestBody.message,
     });
   } else {
-    const retryMessage = chat.messages.findIndex((message) => message.id === requestBody.retryMessageId);
+    const retryMessage = chat.messages.findIndex(
+      (message) => message.id === requestBody.retryMessageId
+    );
     if (retryMessage === -1) {
       return new ChatSDKError("bad_request:api").toResponse();
     }
@@ -139,7 +155,7 @@ export async function POST(req: Request) {
     messages = appendClientMessage({
       messages,
       message: requestBody.message,
-    })
+    });
   }
 
   await saveMessages(chat.id, messages, {

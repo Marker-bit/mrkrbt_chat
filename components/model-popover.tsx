@@ -1,7 +1,14 @@
 "use client";
 
 import { saveChatModelAsCookie } from "@/lib/actions";
-import { effortToString, FEATURES, ModelData, MODELS } from "@/lib/models";
+import {
+  effortToString,
+  FeatureId,
+  FEATURES,
+  ModelData,
+  MODELS,
+  PROVIDERS,
+} from "@/lib/models";
 import { cn } from "@/lib/utils";
 import {
   BrainCogIcon,
@@ -9,6 +16,7 @@ import {
   ChevronLeftIcon,
   ChevronUpIcon,
   FilterIcon,
+  RouteIcon,
   SearchIcon,
   Tally1Icon,
   Tally2Icon,
@@ -31,16 +39,19 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export default function ModelPopover({
   selectedModelData,
+  apiKeys,
 }: {
   selectedModelData: ModelData;
+  apiKeys: Record<string, string>;
 }) {
   const [open, setOpen] = useState(false);
   const [big, setBig] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+  const [selectedFeatures, setSelectedFeatures] = useState<FeatureId[]>([]);
   const [search, setSearch] = useState("");
 
   let favouriteModels = MODELS.slice(0, 6);
@@ -78,18 +89,66 @@ export default function ModelPopover({
     setOpen(false);
 
     startTransition(() => {
-      setOptimisticModelData({ ...optimisticModelData, modelId });
-      saveChatModelAsCookie({ ...optimisticModelData, modelId });
+      const chosenModel = MODELS.find((model) => model.id === modelId)!;
+      const modelAvailableProviders = Object.keys(chosenModel.providers);
+      let provider: string | undefined;
+      if (
+        !modelAvailableProviders.includes(
+          optimisticModelData.options.provider || ""
+        )
+      ) {
+        provider = Object.keys(chosenModel.providers).find(
+          (provider) => provider in apiKeys && apiKeys[provider].length > 0
+        );
+      } else {
+        provider = optimisticModelData.options.provider;
+      }
+      const newModelData: ModelData = {
+        ...optimisticModelData,
+        modelId,
+        options: { ...optimisticModelData.options, provider },
+      };
+      setOptimisticModelData(newModelData);
+      saveChatModelAsCookie(newModelData);
     });
   };
 
   const setEffort = (effort: ModelData["options"]["effort"]) => {
     setOpen(false);
     startTransition(() => {
-      setOptimisticModelData({ ...optimisticModelData, options: { effort } });
-      saveChatModelAsCookie({ ...optimisticModelData, options: { effort } });
+      setOptimisticModelData({
+        ...optimisticModelData,
+        options: { ...optimisticModelData.options, effort },
+      });
+      saveChatModelAsCookie({
+        ...optimisticModelData,
+        options: { ...optimisticModelData.options, effort },
+      });
     });
   };
+
+  const setProvider = (providerId: string) => {
+    startTransition(() => {
+      setOptimisticModelData({
+        ...optimisticModelData,
+        options: { ...optimisticModelData.options, provider: providerId },
+      });
+      saveChatModelAsCookie({
+        ...optimisticModelData,
+        options: { ...optimisticModelData.options, provider: providerId },
+      });
+    });
+  };
+
+  const selectedProvider = useMemo(
+    () =>
+      optimisticModelData.options.provider
+        ? PROVIDERS.find(
+            (provider) => provider.id === optimisticModelData.options.provider
+          )!
+        : null,
+    [optimisticModelData, PROVIDERS]
+  );
 
   return (
     <>
@@ -263,6 +322,63 @@ export default function ModelPopover({
           </div>
         </PopoverContent>
       </Popover>
+      <DropdownMenu>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="rounded-full">
+                {selectedProvider ? (
+                  <>
+                    <selectedProvider.icon />
+                    {selectedProvider.title}
+                  </>
+                ) : (
+                  <>
+                    <RouteIcon />
+                    Provider
+                  </>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
+          <DropdownMenuContent className="min-w-72">
+            {selectedChatModel &&
+              Object.keys(selectedChatModel.providers).map((providerId) => {
+                const provider = PROVIDERS.find((p) => p.id === providerId)!;
+                const hasApiKey =
+                  provider.id in apiKeys && apiKeys[provider.id].length > 0;
+                return (
+                  <DropdownMenuItem
+                    key={provider.id}
+                    onClick={() => setProvider(provider.id)}
+                    disabled={!hasApiKey}
+                  >
+                    <provider.icon className="size-4" />
+                    {provider.title}
+                    <div className="ml-auto flex gap-2 items-center">
+                      {selectedChatModel.providers[provider.id].features.map(
+                        (feature) => {
+                          const realFeature = FEATURES.find(
+                            (f) => f.id === feature
+                          );
+                          return (
+                            realFeature?.displayInModels && (
+                              <FeatureIcon key={feature} id={feature} />
+                            )
+                          );
+                        }
+                      )}
+                    {optimisticModelData.options.provider === provider.id && (
+                        <CheckIcon className="size-4" />
+                    )}
+                    </div>
+                  </DropdownMenuItem>
+                );
+              })}
+          </DropdownMenuContent>
+          <TooltipContent>Provider</TooltipContent>
+        </Tooltip>
+      </DropdownMenu>
       {selectedChatModel?.features.includes("effort-control") && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

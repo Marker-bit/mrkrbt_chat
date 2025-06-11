@@ -1,5 +1,9 @@
 import DeepSeek from "@/components/icons/deepseek";
 import Gemini from "@/components/icons/gemini";
+import Google from "@/components/icons/google";
+import MistralAI from "@/components/icons/mistral";
+import OpenAI from "@/components/icons/openai";
+import OpenRouter from "@/components/icons/openrouter";
 import Qwen from "@/components/icons/qwen";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
@@ -11,36 +15,50 @@ type Model = {
   model: string;
   version: string;
   additionalTitle?: string;
-  features: string[];
-  providers: Record<string, string>;
+  providers: Record<string, { modelName: string; features: FeatureId[] }>;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  supportsTools: boolean
+  supportsTools: boolean;
 };
 
 export type ModelData = {
   modelId: string;
   options: {
     effort: "high" | "medium" | "low";
-  }
-}
+    provider?: string;
+  };
+};
 
 export const PROVIDERS: {
   id: string;
   title: string;
   apiKeyDescription?: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
 }[] = [
   {
     title: "OpenRouter",
     id: "openrouter",
+    icon: OpenRouter,
   },
   {
     title: "Google Generative AI",
     id: "google",
+    icon: Google,
   },
   {
     title: "OpenAI",
     id: "openai",
     apiKeyDescription: "Required for generating images with other models",
+    icon: OpenAI,
+  },
+  {
+    title: "DeepSeek",
+    id: "deepseek",
+    icon: DeepSeek,
+  },
+  {
+    title: "Mistral",
+    id: "mistral",
+    icon: MistralAI,
   },
 ];
 
@@ -49,20 +67,14 @@ export const DEFAULT_API_KEYS_COOKIE = PROVIDERS.reduce(
   {}
 );
 
-export const FEATURES: {
-  id: string;
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  displayInModels: boolean;
-  color: string;
-  name: string;
-  description?: string;
-}[] = [
+export const FEATURES = [
   {
     id: "fast",
     icon: ZapIcon,
     displayInModels: false,
     color: "#fcd34d",
     name: "Fast",
+    description: "Has fast response times",
   },
   {
     id: "vision",
@@ -94,22 +106,30 @@ export const FEATURES: {
     displayInModels: false,
     color: "#d946ef",
     name: "Effort Control",
+    description: "Has effort control capabilities",
   },
-];
+] as const;
 
-export const MODELS: Model[] = [
+export type FeatureId = (typeof FEATURES)[number]["id"];
+
+const models: Model[] = [
   {
     id: "gemini-2.5-flash",
     title: "Gemini 2.5 Flash",
     model: "Gemini",
     version: "2.5 Flash",
-    features: ["vision", "pdfs"],
     providers: {
-      google: "models/gemini-2.5-flash-preview-05-20",
-      openrouter: "google/gemini-2.5-flash-preview-05-20",
+      google: {
+        modelName: "models/gemini-2.5-flash-preview-05-20",
+        features: ["vision", "pdfs"],
+      },
+      openrouter: {
+        modelName: "google/gemini-2.5-flash-preview-05-20",
+        features: ["vision", "pdfs"],
+      },
     },
     icon: Gemini,
-    supportsTools: true
+    supportsTools: true,
   },
   {
     id: "gemini-2.5-flash-thinking",
@@ -117,24 +137,28 @@ export const MODELS: Model[] = [
     model: "Gemini",
     version: "2.5 Flash",
     additionalTitle: "Thinking",
-    features: ["vision", "pdfs", "reasoning", "effort-control"],
     providers: {
-      openrouter: "google/gemini-2.5-flash-preview-05-20:thinking",
+      openrouter: {
+        modelName: "google/gemini-2.5-flash-preview-05-20:thinking",
+        features: ["vision", "pdfs", "reasoning", "effort-control"],
+      },
     },
     icon: Gemini,
-    supportsTools: true
+    supportsTools: true,
   },
   {
     id: "gemini-2.5-pro",
     title: "Gemini 2.5 Pro",
     model: "Gemini",
     version: "2.5 Pro",
-    features: ["vision", "pdfs", "reasoning", "effort-control"],
     providers: {
-      openrouter: "google/gemini-2.5-pro-preview-05-06",
+      openrouter: {
+        modelName: "google/gemini-2.5-pro-preview-05-06",
+        features: ["vision", "pdfs", "reasoning", "effort-control"],
+      },
     },
     icon: Gemini,
-    supportsTools: true
+    supportsTools: true,
   },
   {
     id: "deepseek-r1-0528",
@@ -142,12 +166,14 @@ export const MODELS: Model[] = [
     model: "DeepSeek",
     version: "R1",
     additionalTitle: "0528",
-    features: ["reasoning"],
     providers: {
-      openrouter: "deepseek/deepseek-r1-0528",
+      openrouter: {
+        modelName: "deepseek/deepseek-r1-0528",
+        features: ["reasoning"],
+      },
     },
     icon: DeepSeek,
-    supportsTools: true
+    supportsTools: true,
   },
   {
     id: "deepseek-r1-qwen",
@@ -155,26 +181,44 @@ export const MODELS: Model[] = [
     model: "DeepSeek",
     version: "R1",
     additionalTitle: "Qwen Distilled",
-    features: ["reasoning"],
     providers: {
-      openrouter: "deepseek/deepseek-r1-distill-qwen-7b",
+      openrouter: {
+        modelName: "deepseek/deepseek-r1-distill-qwen-7b",
+        features: ["reasoning"],
+      },
     },
     icon: DeepSeek,
-    supportsTools: false
+    supportsTools: false,
   },
   {
     id: "qwen3",
     title: "Qwen 3",
     model: "Qwen",
     version: "3",
-    features: ["reasoning"],
     providers: {
-      openrouter: "qwen/qwen3-32b",
+      openrouter: { modelName: "qwen/qwen3-32b", features: ["reasoning"] },
     },
     icon: Qwen,
-    supportsTools: true
+    supportsTools: true,
   },
 ];
+
+const extractModelFeatures = (model: Model) => {
+  let features: FeatureId[] = [];
+  for (const provider in model.providers) {
+    for (const feature of model.providers[provider].features) {
+      if (!features.includes(feature)) {
+        features.push(feature);
+      }
+    }
+  }
+  return features;
+};
+
+export const MODELS = models.map((model) => ({
+  ...model,
+  features: extractModelFeatures(model),
+}));
 
 export const PROVIDERS_TITLEGEN_MAP: Record<string, string> = {
   openrouter: "google/gemini-2.0-flash-001",
@@ -196,7 +240,7 @@ export function createProvider(providerId: string, apiKey: string) {
 
 const DEFAULT_MODEL_DATA: ModelData = {
   modelId: "gemini-2.5-flash",
-  options: {effort: "medium"},
+  options: { effort: "medium", provider: "openrouter" },
 };
 
 export function parseModelData(modelData: string) {

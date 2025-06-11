@@ -1,7 +1,6 @@
 import { FEATURES } from "@/lib/models";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";
-import { Popover } from "./ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export default function FeatureIcon({

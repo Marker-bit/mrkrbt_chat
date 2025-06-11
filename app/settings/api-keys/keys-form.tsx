@@ -53,17 +53,20 @@ export default function KeysForm({
           {requiredProviders.includes(provider.id) && (
             <div className="text-red-500 text-xs">Required</div>
           )}
-          <Input
-            id={provider.id + "-key"}
-            type="password"
-            value={apiKeysOptimistic[provider.id]}
-            onChange={(e) =>
-              setApiKeys((a) => ({ ...a, [provider.id]: e.target.value }))
-            }
-            className={cn(
-              requiredProviders.includes(provider.id) && "border-red-500"
-            )}
-          />
+          <div className="flex gap-4 items-center">
+            <provider.icon className="size-6" />
+            <Input
+              id={provider.id + "-key"}
+              type="password"
+              value={apiKeysOptimistic[provider.id]}
+              onChange={(e) =>
+                setApiKeys((a) => ({ ...a, [provider.id]: e.target.value }))
+              }
+              className={cn(
+                requiredProviders.includes(provider.id) && "border-red-500"
+              )}
+            />
+          </div>
           {provider?.apiKeyDescription && (
             <div className="text-muted-foreground/80 text-xs">
               {provider.apiKeyDescription}

@@ -33,6 +33,7 @@ export default function MessageInput({
   setFiles,
   useWebSearch,
   setUseWebSearch,
+  apiKeys
 }: {
   value: string;
   setValue: (value: string) => void;
@@ -45,6 +46,7 @@ export default function MessageInput({
   setFiles: (files: File[]) => void;
   useWebSearch: boolean;
   setUseWebSearch: (value: boolean) => void;
+  apiKeys: Record<string, string>;
 }) {
   const [
     { files, errors },
@@ -171,7 +173,7 @@ export default function MessageInput({
         />
         <div className="flex justify-between w-full items-center">
           <div className="flex gap-2">
-            <ModelPopover selectedModelData={selectedModelData} />
+            <ModelPopover apiKeys={apiKeys} selectedModelData={selectedModelData} />
             <Button
               variant={useWebSearch ? "default" : "outline"}
               className="rounded-full"

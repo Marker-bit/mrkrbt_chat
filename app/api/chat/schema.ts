@@ -29,6 +29,7 @@ export const postRequestBodySchema = z.object({
       modelId: z.string(),
       options: z.object({
         effort: z.enum(["high", "medium", "low"]),
+        provider: z.string().optional(),
       })
     }),
   visibilityType: z.enum(['public', 'private']),

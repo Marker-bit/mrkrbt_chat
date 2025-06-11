@@ -136,7 +136,7 @@ export default function Chat({
         .slice(0, nextMessage)
     );
     setMessages((messages) => messages.slice(0, nextMessage));
-    retryMessage(messages[nextMessage].id)
+    retryMessage(messages[nextMessage].id);
     setEditingMessage(null);
   };
 
@@ -188,7 +188,7 @@ export default function Chat({
                     <div
                       key={message.id}
                       className={cn(
-                        "prose dark:prose-invert prose-code:bg-secondary prose-code:text-primary before:content-none! after:content-none!",
+                        "prose dark:prose-invert prose-code:bg-secondary prose-code:p-1 prose-code:rounded-md prose-code:before:content-none! prose-code:after:content-none!",
                         message.role === "user"
                           ? "bg-secondary rounded-xl px-4 py-2"
                           : ""
@@ -404,6 +404,7 @@ export default function Chat({
 
       {!readOnly && (
         <MessageInput
+          apiKeys={apiKeys}
           useWebSearch={useWebSearch}
           setUseWebSearch={setUseWebSearch}
           setFiles={setFiles}
