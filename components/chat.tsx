@@ -58,7 +58,6 @@ export default function Chat({
     setMessages,
     append,
     input,
-    handleSubmit,
     setInput,
     status,
     stop,
@@ -101,7 +100,6 @@ export default function Chat({
   );
 
   const empty = useMemo(() => input === "", [input]);
-  const [open, setOpen] = useState(false);
   const [sentMessage, setSentMessage] = useState(false);
   const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);

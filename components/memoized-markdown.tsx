@@ -15,7 +15,10 @@ const MemoizedMarkdownBlock = memo(
     return (
       <ReactMarkdown
         components={{
-          code: CodeHighlight
+          pre(props) {
+            return <pre className="p-0" {...props} />;
+          },
+          code: CodeHighlight,
         }}
       >
         {content}

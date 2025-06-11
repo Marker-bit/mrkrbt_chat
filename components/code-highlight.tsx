@@ -1,10 +1,31 @@
-import type { ReactNode } from "react";
+import { cn } from "@/lib/utils";
+import { useState, type ReactNode } from "react";
 import { isInlineCode, useShikiHighlighter, type Element } from "react-shiki";
+import { Button } from "./ui/button";
+import {
+  CheckIcon,
+  CopyIcon,
+  DownloadIcon,
+  TextIcon,
+  WrapTextIcon,
+} from "lucide-react";
 
 interface CodeHighlightProps {
   className?: string | undefined;
   children?: ReactNode | undefined;
   node?: Element | undefined;
+}
+
+const fileExtensions: Record<string, string> = {
+  typescript: "ts",
+  javascript: "js",
+  html: "html",
+  css: "css",
+  json: "json",
+  md: "md",
+  markdown: "md",
+  txt: "txt",
+  text: "txt"
 }
 
 export const CodeHighlight = ({
@@ -15,6 +36,7 @@ export const CodeHighlight = ({
 }: CodeHighlightProps) => {
   const code = String(children);
   const language = className?.match(/language-(\w+)/)?.[1];
+  const [wordWrap, setWordWrap] = useState(false);
 
   const isInline = node ? isInlineCode(node) : false;
 
@@ -28,24 +50,52 @@ export const CodeHighlight = ({
     },
     {
       delay: 150,
-      defaultColor: "dark"
+      defaultColor: "dark",
     }
   );
 
+  const [copied, setCopied] = useState(false);
+
   return !isInline ? (
     <div
-      className="shiki not-prose relative [&_pre]:overflow-auto 
-      [&_pre]:rounded-lg [&_pre]:px-6 [&_pre]:py-5"
+      className={cn(
+        "shiki not-prose relative [&_pre]:overflow-auto [&_pre]:rounded-lg [&_pre]:bg-transparent!",
+        wordWrap && "[&_pre]:whitespace-pre-wrap"
+      )}
     >
-      {language ? (
-        <span
-          className="absolute right-3 top-2 text-xs tracking-tighter
-          text-muted-foreground/85"
-        >
-          {language}
-        </span>
-      ) : null}
-      {highlightedCode}
+      <div className="p-2 px-4 flex gap-2 items-center justify-between bg-secondary">
+        {language}
+        <div className="flex gap-2 items-center">
+          <Button variant="ghost" size="icon" onClick={() => {
+            const link = document.createElement("a");
+            link.href = "data:text/plain;charset=utf-8," + encodeURIComponent(code);
+            link.download = "code." + fileExtensions[language || "text"];
+            link.click();
+          }}>
+            <DownloadIcon />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setWordWrap(!wordWrap)}
+          >
+            {wordWrap ? <WrapTextIcon /> : <TextIcon />}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => {
+              navigator.clipboard.writeText(code);
+              if (copied) return;
+              setCopied(true);
+              setTimeout(() => setCopied(false), 1000);
+            }}
+          >
+            {copied ? <CheckIcon /> : <CopyIcon />}
+          </Button>
+        </div>
+      </div>
+      <div className="p-2 px-4 wrap-anywhere text-wrap">{highlightedCode}</div>
     </div>
   ) : (
     <code className={className} {...props}>
