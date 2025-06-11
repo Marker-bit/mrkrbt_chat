@@ -20,6 +20,7 @@ import MessageInput from "./message-input";
 import { MessageReasoning } from "./reasoning";
 import { Button } from "./ui/button";
 import Link from "next/link";
+import { useChatVisibility } from "@/hooks/use-chat-visibility";
 
 export default function Chat({
   isMain = false,
@@ -28,6 +29,7 @@ export default function Chat({
   selectedModelId,
   apiKeys,
   state,
+  readOnly,
 }: {
   isMain?: boolean;
   id: string;
@@ -35,9 +37,15 @@ export default function Chat({
   selectedModelId: string;
   apiKeys: Record<string, string>;
   state: "loading" | "complete";
+  readOnly: boolean;
 }) {
   const [height, setHeight] = useState(0);
   const ref = useRef<AutosizeTextAreaRef>(null);
+  const { visibilityType } = useChatVisibility({
+    chatId: id,
+    initialVisibilityType: "private",
+  });
+
   const {
     messages,
     setMessages,
@@ -59,6 +67,7 @@ export default function Chat({
       id,
       message: body.messages.at(-1),
       selectedChatModel: selectedModelId,
+      visibilityType,
     }),
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
@@ -137,8 +146,8 @@ export default function Chat({
                 <div
                   key={message.id}
                   className={cn(
-                    "px-4 py-2 prose dark:prose-invert prose-code:bg-secondary prose-code:text-primary before:content-none! after:content-none!",
-                    message.role === "user" ? "bg-secondary rounded-xl" : ""
+                    "prose dark:prose-invert prose-code:bg-secondary prose-code:text-primary before:content-none! after:content-none!",
+                    message.role === "user" ? "bg-secondary rounded-xl px-4 py-2" : ""
                   )}
                 >
                   {message.parts.map((part, index) => {
@@ -220,6 +229,7 @@ export default function Chat({
                   reload={reload}
                   setMessages={setMessages}
                   message={message}
+                  readOnly={readOnly}
                 />
               </div>
             ))}
@@ -255,34 +265,36 @@ export default function Chat({
         providerName="OpenRouter"
       />
 
-      <MessageInput
-        setFiles={setFiles}
-        setApiKeysOpen={setOpen}
-        selectedModelId={selectedModelId}
-        stop={stop}
-        status={status}
-        value={input}
-        setValue={(value) => setInput(value)}
-        ref={ref}
-        setHeight={setHeight}
-        onSubmit={(message) => {
-          if (!apiKeys["openrouter"]) {
-            setOpen(true);
-            return;
-          }
-          if (messages.length === 0) {
-            window.history.replaceState({}, "", `/chat/${id}`);
-          }
-          if (message.trim() === "" || status !== "ready") return;
-          setSentMessage(true);
-          append({
-            role: "user",
-            content: message.trim(),
-            // @ts-expect-error
-            experimental_attachments: convertFileArrayToFileList(files),
-          });
-        }}
-      />
+      {!readOnly && (
+        <MessageInput
+          setFiles={setFiles}
+          setApiKeysOpen={setOpen}
+          selectedModelId={selectedModelId}
+          stop={stop}
+          status={status}
+          value={input}
+          setValue={(value) => setInput(value)}
+          ref={ref}
+          setHeight={setHeight}
+          onSubmit={(message) => {
+            if (!apiKeys["openrouter"]) {
+              setOpen(true);
+              return;
+            }
+            if (messages.length === 0) {
+              window.history.replaceState({}, "", `/chat/${id}`);
+            }
+            if (message.trim() === "" || status !== "ready") return;
+            setSentMessage(true);
+            append({
+              role: "user",
+              content: message.trim(),
+              // @ts-expect-error
+              experimental_attachments: convertFileArrayToFileList(files),
+            });
+          }}
+        />
+      )}
     </>
   );
 }

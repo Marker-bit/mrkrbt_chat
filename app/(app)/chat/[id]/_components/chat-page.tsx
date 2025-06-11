@@ -7,8 +7,24 @@ import Link from "next/link";
 import { ModeToggle } from "@/components/mode-toggle";
 import Chat from "@/components/chat";
 import { Chat as ChatType } from "@/lib/db/db-types";
+import VisibilitySelector from "@/components/visibility-selector";
+import { useChatVisibility } from "@/hooks/use-chat-visibility";
 
-export default function ChatPage({id, chat, selectedModelId, apiKeys}: {id: string; chat: ChatType; selectedModelId: string, apiKeys: Record<string, string>}) {
+export default function ChatPage({
+  id,
+  chat,
+  selectedModelId,
+  apiKeys,
+  initialVisibilityType,
+  readOnly,
+}: {
+  id: string;
+  chat: ChatType;
+  selectedModelId: string;
+  apiKeys: Record<string, string>;
+  initialVisibilityType: "public" | "private";
+  readOnly: boolean;
+}) {
   return (
     <div
       className="flex flex-col h-svh"
@@ -16,6 +32,12 @@ export default function ChatPage({id, chat, selectedModelId, apiKeys}: {id: stri
     >
       <div className="absolute top-4 left-4 p-1 flex gap-1 border bg-background rounded-md">
         <SidebarTrigger />
+        {!readOnly && (
+          <VisibilitySelector
+            chatId={id}
+            initialVisibilityType={initialVisibilityType}
+          />
+        )}
       </div>
       <div className="absolute top-4 right-4 p-1 flex gap-1 border bg-background rounded-md">
         <ModeToggle />
@@ -25,7 +47,14 @@ export default function ChatPage({id, chat, selectedModelId, apiKeys}: {id: stri
           </Link>
         </Button>
       </div>
-      <Chat selectedModelId={selectedModelId} id={id} initialMessages={chat.messages} apiKeys={apiKeys} state={chat.state} />
+      <Chat
+        selectedModelId={selectedModelId}
+        id={id}
+        initialMessages={chat.messages}
+        apiKeys={apiKeys}
+        state={chat.state}
+        readOnly={readOnly}
+      />
     </div>
   );
 }

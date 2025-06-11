@@ -29,7 +29,7 @@ export const postRequestBodySchema = z.object({
     .refine((value) => MODELS.some((model) => model.id === value), {
       message: "Invalid chat model",
     }),
-  // selectedVisibilityType: z.enum(['public', 'private']),
+  visibilityType: z.enum(['public', 'private']),
 });
 
 export type PostRequestBody = z.infer<typeof postRequestBodySchema>;

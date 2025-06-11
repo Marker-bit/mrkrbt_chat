@@ -3,7 +3,7 @@
 import { cookies, headers } from "next/headers";
 import { auth } from "./auth";
 import { db } from "./db/drizzle";
-import { and } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { chat } from "./db/schema";
 import { generateText, LanguageModel, Provider, UIMessage } from "ai";
 import { createProvider, PROVIDERS_TITLEGEN_MAP } from "./models";
@@ -83,4 +83,8 @@ export async function generateTitleFromUserMessage({
   });
 
   return title;
+}
+
+export async function updateChatVisibility({ chatId, visibility }: { chatId: string; visibility: "public" | "private" }) {
+  await db.update(chat).set({ visibility }).where(eq(chat.id, chatId));
 }

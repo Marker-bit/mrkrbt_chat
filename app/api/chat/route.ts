@@ -115,7 +115,10 @@ export async function POST(req: Request) {
     message: requestBody.message,
   });
 
-  await saveMessages(chat.id, messages, "loading");
+  await saveMessages(chat.id, messages, {
+    state: "loading",
+    visibility: requestBody.visibilityType,
+  });
 
   const provider = createProvider(providerData.id, providerData.apiKey);
 
@@ -165,12 +168,13 @@ export async function POST(req: Request) {
                   role: assistantMessage.role,
                   parts: assistantMessage.parts,
                   content: assistantMessage.content,
-                  experimental_attachments: assistantMessage.experimental_attachments,
+                  experimental_attachments:
+                    assistantMessage.experimental_attachments,
                   createdAt: new Date(),
                   modelId: requestBody.selectedChatModel,
                 },
               ],
-              "complete"
+              { state: "complete" }
             );
           } catch (_) {
             console.error("Failed to save chat");

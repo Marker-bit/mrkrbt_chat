@@ -85,4 +85,5 @@ export const chat = pgTable("chat", {
   messages: json("messages").notNull().default([]).$type<Message[]>(),
   state: text("state").notNull().default("complete").$type<"loading" | "complete">(),
   title: text("title").notNull().default("Unnamed").$type<string>(),
+  visibility: text("visibility").notNull().default("private").$type<"public" | "private">(),
 });
