@@ -1,19 +1,14 @@
+import { deleteChat, pinChat, updateChatTitle } from "@/lib/actions";
 import { Chat } from "@/lib/db/db-types";
 import { fetcher } from "@/lib/utils";
 import { isToday, isYesterday, subMonths, subWeeks } from "date-fns";
-import { Loader2Icon } from "lucide-react";
+import { ChartBarStackedIcon, Loader2Icon } from "lucide-react";
 import { motion } from "motion/react";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 import useSWRInfinite from "swr/infinite";
 import { ChatItem } from "./chat-item";
-import {
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarMenu,
-  useSidebar,
-} from "./ui/sidebar";
-import { Skeleton } from "./ui/skeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,9 +19,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "./ui/alert-dialog";
-import { toast } from "sonner";
-import { deleteChat, pinChat } from "@/lib/actions";
-import { chat } from "@/lib/db/schema";
+import {
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarMenu,
+  useSidebar,
+} from "./ui/sidebar";
+import { Skeleton } from "./ui/skeleton";
 
 type GroupedChats = {
   pinned: Chat[];
@@ -156,12 +155,12 @@ export default function ChatList() {
   const handlePin = async (chatId: string, isPinned: boolean) => {
     if (
       !isPinned &&
-      paginatedChatHistories?.flatMap(
-        (paginatedChatHistory) => paginatedChatHistory.chats
-      ).filter(chat => chat.isPinned).length === 5
+      paginatedChatHistories
+        ?.flatMap((paginatedChatHistory) => paginatedChatHistory.chats)
+        .filter((chat) => chat.isPinned).length === 5
     ) {
-      toast.error("You cannot pin more than 5 chats")
-      return
+      toast.error("You cannot pin more than 5 chats");
+      return;
     }
     const pinPromise = pinChat(chatId!, isPinned);
 
@@ -179,6 +178,33 @@ export default function ChatList() {
     if (deleteId === id) {
       router.push("/");
     }
+  };
+
+  const setTitle = async (chatId: string, title: string) => {
+    const updatePromise = updateChatTitle(chatId, title);
+    toast.promise(updatePromise, {
+      loading: "Updating chat title...",
+      success: () => {
+        mutate((chatHistories) => {
+          if (chatHistories) {
+            return chatHistories.map((chatHistory) => ({
+              ...chatHistory,
+              chats: chatHistory.chats.map((chat: any) => {
+                if (chat.id === chatId) {
+                  return {
+                    ...chat,
+                    title,
+                  };
+                }
+                return chat;
+              }),
+            }));
+          }
+        });
+        return "Chat title updated successfully";
+      },
+      error: "Failed to update chat title",
+    });
   };
 
   if (isLoading) {
@@ -237,6 +263,7 @@ export default function ChatList() {
                         </div>
                         {groupedChats.pinned.map((chat) => (
                           <ChatItem
+                            setTitle={setTitle}
                             key={chat.id}
                             chat={chat}
                             isActive={chat.id === id}
@@ -259,6 +286,7 @@ export default function ChatList() {
                         </div>
                         {groupedChats.today.map((chat) => (
                           <ChatItem
+                            setTitle={setTitle}
                             key={chat.id}
                             chat={chat}
                             isActive={chat.id === id}
@@ -282,6 +310,7 @@ export default function ChatList() {
                         </div>
                         {groupedChats.yesterday.map((chat) => (
                           <ChatItem
+                            setTitle={setTitle}
                             key={chat.id}
                             chat={chat}
                             isActive={chat.id === id}
@@ -305,6 +334,7 @@ export default function ChatList() {
                         </div>
                         {groupedChats.lastWeek.map((chat) => (
                           <ChatItem
+                            setTitle={setTitle}
                             key={chat.id}
                             chat={chat}
                             isActive={chat.id === id}
@@ -328,6 +358,7 @@ export default function ChatList() {
                         </div>
                         {groupedChats.lastMonth.map((chat) => (
                           <ChatItem
+                            setTitle={setTitle}
                             key={chat.id}
                             chat={chat}
                             isActive={chat.id === id}
@@ -351,6 +382,7 @@ export default function ChatList() {
                         </div>
                         {groupedChats.older.map((chat) => (
                           <ChatItem
+                            setTitle={setTitle}
                             key={chat.id}
                             chat={chat}
                             isActive={chat.id === id}

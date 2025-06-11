@@ -15,9 +15,7 @@ export async function setApiKeysAsCookie(
   cookieStore.set("apiKeys", JSON.stringify(apiKeys));
 }
 
-export async function saveChatModelAsCookie(
-  modelId: string
-): Promise<void> {
+export async function saveChatModelAsCookie(modelId: string): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.set("selectedModelId", modelId);
 }
@@ -37,7 +35,9 @@ export async function branchOffChat(
   if (!oldChat) {
     return { error: "Chat not found" };
   }
-  const targetMessage = oldChat.messages.findIndex((message) => message.id === messageId);
+  const targetMessage = oldChat.messages.findIndex(
+    (message) => message.id === messageId
+  );
   const newMessages = oldChat.messages.slice(0, targetMessage + 1);
   const newId = crypto.randomUUID();
   await db.insert(chat).values({
@@ -51,7 +51,7 @@ export async function branchOffChat(
 
 export async function generateTitleFromUserMessage({
   message,
-  apiKeys
+  apiKeys,
 }: {
   message: UIMessage;
   apiKeys: Record<string, string>;
@@ -69,7 +69,7 @@ export async function generateTitleFromUserMessage({
   }
 
   if (!model) {
-    return "Unnamed"
+    return "Unnamed";
   }
 
   const { text: title } = await generateText({
@@ -85,7 +85,13 @@ export async function generateTitleFromUserMessage({
   return title;
 }
 
-export async function updateChatVisibility({ chatId, visibility }: { chatId: string; visibility: "public" | "private" }) {
+export async function updateChatVisibility({
+  chatId,
+  visibility,
+}: {
+  chatId: string;
+  visibility: "public" | "private";
+}) {
   await db.update(chat).set({ visibility }).where(eq(chat.id, chatId));
 }
 
@@ -94,5 +100,9 @@ export async function deleteChat(chatId: string) {
 }
 
 export async function pinChat(chatId: string, isPinned: boolean) {
-  await db.update(chat).set({isPinned: !isPinned}).where(eq(chat.id, chatId));
+  await db.update(chat).set({ isPinned: !isPinned }).where(eq(chat.id, chatId));
+}
+
+export async function updateChatTitle(chatId: string, title: string) {
+  await db.update(chat).set({ title }).where(eq(chat.id, chatId));
 }
