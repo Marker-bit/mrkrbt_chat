@@ -30,7 +30,9 @@ export default function MessageInput({
   stop,
   selectedModelId,
   setApiKeysOpen,
-  setFiles
+  setFiles,
+  useWebSearch,
+  setUseWebSearch
 }: {
   value: string;
   setValue: (value: string) => void;
@@ -41,7 +43,9 @@ export default function MessageInput({
   stop: () => void;
   selectedModelId: string;
   setApiKeysOpen: (open: boolean) => void;
-  setFiles: (files: File[]) => void
+  setFiles: (files: File[]) => void;
+  useWebSearch: boolean;
+  setUseWebSearch: (value: boolean) => void
 }) {
   const [{ files, errors }, { openFileDialog, removeFile, getInputProps, clearFiles }] =
     useFileUpload({
@@ -172,6 +176,8 @@ export default function MessageInput({
               variant="outline"
               size="sm"
               className="rounded-full"
+              pressed={useWebSearch}
+              onPressedChange={setUseWebSearch}
             >
               <GlobeIcon />
               Search

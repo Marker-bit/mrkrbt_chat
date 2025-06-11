@@ -6,7 +6,12 @@ import { fetchWithErrorHandlers } from "@/lib/fetch";
 import { MODELS } from "@/lib/models";
 import { cn, convertFileArrayToFileList, fetcher } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
-import { DownloadIcon, Loader2Icon } from "lucide-react";
+import {
+  ChevronDownIcon,
+  DownloadIcon,
+  GlobeIcon,
+  Loader2Icon,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -21,6 +26,8 @@ import { MessageReasoning } from "./reasoning";
 import { Button } from "./ui/button";
 import Link from "next/link";
 import { useChatVisibility } from "@/hooks/use-chat-visibility";
+import { TextShimmer } from "./ui/text-shimmer";
+import MessageWebSearch from "./message-web-search";
 
 export default function Chat({
   isMain = false,
@@ -45,6 +52,7 @@ export default function Chat({
     chatId: id,
     initialVisibilityType: "private",
   });
+  const [useWebSearch, setUseWebSearch] = useState(false)
 
   const {
     messages,
@@ -68,6 +76,7 @@ export default function Chat({
       message: body.messages.at(-1),
       selectedChatModel: selectedModelId,
       visibilityType,
+      useWebSearch
     }),
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
@@ -147,7 +156,9 @@ export default function Chat({
                   key={message.id}
                   className={cn(
                     "prose dark:prose-invert prose-code:bg-secondary prose-code:text-primary before:content-none! after:content-none!",
-                    message.role === "user" ? "bg-secondary rounded-xl px-4 py-2" : ""
+                    message.role === "user"
+                      ? "bg-secondary rounded-xl px-4 py-2"
+                      : ""
                   )}
                 >
                   {message.parts.map((part, index) => {
@@ -175,6 +186,31 @@ export default function Chat({
                           reasoning={part.reasoning}
                         />
                       );
+                    }
+
+                    if (part.type === "tool-invocation") {
+                      if (part.toolInvocation.toolName === "webSearch") {
+                        if (part.toolInvocation.state === "result") {
+                          return (
+                            <div key={part.toolInvocation.toolCallId}>
+                              {/* <pre>
+                                {JSON.stringify(part.toolInvocation, null, 2)}
+                              </pre> */}
+                              <MessageWebSearch result={part.toolInvocation.result} query={part.toolInvocation.args.query} />
+                            </div>
+                          );
+                        } else {
+                          return (
+                            <TextShimmer
+                              className="font-mono text-sm"
+                              duration={1}
+                              key={part.toolInvocation.toolCallId}
+                            >
+                              Searching the web...
+                            </TextShimmer>
+                          );
+                        }
+                      }
                     }
                   })}
                 </div>
@@ -256,17 +292,10 @@ export default function Chat({
         </div>
       )}
 
-      <ApiKeyDialog
-        providerId="openrouter"
-        apiKeys={apiKeys}
-        modelName={selectedModel?.title!}
-        open={open}
-        setOpen={setOpen}
-        providerName="OpenRouter"
-      />
-
       {!readOnly && (
         <MessageInput
+          useWebSearch={useWebSearch}
+          setUseWebSearch={setUseWebSearch}
           setFiles={setFiles}
           setApiKeysOpen={setOpen}
           selectedModelId={selectedModelId}

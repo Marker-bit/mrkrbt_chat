@@ -30,6 +30,7 @@ export const postRequestBodySchema = z.object({
       message: "Invalid chat model",
     }),
   visibilityType: z.enum(['public', 'private']),
+  useWebSearch: z.boolean()
 });
 
 export type PostRequestBody = z.infer<typeof postRequestBodySchema>;

@@ -19,6 +19,7 @@ import { cookies, headers } from "next/headers";
 import { PostRequestBody, postRequestBodySchema } from "./schema";
 import { generateTitleFromUserMessage } from "@/lib/actions";
 import { z } from "zod";
+import { webSearch } from "@/lib/web-search";
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
@@ -142,6 +143,12 @@ export async function POST(req: Request) {
       model,
       system: "You are a helpful assistant.",
       messages,
+      tools: requestBody.useWebSearch
+        ? {
+            webSearch,
+          }
+        : {},
+      maxSteps: 2,
       // tools: {
       //   generateImage: tool({
       //     description: "Generate an image",
@@ -162,9 +169,9 @@ export async function POST(req: Request) {
       // },
       experimental_transform: smoothStream({ chunking: "word" }),
       experimental_generateMessageId: () => crypto.randomUUID(),
-      providerOptions: {
-        google: { responseModalities: ["TEXT", "IMAGE"] },
-      },
+      // providerOptions: {
+      //   google: { responseModalities: ["TEXT", "IMAGE"] },
+      // },
       onFinish: async ({ response }) => {
         if (session.user?.id) {
           try {

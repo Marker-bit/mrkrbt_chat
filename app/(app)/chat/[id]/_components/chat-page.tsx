@@ -1,8 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Settings2Icon } from "lucide-react";
+import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import { PlusIcon, Settings2Icon } from "lucide-react";
 import Link from "next/link";
 import { ModeToggle } from "@/components/mode-toggle";
 import Chat from "@/components/chat";
@@ -25,6 +25,7 @@ export default function ChatPage({
   initialVisibilityType: "public" | "private";
   readOnly: boolean;
 }) {
+  const { open } = useSidebar();
   return (
     <div
       className="flex flex-col h-svh"
@@ -32,6 +33,11 @@ export default function ChatPage({
     >
       <div className="absolute top-4 left-4 p-1 flex gap-1 border bg-background rounded-md">
         <SidebarTrigger />
+        {!open && (
+          <Button variant="ghost" size="icon" className="size-7">
+            <PlusIcon />
+          </Button>
+        )}
         {!readOnly && (
           <VisibilitySelector
             chatId={id}

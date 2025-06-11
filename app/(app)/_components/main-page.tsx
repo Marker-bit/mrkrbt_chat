@@ -1,15 +1,22 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Settings2Icon } from "lucide-react";
+import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import { PlusIcon, Settings2Icon } from "lucide-react";
 import Link from "next/link";
 import { ModeToggle } from "../../../components/mode-toggle";
 import Chat from "../../../components/chat";
 import VisibilitySelector from "@/components/visibility-selector";
 
-export default function MainPage({selectedModelId, apiKeys}: {selectedModelId: string; apiKeys: Record<string, string>}) {
+export default function MainPage({
+  selectedModelId,
+  apiKeys,
+}: {
+  selectedModelId: string;
+  apiKeys: Record<string, string>;
+}) {
   const chatId = crypto.randomUUID();
+  const { open } = useSidebar();
   return (
     <div
       className="flex flex-col h-svh"
@@ -17,6 +24,11 @@ export default function MainPage({selectedModelId, apiKeys}: {selectedModelId: s
     >
       <div className="absolute top-4 left-4 p-1 flex gap-1 border bg-background rounded-md">
         <SidebarTrigger />
+        {!open && (
+          <Button variant="ghost" size="icon" className="size-7">
+            <PlusIcon />
+          </Button>
+        )}
         <VisibilitySelector chatId={chatId} initialVisibilityType="private" />
       </div>
       <div className="absolute top-4 right-4 p-1 flex gap-1 border bg-background rounded-md">
@@ -27,7 +39,14 @@ export default function MainPage({selectedModelId, apiKeys}: {selectedModelId: s
           </Link>
         </Button>
       </div>
-      <Chat readOnly={false} state="complete" apiKeys={apiKeys} selectedModelId={selectedModelId} id={chatId} isMain />
+      <Chat
+        readOnly={false}
+        state="complete"
+        apiKeys={apiKeys}
+        selectedModelId={selectedModelId}
+        id={chatId}
+        isMain
+      />
     </div>
   );
 }
