@@ -1,41 +1,38 @@
 import { MemoizedMarkdown } from "@/components/memoized-markdown";
 import { AutosizeTextAreaRef } from "@/components/ui/autosize-textarea";
+import { useChatVisibility } from "@/hooks/use-chat-visibility";
 import { Message } from "@/lib/db/db-types";
 import { ChatSDKError } from "@/lib/errors";
 import { fetchWithErrorHandlers } from "@/lib/fetch";
-import { MODELS } from "@/lib/models";
+import { ModelData, MODELS } from "@/lib/models";
 import { cn, convertFileArrayToFileList, fetcher } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import {
-  ChevronDownIcon,
   CircleAlertIcon,
   DownloadIcon,
-  GlobeIcon,
-  Loader2Icon,
+  Loader2Icon
 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import useSWR, { mutate } from "swr";
 import { unstable_serialize } from "swr/infinite";
 import WelcomeScreen from "../app/(app)/_components/welcome-screen";
-import ApiKeyDialog from "./api-key-dialog";
 import { getChatHistoryPaginationKey } from "./chat-list";
 import MessageButtons from "./message-buttons";
 import MessageInput from "./message-input";
+import MessageWebSearch from "./message-web-search";
 import { MessageReasoning } from "./reasoning";
 import { Button } from "./ui/button";
-import Link from "next/link";
-import { useChatVisibility } from "@/hooks/use-chat-visibility";
 import { TextShimmer } from "./ui/text-shimmer";
-import MessageWebSearch from "./message-web-search";
-import Image from "next/image";
 
 export default function Chat({
   isMain = false,
   id,
   initialMessages,
-  selectedModelId,
+  selectedModelData,
   apiKeys,
   state,
   readOnly,
@@ -43,7 +40,7 @@ export default function Chat({
   isMain?: boolean;
   id: string;
   initialMessages?: Message[];
-  selectedModelId: string;
+  selectedModelData: ModelData;
   apiKeys: Record<string, string>;
   state: "loading" | "complete";
   readOnly: boolean;
@@ -76,7 +73,7 @@ export default function Chat({
     experimental_prepareRequestBody: (body) => ({
       id,
       message: body.messages.at(-1),
-      selectedChatModel: selectedModelId,
+      selectedChatModel: selectedModelData,
       visibilityType,
       useWebSearch,
     }),
@@ -366,7 +363,7 @@ export default function Chat({
           useWebSearch={useWebSearch}
           setUseWebSearch={setUseWebSearch}
           setFiles={setFiles}
-          selectedModelId={selectedModelId}
+          selectedModelData={selectedModelData}
           stop={stop}
           status={status}
           value={input}
@@ -375,7 +372,7 @@ export default function Chat({
           setHeight={setHeight}
           onSubmit={(message) => {
             const modelProviders = MODELS.find(
-              (m) => m.id === selectedModelId
+              (m) => m.id === selectedModelData.modelId
             )!.providers;
             let foundKey: boolean = false;
             let providers = new URLSearchParams();

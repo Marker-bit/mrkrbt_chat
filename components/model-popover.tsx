@@ -1,15 +1,18 @@
 "use client";
 
+import { saveChatModelAsCookie } from "@/lib/actions";
+import { effortToString, FEATURES, ModelData, MODELS } from "@/lib/models";
+import { cn } from "@/lib/utils";
 import {
-  BrainIcon,
+  BrainCogIcon,
   CheckIcon,
   ChevronLeftIcon,
   ChevronUpIcon,
-  EyeIcon,
-  FileTextIcon,
   FilterIcon,
-  GlobeIcon,
   SearchIcon,
+  Tally1Icon,
+  Tally2Icon,
+  Tally3Icon,
 } from "lucide-react";
 import {
   startTransition,
@@ -18,11 +21,8 @@ import {
   useRef,
   useState,
 } from "react";
+import FeatureIcon from "./feature-icon";
 import { Button } from "./ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { FEATURES, MODELS } from "@/lib/models";
-import { cn } from "@/lib/utils";
-import { saveChatModelAsCookie } from "@/lib/actions";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,12 +30,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import FeatureIcon from "./feature-icon";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 export default function ModelPopover({
-  selectedModelId,
+  selectedModelData,
 }: {
-  selectedModelId: string;
+  selectedModelData: ModelData;
 }) {
   const [open, setOpen] = useState(false);
   const [big, setBig] = useState(false);
@@ -48,13 +48,11 @@ export default function ModelPopover({
   let filteredModels = MODELS;
 
   if (selectedFeatures.length > 0) {
-    filteredModels = filteredModels.filter(
-      (model) =>
-        selectedFeatures.some((feature) => model.features.includes(feature))
+    filteredModels = filteredModels.filter((model) =>
+      selectedFeatures.some((feature) => model.features.includes(feature))
     );
-    favouriteModels = favouriteModels.filter(
-      (model) =>
-        selectedFeatures.some((feature) => model.features.includes(feature))
+    favouriteModels = favouriteModels.filter((model) =>
+      selectedFeatures.some((feature) => model.features.includes(feature))
     );
   }
 
@@ -67,20 +65,29 @@ export default function ModelPopover({
     );
   }
 
-  const [optimisticModelId, setOptimisticModelId] =
-    useOptimistic(selectedModelId);
+  const [optimisticModelData, setOptimisticModelData] =
+    useOptimistic(selectedModelData);
 
   const selectedChatModel = useMemo(
-    () => MODELS.find((chatModel) => chatModel.id === optimisticModelId),
-    [optimisticModelId, MODELS]
+    () =>
+      MODELS.find((chatModel) => chatModel.id === optimisticModelData.modelId),
+    [optimisticModelData, MODELS]
   );
 
   const setModel = (modelId: string) => {
     setOpen(false);
 
     startTransition(() => {
-      setOptimisticModelId(modelId);
-      saveChatModelAsCookie(modelId);
+      setOptimisticModelData({ ...optimisticModelData, modelId });
+      saveChatModelAsCookie({ ...optimisticModelData, modelId });
+    });
+  };
+
+  const setEffort = (effort: ModelData["options"]["effort"]) => {
+    setOpen(false);
+    startTransition(() => {
+      setOptimisticModelData({ ...optimisticModelData, options: { effort } });
+      saveChatModelAsCookie({ ...optimisticModelData, options: { effort } });
     });
   };
 
@@ -116,9 +123,9 @@ export default function ModelPopover({
               value={search}
               onChange={(e) => {
                 if (search.length === 0) {
-                  setBig(true)
+                  setBig(true);
                 }
-                setSearch(e.target.value)
+                setSearch(e.target.value);
               }}
             />
           </div>
@@ -179,7 +186,7 @@ export default function ModelPopover({
                         )
                       );
                     })}
-                    {selectedModelId === model.id && (
+                    {selectedModelData.modelId === model.id && (
                       <CheckIcon className="size-4" />
                     )}
                   </div>
@@ -256,6 +263,30 @@ export default function ModelPopover({
           </div>
         </PopoverContent>
       </Popover>
+      {selectedChatModel?.features.includes("effort-control") && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="rounded-full">
+              <BrainCogIcon />
+              {effortToString(selectedModelData.options.effort)}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => setEffort("low")}>
+              <Tally1Icon />
+              Low
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setEffort("medium")}>
+              <Tally2Icon />
+              Medium
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setEffort("high")}>
+              <Tally3Icon />
+              High
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
     </>
   );
 }

@@ -54,7 +54,7 @@ export async function POST(req: Request) {
   }
 
   const modelToRun = MODELS.find(
-    (model) => model.id === requestBody.selectedChatModel
+    (model) => model.id === requestBody.selectedChatModel.modelId
   )!;
 
   const cookiesInfo = await cookies();
@@ -192,6 +192,14 @@ export async function POST(req: Request) {
       messages,
       tools,
       maxSteps: 2,
+      providerOptions: {
+        openrouter: {
+          effort: requestBody.selectedChatModel.options.effort
+        },
+        openai: {
+          effort: requestBody.selectedChatModel.options.effort
+        },
+      },
       // tools: {
       //   generateImage: tool({
       //     description: "Generate an image",
@@ -245,7 +253,7 @@ export async function POST(req: Request) {
                   experimental_attachments:
                     assistantMessage.experimental_attachments,
                   createdAt: new Date(),
-                  modelId: requestBody.selectedChatModel,
+                  modelId: requestBody.selectedChatModel.modelId,
                 },
               ],
               { state: "complete" }

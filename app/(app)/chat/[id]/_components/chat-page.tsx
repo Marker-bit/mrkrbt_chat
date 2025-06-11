@@ -1,26 +1,26 @@
 "use client";
 
+import Chat from "@/components/chat";
+import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import VisibilitySelector from "@/components/visibility-selector";
+import { Chat as ChatType } from "@/lib/db/db-types";
+import { ModelData } from "@/lib/models";
 import { PlusIcon, Settings2Icon } from "lucide-react";
 import Link from "next/link";
-import { ModeToggle } from "@/components/mode-toggle";
-import Chat from "@/components/chat";
-import { Chat as ChatType } from "@/lib/db/db-types";
-import VisibilitySelector from "@/components/visibility-selector";
-import { useChatVisibility } from "@/hooks/use-chat-visibility";
 
 export default function ChatPage({
   id,
   chat,
-  selectedModelId,
+  selectedModelData,
   apiKeys,
   initialVisibilityType,
   readOnly,
 }: {
   id: string;
   chat: ChatType;
-  selectedModelId: string;
+  selectedModelData: ModelData;
   apiKeys: Record<string, string>;
   initialVisibilityType: "public" | "private";
   readOnly: boolean;
@@ -54,7 +54,7 @@ export default function ChatPage({
         </Button>
       </div>
       <Chat
-        selectedModelId={selectedModelId}
+        selectedModelData={selectedModelData}
         id={id}
         initialMessages={chat.messages}
         apiKeys={apiKeys}

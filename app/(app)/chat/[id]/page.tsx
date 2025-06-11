@@ -4,7 +4,7 @@ import { and, or } from "drizzle-orm";
 import { cookies, headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import ChatPage from "./_components/chat-page";
-import { DEFAULT_API_KEYS_COOKIE } from "@/lib/models";
+import { DEFAULT_API_KEYS_COOKIE, parseModelData } from "@/lib/models";
 
 export default async function Home({
   params,
@@ -23,7 +23,10 @@ export default async function Home({
 
   const chat = await db.query.chat.findFirst({
     where: (chat, { eq }) =>
-      and(or(eq(chat.userId, session.user.id), eq(chat.visibility, "public")), eq(chat.id, id)),
+      and(
+        or(eq(chat.userId, session.user.id), eq(chat.visibility, "public")),
+        eq(chat.id, id)
+      ),
   });
 
   if (!chat) {
@@ -45,9 +48,9 @@ export default async function Home({
       chat={chat}
       readOnly={chat.visibility === "public" && session.user.id !== chat.userId}
       // readOnly={chat.visibility === "public"}
-      selectedModelId={
-        cookiesInfo.get("selectedModelId")?.value || "gemini-2.5-flash"
-      }
+      selectedModelData={parseModelData(
+        cookiesInfo.get("selectedModelData")?.value || ""
+      )}
       initialVisibilityType={chat.visibility}
       apiKeys={apiKeys}
     />

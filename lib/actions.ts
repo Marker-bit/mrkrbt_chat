@@ -6,7 +6,7 @@ import { db } from "./db/drizzle";
 import { and, eq } from "drizzle-orm";
 import { chat } from "./db/schema";
 import { generateText, LanguageModel, Provider, UIMessage } from "ai";
-import { createProvider, PROVIDERS_TITLEGEN_MAP } from "./models";
+import { createProvider, ModelData, PROVIDERS_TITLEGEN_MAP } from "./models";
 
 export async function setApiKeysAsCookie(
   apiKeys: Record<string, string>
@@ -15,9 +15,9 @@ export async function setApiKeysAsCookie(
   cookieStore.set("apiKeys", JSON.stringify(apiKeys));
 }
 
-export async function saveChatModelAsCookie(modelId: string): Promise<void> {
+export async function saveChatModelAsCookie(modelData: ModelData): Promise<void> {
   const cookieStore = await cookies();
-  cookieStore.set("selectedModelId", modelId);
+  cookieStore.set("selectedModelData", JSON.stringify(modelData));
 }
 
 export async function branchOffChat(

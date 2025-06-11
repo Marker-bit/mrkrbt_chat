@@ -25,9 +25,11 @@ export const postRequestBodySchema = z.object({
       .optional(),
   }),
   selectedChatModel: z
-    .string()
-    .refine((value) => MODELS.some((model) => model.id === value), {
-      message: "Invalid chat model",
+    .object({
+      modelId: z.string(),
+      options: z.object({
+        effort: z.enum(["high", "medium", "low"]),
+      })
     }),
   visibilityType: z.enum(['public', 'private']),
   useWebSearch: z.boolean()

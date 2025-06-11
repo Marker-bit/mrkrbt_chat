@@ -1,9 +1,9 @@
-import Gemini from "@/components/icons/gemini";
-import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import Qwen from "@/components/icons/qwen";
 import DeepSeek from "@/components/icons/deepseek";
-import { Brain, Eye, FileText, Globe, Settings2, ZapIcon } from "lucide-react";
+import Gemini from "@/components/icons/gemini";
+import Qwen from "@/components/icons/qwen";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { Brain, Eye, FileText, Settings2, ZapIcon } from "lucide-react";
 
 type Model = {
   id: string;
@@ -15,6 +15,13 @@ type Model = {
   providers: Record<string, string>;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
 };
+
+export type ModelData = {
+  modelId: string;
+  options: {
+    effort: "high" | "medium" | "low";
+  }
+}
 
 export const PROVIDERS: {
   id: string;
@@ -108,7 +115,7 @@ export const MODELS: Model[] = [
     model: "Gemini",
     version: "2.5 Flash",
     additionalTitle: "Thinking",
-    features: ["vision", "pdfs", "reasoning"],
+    features: ["vision", "pdfs", "reasoning", "effort-control"],
     providers: {
       openrouter: "google/gemini-2.5-flash-preview-05-20:thinking",
     },
@@ -177,5 +184,31 @@ export function createProvider(providerId: string, apiKey: string) {
 
     default:
       break;
+  }
+}
+
+const DEFAULT_MODEL_DATA: ModelData = {
+  modelId: "gemini-2.5-flash",
+  options: {effort: "medium"},
+};
+
+export function parseModelData(modelData: string) {
+  try {
+    return JSON.parse(modelData);
+  } catch {
+    return DEFAULT_MODEL_DATA;
+  }
+}
+
+export function effortToString(effort: "high" | "medium" | "low") {
+  switch (effort) {
+    case "high":
+      return "High";
+    case "medium":
+      return "Medium";
+    case "low":
+      return "Low";
+    default:
+      return "Medium";
   }
 }

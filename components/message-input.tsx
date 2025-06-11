@@ -19,6 +19,7 @@ import { RefObject, useEffect } from "react";
 import useMeasure from "react-use-measure";
 import ModelPopover from "./model-popover";
 import { formatBytes, useFileUpload } from "@/hooks/use-file-upload";
+import { ModelData } from "@/lib/models";
 
 export default function MessageInput({
   value,
@@ -28,10 +29,10 @@ export default function MessageInput({
   onSubmit,
   status,
   stop,
-  selectedModelId,
+  selectedModelData,
   setFiles,
   useWebSearch,
-  setUseWebSearch
+  setUseWebSearch,
 }: {
   value: string;
   setValue: (value: string) => void;
@@ -40,18 +41,20 @@ export default function MessageInput({
   onSubmit?: (message: string) => void;
   status: "submitted" | "streaming" | "ready" | "error";
   stop: () => void;
-  selectedModelId: string;
+  selectedModelData: ModelData;
   setFiles: (files: File[]) => void;
   useWebSearch: boolean;
-  setUseWebSearch: (value: boolean) => void
+  setUseWebSearch: (value: boolean) => void;
 }) {
-  const [{ files, errors }, { openFileDialog, removeFile, getInputProps, clearFiles }] =
-    useFileUpload({
-      multiple: true,
-      maxFiles: 5,
-      maxSize: 5 * 1024 * 1024, // 5MB
-      accept: "*",
-    });
+  const [
+    { files, errors },
+    { openFileDialog, removeFile, getInputProps, clearFiles },
+  ] = useFileUpload({
+    multiple: true,
+    maxFiles: 5,
+    maxSize: 5 * 1024 * 1024, // 5MB
+    accept: "*",
+  });
   const [measureRef, bounds] = useMeasure();
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -73,7 +76,7 @@ export default function MessageInput({
   // const availableChatModels = MODELS;
 
   // const [optimisticModelId, setOptimisticModelId] =
-  //   useOptimistic(selectedModelId);
+  //   useOptimistic(selectedModelData);
 
   // const selectedChatModel = useMemo(
   //   () =>
@@ -168,18 +171,16 @@ export default function MessageInput({
         />
         <div className="flex justify-between w-full items-center">
           <div className="flex gap-2">
-            <ModelPopover selectedModelId={selectedModelId} />
-            <Toggle
-              aria-label="Toggle search"
-              variant="outline"
-              size="sm"
+            <ModelPopover selectedModelData={selectedModelData} />
+            <Button
+              variant={useWebSearch ? "default" : "outline"}
               className="rounded-full"
-              pressed={useWebSearch}
-              onPressedChange={setUseWebSearch}
+              aria-label="Toggle search"
+              onClick={() => setUseWebSearch(!useWebSearch)}
             >
               <GlobeIcon />
               Search
-            </Toggle>
+            </Button>
           </div>
           <div className="flex gap-2">
             <Button
@@ -198,7 +199,7 @@ export default function MessageInput({
                 } else {
                   onSubmit?.(value);
                   setValue("");
-                  clearFiles()
+                  clearFiles();
                 }
               }}
               disabled={
