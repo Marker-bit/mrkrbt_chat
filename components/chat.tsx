@@ -7,11 +7,7 @@ import { fetchWithErrorHandlers } from "@/lib/fetch";
 import { ModelData, MODELS } from "@/lib/models";
 import { cn, convertFileArrayToFileList, fetcher } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
-import {
-  CircleAlertIcon,
-  DownloadIcon,
-  Loader2Icon
-} from "lucide-react";
+import { CircleAlertIcon, DownloadIcon, Loader2Icon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -52,6 +48,7 @@ export default function Chat({
     initialVisibilityType: "private",
   });
   const [useWebSearch, setUseWebSearch] = useState(false);
+  const retryMessageId = useRef<string | null>(null);
 
   const {
     messages,
@@ -75,17 +72,22 @@ export default function Chat({
       selectedChatModel: selectedModelData,
       visibilityType,
       useWebSearch,
+      retryMessageId: retryMessageId.current,
+      body,
     }),
     onFinish: () => {
+      retryMessageId.current = null;
       mutate(unstable_serialize(getChatHistoryPaginationKey));
       if (isMain) {
         router.push(`/chat/${id}`, { scroll: false });
       }
     },
     onError: (error) => {
+      retryMessageId.current = null;
       if (error instanceof ChatSDKError) {
         toast.error(error.message);
       } else {
+        console.error(error);
         toast.error("Unknown error");
       }
     },
@@ -98,6 +100,11 @@ export default function Chat({
       refreshInterval: 1000,
     }
   );
+
+  const retryMessage = (id: string) => {
+    retryMessageId.current = id;
+    setTimeout(reload, 20);
+  };
 
   const empty = useMemo(() => input === "", [input]);
   const [sentMessage, setSentMessage] = useState(false);
@@ -321,7 +328,7 @@ export default function Chat({
                 </div>
                 <MessageButtons
                   chatId={id}
-                  reload={reload}
+                  retryMessage={retryMessage}
                   setMessages={setMessages}
                   message={message}
                   readOnly={readOnly}

@@ -14,6 +14,7 @@ type Model = {
   features: string[];
   providers: Record<string, string>;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  supportsTools: boolean
 };
 
 export type ModelData = {
@@ -108,6 +109,7 @@ export const MODELS: Model[] = [
       openrouter: "google/gemini-2.5-flash-preview-05-20",
     },
     icon: Gemini,
+    supportsTools: true
   },
   {
     id: "gemini-2.5-flash-thinking",
@@ -120,6 +122,7 @@ export const MODELS: Model[] = [
       openrouter: "google/gemini-2.5-flash-preview-05-20:thinking",
     },
     icon: Gemini,
+    supportsTools: true
   },
   {
     id: "gemini-2.5-pro",
@@ -131,6 +134,7 @@ export const MODELS: Model[] = [
       openrouter: "google/gemini-2.5-pro-preview-05-06",
     },
     icon: Gemini,
+    supportsTools: true
   },
   {
     id: "deepseek-r1-0528",
@@ -143,6 +147,7 @@ export const MODELS: Model[] = [
       openrouter: "deepseek/deepseek-r1-0528",
     },
     icon: DeepSeek,
+    supportsTools: true
   },
   {
     id: "deepseek-r1-qwen",
@@ -155,6 +160,7 @@ export const MODELS: Model[] = [
       openrouter: "deepseek/deepseek-r1-distill-qwen-7b",
     },
     icon: DeepSeek,
+    supportsTools: false
   },
   {
     id: "qwen3",
@@ -166,6 +172,7 @@ export const MODELS: Model[] = [
       openrouter: "qwen/qwen3-32b",
     },
     icon: Qwen,
+    supportsTools: true
   },
 ];
 

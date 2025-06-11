@@ -23,7 +23,7 @@ import { MODELS } from "@/lib/models";
 export default function MessageButtons({
   message,
   setMessages,
-  reload,
+  retryMessage,
   chatId,
   readOnly,
 }: {
@@ -31,9 +31,7 @@ export default function MessageButtons({
   setMessages: (
     messages: OldMessage[] | ((messages: OldMessage[]) => OldMessage[])
   ) => void;
-  reload: (
-    chatRequestOptions?: ChatRequestOptions
-  ) => Promise<string | null | undefined>;
+  retryMessage: (id: string) => void;
   chatId: string;
   readOnly: boolean;
 }) {
@@ -41,12 +39,12 @@ export default function MessageButtons({
   const [branchLoading, setBranchLoading] = useState(false);
   const router = useRouter();
 
-  const retryMessage = async () => {
+  const retryMessageLocal = async () => {
     setMessages((messages) => {
       const index = messages.findIndex((m) => m.id === message.id);
       return messages.slice(0, index);
     });
-    await reload();
+    retryMessage(message.id);
   };
 
   const branchOff = async () => {
@@ -110,7 +108,7 @@ export default function MessageButtons({
                 <Button
                   size="icon"
                   variant="ghost"
-                  onClick={() => retryMessage()}
+                  onClick={() => retryMessageLocal()}
                 >
                   <RefreshCw />
                 </Button>

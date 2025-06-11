@@ -32,7 +32,8 @@ export const postRequestBodySchema = z.object({
       })
     }),
   visibilityType: z.enum(['public', 'private']),
-  useWebSearch: z.boolean()
+  useWebSearch: z.boolean(),
+  retryMessageId: z.string().or(z.null()).optional(),
 });
 
 export type PostRequestBody = z.infer<typeof postRequestBodySchema>;

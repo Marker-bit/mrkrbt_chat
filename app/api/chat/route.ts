@@ -14,6 +14,7 @@ import {
   appendResponseMessages,
   experimental_generateImage,
   LanguageModel,
+  Message,
   smoothStream,
   streamText,
   Tool,
@@ -117,10 +118,21 @@ export async function POST(req: Request) {
       .returning();
   }
 
-  const messages = appendClientMessage({
-    messages: chat.messages,
-    message: requestBody.message,
-  });
+  let messages: Message[]
+
+  if (!requestBody.retryMessageId) {
+    messages = appendClientMessage({
+      messages: chat.messages,
+      message: requestBody.message,
+    });
+  } else {
+    const retryMessage = chat.messages.findIndex((message) => message.id === requestBody.retryMessageId);
+    if (retryMessage === -1) {
+      return new ChatSDKError("bad_request:api").toResponse();
+    }
+
+    messages = chat.messages.slice(0, retryMessage);
+  }
 
   await saveMessages(chat.id, messages, {
     state: "loading",
@@ -151,7 +163,7 @@ export async function POST(req: Request) {
         if (!("openai" in keys)) {
           return {
             error: "API key for OpenAI not found",
-          }
+          };
         }
         const openai = createOpenAI({
           apiKey: keys.openai,
@@ -161,9 +173,9 @@ export async function POST(req: Request) {
           prompt,
           providerOptions: {
             openai: {
-              quality: "standard"
-            }
-          }
+              quality: "standard",
+            },
+          },
         });
 
         const blob = await put(
@@ -190,14 +202,14 @@ export async function POST(req: Request) {
       system:
         "You are a helpful assistant. ONLY if the user asks for an image, use the generateImage tool.",
       messages,
-      tools,
+      tools: modelToRun.supportsTools ? tools : undefined,
       maxSteps: 2,
       providerOptions: {
         openrouter: {
-          effort: requestBody.selectedChatModel.options.effort
+          effort: requestBody.selectedChatModel.options.effort,
         },
         openai: {
-          effort: requestBody.selectedChatModel.options.effort
+          effort: requestBody.selectedChatModel.options.effort,
         },
       },
       // tools: {
