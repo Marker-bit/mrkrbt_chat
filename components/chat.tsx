@@ -332,6 +332,7 @@ export default function Chat({
                   setMessages={setMessages}
                   message={message}
                   readOnly={readOnly}
+                  nextMessage={messages[msgIndex + 1]}
                 />
               </div>
             ))}
