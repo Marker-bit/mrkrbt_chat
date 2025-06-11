@@ -141,10 +141,6 @@ export async function POST(req: Request) {
     return new ChatSDKError("unauthorized:provider").toResponse();
   }
 
-  const openai = createOpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-
   let tools: Record<string, Tool> = {
     generateImage: tool({
       description: "Generate an image",
@@ -152,9 +148,22 @@ export async function POST(req: Request) {
         prompt: z.string().describe("The prompt to generate the image from"),
       }),
       execute: async ({ prompt }) => {
+        if (!("openai" in keys)) {
+          return {
+            error: "API key for OpenAI not found",
+          }
+        }
+        const openai = createOpenAI({
+          apiKey: keys.openai,
+        });
         const { image } = await experimental_generateImage({
           model: openai.image("dall-e-3"),
           prompt,
+          providerOptions: {
+            openai: {
+              quality: "standard"
+            }
+          }
         });
 
         const blob = await put(

@@ -1,8 +1,6 @@
 import Gemini from "@/components/icons/gemini";
-import {
-  createOpenRouter
-} from "@openrouter/ai-sdk-provider";
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import Qwen from "@/components/icons/qwen";
 import DeepSeek from "@/components/icons/deepseek";
 import { Brain, Eye, FileText, Globe, Settings2, ZapIcon } from "lucide-react";
@@ -18,7 +16,11 @@ type Model = {
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
 };
 
-export const PROVIDERS = [
+export const PROVIDERS: {
+  id: string;
+  title: string;
+  apiKeyDescription?: string;
+}[] = [
   {
     title: "OpenRouter",
     id: "openrouter",
@@ -27,6 +29,11 @@ export const PROVIDERS = [
     title: "Google Generative AI",
     id: "google",
   },
+  {
+    title: "OpenAI",
+    id: "openai",
+    apiKeyDescription: "Required for generating images with other models",
+  },
 ];
 
 export const DEFAULT_API_KEYS_COOKIE = PROVIDERS.reduce(
@@ -34,13 +41,20 @@ export const DEFAULT_API_KEYS_COOKIE = PROVIDERS.reduce(
   {}
 );
 
-export const FEATURES: { id: string; icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; displayInModels: boolean; color: string; name: string; description?: string }[] = [
+export const FEATURES: {
+  id: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  displayInModels: boolean;
+  color: string;
+  name: string;
+  description?: string;
+}[] = [
   {
     id: "fast",
     icon: ZapIcon,
     displayInModels: false,
     color: "#fcd34d",
-    name: "Fast"
+    name: "Fast",
   },
   {
     id: "vision",
@@ -48,7 +62,7 @@ export const FEATURES: { id: string; icon: React.ComponentType<React.SVGProps<SV
     displayInModels: true,
     color: "#14b8a6",
     name: "Vision",
-    description: "Supports image uploads and analysis"
+    description: "Supports image uploads and analysis",
   },
   {
     id: "pdfs",
@@ -56,7 +70,7 @@ export const FEATURES: { id: string; icon: React.ComponentType<React.SVGProps<SV
     displayInModels: true,
     color: "#6366f1",
     name: "PDFs",
-    description: "Supports PDF uploads and analysis"
+    description: "Supports PDF uploads and analysis",
   },
   {
     id: "reasoning",
@@ -64,16 +78,16 @@ export const FEATURES: { id: string; icon: React.ComponentType<React.SVGProps<SV
     displayInModels: true,
     color: "#a855f7",
     name: "Reasoning",
-    description: "Has reasoning capabilities"
+    description: "Has reasoning capabilities",
   },
   {
     id: "effort-control",
     icon: Settings2,
     displayInModels: false,
     color: "#d946ef",
-    name: "Effort Control"
+    name: "Effort Control",
   },
-]
+];
 
 export const MODELS: Model[] = [
   {
@@ -150,8 +164,8 @@ export const MODELS: Model[] = [
 
 export const PROVIDERS_TITLEGEN_MAP: Record<string, string> = {
   openrouter: "google/gemini-2.0-flash-001",
-  google: "models/gemini-2.0-flash-lite"
-}
+  google: "models/gemini-2.0-flash-lite",
+};
 
 export function createProvider(providerId: string, apiKey: string) {
   switch (providerId) {
@@ -160,7 +174,7 @@ export function createProvider(providerId: string, apiKey: string) {
 
     case "google":
       return createGoogleGenerativeAI({ apiKey });
-    
+
     default:
       break;
   }

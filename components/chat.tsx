@@ -8,6 +8,7 @@ import { cn, convertFileArrayToFileList, fetcher } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import {
   ChevronDownIcon,
+  CircleAlertIcon,
   DownloadIcon,
   GlobeIcon,
   Loader2Icon,
@@ -136,7 +137,7 @@ export default function Chat({
           </div>
         </div>
       ) : (
-        <div className="flex justify-center grow w-full pt-14 gap-4 overflow-auto">
+        <div className="flex justify-center grow w-full pt-14 px-4 gap-4 overflow-auto">
           <div
             className="flex flex-col w-full max-w-3xl h-fit gap-4"
             style={{ paddingBottom: `${height + 10}px` }}
@@ -214,6 +215,24 @@ export default function Chat({
                         part.toolInvocation.toolName === "generateImage"
                       ) {
                         if (part.toolInvocation.state === "result") {
+                          if (part.toolInvocation.result?.error) {
+                            return (
+                              <div
+                                className="bg-red-500/20 text-red-500 p-4 rounded-xl flex gap-4 items-center"
+                                key={part.toolInvocation.toolCallId}
+                              >
+                                <CircleAlertIcon className="size-5" />
+                                <div className="flex flex-col leading-tight">
+                                  <div className="font-semibold">
+                                    Failed to generate image
+                                  </div>
+                                  <div className="text-sm">
+                                    {part.toolInvocation.result.error}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          }
                           return (
                             <div
                               className="relative rounded-xl overflow-hidden size-[400px] group/image"

@@ -42,6 +42,11 @@ export default function KeysForm({
               setApiKeys((a) => ({ ...a, [provider.id]: e.target.value }))
             }
           />
+          {provider?.apiKeyDescription && (
+            <div className="text-muted-foreground/80 text-xs">
+              {provider.apiKeyDescription}
+            </div>
+          )}
         </div>
       ))}
       <Button type="submit" disabled={loading}>
