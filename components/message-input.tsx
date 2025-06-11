@@ -29,7 +29,6 @@ export default function MessageInput({
   status,
   stop,
   selectedModelId,
-  setApiKeysOpen,
   setFiles,
   useWebSearch,
   setUseWebSearch
@@ -42,7 +41,6 @@ export default function MessageInput({
   status: "submitted" | "streaming" | "ready" | "error";
   stop: () => void;
   selectedModelId: string;
-  setApiKeysOpen: (open: boolean) => void;
   setFiles: (files: File[]) => void;
   useWebSearch: boolean;
   setUseWebSearch: (value: boolean) => void

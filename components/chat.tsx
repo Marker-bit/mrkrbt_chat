@@ -361,7 +361,6 @@ export default function Chat({
           useWebSearch={useWebSearch}
           setUseWebSearch={setUseWebSearch}
           setFiles={setFiles}
-          setApiKeysOpen={setOpen}
           selectedModelId={selectedModelId}
           stop={stop}
           status={status}
@@ -370,9 +369,18 @@ export default function Chat({
           ref={ref}
           setHeight={setHeight}
           onSubmit={(message) => {
-            if (!apiKeys["openrouter"]) {
-              setOpen(true);
-              return;
+            const modelProviders = MODELS.find(m => m.id === selectedModelId)!.providers;
+            let foundKey: boolean = false
+            let providers = new URLSearchParams()
+            for (const provider in modelProviders) {
+              providers.append("providers", provider);
+              if (apiKeys[provider]) {
+                foundKey = true;
+              }
+            }
+            if (!foundKey) {
+              router.push("/settings/api-keys?" + providers.toString());
+              return
             }
             if (messages.length === 0) {
               window.history.replaceState({}, "", `/chat/${id}`);
