@@ -86,4 +86,5 @@ export const chat = pgTable("chat", {
   state: text("state").notNull().default("complete").$type<"loading" | "complete">(),
   title: text("title").notNull().default("Unnamed").$type<string>(),
   visibility: text("visibility").notNull().default("private").$type<"public" | "private">(),
+  isPinned: boolean("is_pinned").notNull().default(false).$type<boolean>(),
 });

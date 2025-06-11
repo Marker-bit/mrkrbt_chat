@@ -16,17 +16,19 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { memo } from "react";
-import { MoreHorizontalIcon, PinIcon, TrashIcon } from "lucide-react";
+import { MoreHorizontalIcon, PinIcon, PinOffIcon, TrashIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 const PureChatItem = ({
   chat,
   isActive,
+  onPin,
   onDelete,
   setOpenMobile,
 }: {
   chat: Chat;
   isActive: boolean;
+  onPin: (isPinned: boolean) => void;
   onDelete: (chatId: string) => void;
   setOpenMobile: (open: boolean) => void;
 }) => {
@@ -39,6 +41,9 @@ const PureChatItem = ({
               href={`/chat/${chat.id}`}
               onClick={() => setOpenMobile(false)}
             >
+              {chat.isPinned && (
+                <PinIcon fill="currentColor" className="size-4" />
+              )}
               <span>{chat.title}</span>
               {/* <span>A</span> */}
             </Link>
@@ -60,45 +65,18 @@ const PureChatItem = ({
         </DropdownMenuTrigger>
 
         <DropdownMenuContent side="bottom" align="end">
-          {/* <DropdownMenuSub>
-            <DropdownMenuSubTrigger className="cursor-pointer">
-              <ShareIcon />
-              <span>Share</span>
-            </DropdownMenuSubTrigger>
-            <DropdownMenuPortal>
-              <DropdownMenuSubContent>
-                <DropdownMenuItem
-                  className="cursor-pointer flex-row justify-between"
-                  onClick={() => {
-                    setVisibilityType('private');
-                  }}
-                >
-                  <div className="flex flex-row gap-2 items-center">
-                    <LockIcon size={12} />
-                    <span>Private</span>
-                  </div>
-                  {visibilityType === 'private' ? (
-                    <CheckCircleFillIcon />
-                  ) : null}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="cursor-pointer flex-row justify-between"
-                  onClick={() => {
-                    setVisibilityType('public');
-                  }}
-                >
-                  <div className="flex flex-row gap-2 items-center">
-                    <GlobeIcon />
-                    <span>Public</span>
-                  </div>
-                  {visibilityType === 'public' ? <CheckCircleFillIcon /> : null}
-                </DropdownMenuItem>
-              </DropdownMenuSubContent>
-            </DropdownMenuPortal>
-          </DropdownMenuSub> */}
-          <DropdownMenuItem onSelect={() => onDelete(chat.id)}>
-            <PinIcon />
-            <span>Pin chat</span>
+          <DropdownMenuItem onSelect={() => onPin(chat.isPinned)}>
+            {chat.isPinned ? (
+              <>
+                <PinOffIcon />
+                <span>Unpin chat</span>
+              </>
+            ) : (
+              <>
+                <PinIcon />
+                <span>Pin chat</span>
+              </>
+            )}
           </DropdownMenuItem>
 
           <DropdownMenuItem
@@ -116,5 +94,6 @@ const PureChatItem = ({
 
 export const ChatItem = memo(PureChatItem, (prevProps, nextProps) => {
   if (prevProps.isActive !== nextProps.isActive) return false;
+  if (prevProps.chat.isPinned !== nextProps.chat.isPinned) return false;
   return true;
 });

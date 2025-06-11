@@ -1,30 +1,30 @@
-import type { NextRequest } from 'next/server';
-import { ChatSDKError } from '@/lib/errors';
-import { auth } from '@/lib/auth';
-import { headers } from 'next/headers';
-import { and, desc, eq, gt, lt, SQL } from 'drizzle-orm';
-import { Chat } from '@/lib/db/db-types';
-import { db } from '@/lib/db/drizzle';
-import { chat } from '@/lib/db/schema';
+import type { NextRequest } from "next/server";
+import { ChatSDKError } from "@/lib/errors";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { and, desc, eq, gt, lt, SQL } from "drizzle-orm";
+import { Chat } from "@/lib/db/db-types";
+import { db } from "@/lib/db/drizzle";
+import { chat } from "@/lib/db/schema";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
 
-  const limit = Number.parseInt(searchParams.get('limit') || '10');
-  const startingAfter = searchParams.get('starting_after');
-  const endingBefore = searchParams.get('ending_before');
+  const limit = Number.parseInt(searchParams.get("limit") || "10");
+  const startingAfter = searchParams.get("starting_after");
+  const endingBefore = searchParams.get("ending_before");
 
   if (startingAfter && endingBefore) {
     return new ChatSDKError(
-      'bad_request:api',
-      'Only one of starting_after or ending_before can be provided.',
+      "bad_request:api",
+      "Only one of starting_after or ending_before can be provided."
     ).toResponse();
   }
 
-  const session = await auth.api.getSession({headers: await headers()});
+  const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session) {
-    return new ChatSDKError('unauthorized:chat').toResponse();
+    return new ChatSDKError("unauthorized:chat").toResponse();
   }
 
   const userId = session.user.id;
@@ -39,9 +39,9 @@ export async function GET(request: NextRequest) {
         .where(
           whereCondition
             ? and(whereCondition, eq(chat.userId, userId))
-            : eq(chat.userId, userId),
+            : eq(chat.userId, userId)
         )
-        .orderBy(desc(chat.createdAt))
+        .orderBy(desc(chat.isPinned), desc(chat.createdAt))
         .limit(extendedLimit);
 
     let filteredChats: Array<Chat> = [];
@@ -55,8 +55,8 @@ export async function GET(request: NextRequest) {
 
       if (!selectedChat) {
         throw new ChatSDKError(
-          'not_found:database',
-          `Chat with id ${startingAfter} not found`,
+          "not_found:database",
+          `Chat with id ${startingAfter} not found`
         );
       }
 
@@ -70,8 +70,8 @@ export async function GET(request: NextRequest) {
 
       if (!selectedChat) {
         throw new ChatSDKError(
-          'not_found:database',
-          `Chat with id ${endingBefore} not found`,
+          "not_found:database",
+          `Chat with id ${endingBefore} not found`
         );
       }
 
@@ -88,8 +88,8 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     throw new ChatSDKError(
-      'bad_request:database',
-      'Failed to get chats by user id',
+      "bad_request:database",
+      "Failed to get chats by user id"
     );
   }
 }

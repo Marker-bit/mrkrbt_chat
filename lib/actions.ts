@@ -88,3 +88,11 @@ export async function generateTitleFromUserMessage({
 export async function updateChatVisibility({ chatId, visibility }: { chatId: string; visibility: "public" | "private" }) {
   await db.update(chat).set({ visibility }).where(eq(chat.id, chatId));
 }
+
+export async function deleteChat(chatId: string) {
+  await db.delete(chat).where(eq(chat.id, chatId));
+}
+
+export async function pinChat(chatId: string, isPinned: boolean) {
+  await db.update(chat).set({isPinned: !isPinned}).where(eq(chat.id, chatId));
+}
