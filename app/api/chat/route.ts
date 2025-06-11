@@ -174,6 +174,7 @@ export async function POST(req: Request) {
   try {
     model = provider.chat(providerData.modelName);
   } catch (e) {
+    console.error(e);
     return new ChatSDKError("unauthorized:provider").toResponse();
   }
 

@@ -6,6 +6,7 @@ import OpenAI from "@/components/icons/openai";
 import OpenRouter from "@/components/icons/openrouter";
 import Qwen from "@/components/icons/qwen";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createOpenAI } from "@ai-sdk/openai";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { Brain, Eye, FileText, Settings2, ZapIcon } from "lucide-react";
 
@@ -201,6 +202,21 @@ const models: Model[] = [
     icon: Qwen,
     supportsTools: true,
   },
+  {
+    id: "chatgpt-4.1",
+    title: "GPT 4.1 Nano",
+    model: "GPT",
+    version: "4.1 Nano",
+    providers: {
+      openrouter: { modelName: "qwen/qwen3-32b", features: ["reasoning"] },
+      openai: {
+        modelName: "gpt-4.1-nano-2025-04-14",
+        features: ["reasoning", "pdfs", "vision"],
+      },
+    },
+    icon: OpenAI,
+    supportsTools: true,
+  },
 ];
 
 const extractModelFeatures = (model: Model) => {
@@ -232,6 +248,9 @@ export function createProvider(providerId: string, apiKey: string) {
 
     case "google":
       return createGoogleGenerativeAI({ apiKey });
+
+    case "openai":
+      return createOpenAI({ apiKey });
 
     default:
       break;
