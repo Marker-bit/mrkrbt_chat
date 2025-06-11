@@ -23,6 +23,7 @@ import MessageWebSearch from "./message-web-search";
 import { MessageReasoning } from "./reasoning";
 import { Button } from "./ui/button";
 import { TextShimmer } from "./ui/text-shimmer";
+import EditingMessage from "./editing-message";
 
 export default function Chat({
   isMain = false,
@@ -73,7 +74,6 @@ export default function Chat({
       visibilityType,
       useWebSearch,
       retryMessageId: retryMessageId.current,
-      body,
     }),
     onFinish: () => {
       retryMessageId.current = null;
@@ -110,12 +110,35 @@ export default function Chat({
   const [sentMessage, setSentMessage] = useState(false);
   const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
+  const [editingMessage, setEditingMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (chatState === "complete" && !sentMessage && !isMain) {
       router.refresh();
     }
   }, [chatState, sentMessage]);
+
+  const editMessage = (messageId: string, text: string) => {
+    const nextMessage =
+      messages.findIndex((message) => message.id === messageId) + 1;
+    setMessages((messages) =>
+      messages
+        .map((message) => {
+          if (message.id === messageId) {
+            return {
+              ...message,
+              content: text,
+              parts: [{ text, type: "text" as const }],
+            };
+          }
+          return message;
+        })
+        .slice(0, nextMessage)
+    );
+    setMessages((messages) => messages.slice(0, nextMessage));
+    retryMessage(messages[nextMessage].id)
+    setEditingMessage(null);
+  };
 
   return (
     <>
@@ -149,191 +172,206 @@ export default function Chat({
                 key={message.id}
                 className={cn(
                   "flex flex-col gap-2 group",
-                  message.role === "user" && "ml-auto items-end"
+                  message.role === "user" && "items-end"
                 )}
               >
-                <div
-                  key={message.id}
-                  className={cn(
-                    "prose dark:prose-invert prose-code:bg-secondary prose-code:text-primary before:content-none! after:content-none!",
-                    message.role === "user"
-                      ? "bg-secondary rounded-xl px-4 py-2"
-                      : ""
-                  )}
-                >
-                  {message.parts.map((part, index) => {
-                    // text parts:
-                    if (part.type === "text") {
-                      return (
-                        <MemoizedMarkdown
-                          key={index}
-                          id={id}
-                          content={part.text}
-                        />
-                      );
+                {editingMessage === message.id ? (
+                  <EditingMessage
+                    editMessage={(text) => editMessage(message.id, text)}
+                    setEditingMessage={(editing) =>
+                      setEditingMessage(editing ? message.id : null)
                     }
-
-                    // reasoning parts:
-                    if (part.type === "reasoning") {
-                      return (
-                        <MessageReasoning
-                          key={index}
-                          isLoading={
-                            status === "streaming" &&
-                            messages.length - 1 === msgIndex
-                          }
-                          messageId={message.id}
-                          reasoning={part.reasoning}
-                        />
-                      );
-                    }
-
-                    if (part.type === "tool-invocation") {
-                      if (part.toolInvocation.toolName === "webSearch") {
-                        if (part.toolInvocation.state === "result") {
+                    message={message}
+                  />
+                ) : (
+                  <>
+                    <div
+                      key={message.id}
+                      className={cn(
+                        "prose dark:prose-invert prose-code:bg-secondary prose-code:text-primary before:content-none! after:content-none!",
+                        message.role === "user"
+                          ? "bg-secondary rounded-xl px-4 py-2"
+                          : ""
+                      )}
+                    >
+                      {message.parts.map((part, index) => {
+                        // text parts:
+                        if (part.type === "text") {
                           return (
-                            <div key={part.toolInvocation.toolCallId}>
-                              {/* <pre>
+                            <MemoizedMarkdown
+                              key={index}
+                              id={id}
+                              content={part.text}
+                            />
+                          );
+                        }
+
+                        // reasoning parts:
+                        if (part.type === "reasoning") {
+                          return (
+                            <MessageReasoning
+                              key={index}
+                              isLoading={
+                                status === "streaming" &&
+                                messages.length - 1 === msgIndex
+                              }
+                              messageId={message.id}
+                              reasoning={part.reasoning}
+                            />
+                          );
+                        }
+
+                        if (part.type === "tool-invocation") {
+                          if (part.toolInvocation.toolName === "webSearch") {
+                            if (part.toolInvocation.state === "result") {
+                              return (
+                                <div key={part.toolInvocation.toolCallId}>
+                                  {/* <pre>
                                 {JSON.stringify(part.toolInvocation, null, 2)}
                               </pre> */}
-                              <MessageWebSearch
-                                result={part.toolInvocation.result}
-                                query={part.toolInvocation.args.query}
-                              />
-                            </div>
-                          );
-                        } else {
-                          return (
-                            <TextShimmer
-                              className="text-sm"
-                              duration={1}
-                              key={part.toolInvocation.toolCallId}
-                            >
-                              Searching the web...
-                            </TextShimmer>
-                          );
-                        }
-                      } else if (
-                        part.toolInvocation.toolName === "generateImage"
-                      ) {
-                        if (part.toolInvocation.state === "result") {
-                          if (part.toolInvocation.result?.error) {
-                            return (
-                              <div
-                                className="bg-red-500/20 text-red-500 p-4 rounded-xl flex gap-4 items-center"
-                                key={part.toolInvocation.toolCallId}
-                              >
-                                <CircleAlertIcon className="size-5" />
-                                <div className="flex flex-col leading-tight">
-                                  <div className="font-semibold">
-                                    Failed to generate image
+                                  <MessageWebSearch
+                                    result={part.toolInvocation.result}
+                                    query={part.toolInvocation.args.query}
+                                  />
+                                </div>
+                              );
+                            } else {
+                              return (
+                                <TextShimmer
+                                  className="text-sm"
+                                  duration={1}
+                                  key={part.toolInvocation.toolCallId}
+                                >
+                                  Searching the web...
+                                </TextShimmer>
+                              );
+                            }
+                          } else if (
+                            part.toolInvocation.toolName === "generateImage"
+                          ) {
+                            if (part.toolInvocation.state === "result") {
+                              if (part.toolInvocation.result?.error) {
+                                return (
+                                  <div
+                                    className="bg-red-500/20 text-red-500 p-4 rounded-xl flex gap-4 items-center"
+                                    key={part.toolInvocation.toolCallId}
+                                  >
+                                    <CircleAlertIcon className="size-5" />
+                                    <div className="flex flex-col leading-tight">
+                                      <div className="font-semibold">
+                                        Failed to generate image
+                                      </div>
+                                      <div className="text-sm">
+                                        {part.toolInvocation.result.error}
+                                      </div>
+                                    </div>
                                   </div>
-                                  <div className="text-sm">
-                                    {part.toolInvocation.result.error}
+                                );
+                              }
+                              return (
+                                <div
+                                  className="relative rounded-xl overflow-hidden size-[400px] group/image"
+                                  key={part.toolInvocation.toolCallId}
+                                >
+                                  <Image
+                                    src={part.toolInvocation.result.image}
+                                    alt={part.toolInvocation.result.prompt}
+                                    height={400}
+                                    width={400}
+                                  />
+                                  <div
+                                    className="absolute bottom-0 left-0 w-full p-2 pt-4 opacity-0 group-hover/image:opacity-100 transition"
+                                    style={{
+                                      backgroundImage:
+                                        "linear-gradient(to top, color-mix(in oklab, var(--background) 100%, transparent), color-mix(in oklab, var(--background) 80%, transparent) 50%, transparent)",
+                                    }}
+                                  >
+                                    <Button variant="ghost" size="icon" asChild>
+                                      <a
+                                        href={part.toolInvocation.result.image}
+                                        download="image.png"
+                                        target="_blank"
+                                      >
+                                        <DownloadIcon />
+                                      </a>
+                                    </Button>
                                   </div>
                                 </div>
-                              </div>
-                            );
+                              );
+                            } else {
+                              return (
+                                <TextShimmer
+                                  className="text-sm"
+                                  duration={1}
+                                  key={part.toolInvocation.toolCallId}
+                                >
+                                  Generating the image...
+                                </TextShimmer>
+                              );
+                            }
                           }
-                          return (
-                            <div
-                              className="relative rounded-xl overflow-hidden size-[400px] group/image"
-                              key={part.toolInvocation.toolCallId}
-                            >
-                              <Image
-                                src={part.toolInvocation.result.image}
-                                alt={part.toolInvocation.result.prompt}
-                                height={400}
-                                width={400}
-                              />
-                              <div
-                                className="absolute bottom-0 left-0 w-full p-2 pt-4 opacity-0 group-hover/image:opacity-100 transition"
-                                style={{
-                                  backgroundImage:
-                                    "linear-gradient(to top, color-mix(in oklab, var(--background) 100%, transparent), color-mix(in oklab, var(--background) 80%, transparent) 50%, transparent)",
-                                }}
-                              >
-                                <Button variant="ghost" size="icon" asChild>
-                                  <a
-                                    href={part.toolInvocation.result.image}
-                                    download="image.png"
-                                    target="_blank"
-                                  >
-                                    <DownloadIcon />
-                                  </a>
-                                </Button>
-                              </div>
-                            </div>
-                          );
-                        } else {
-                          return (
-                            <TextShimmer
-                              className="text-sm"
-                              duration={1}
-                              key={part.toolInvocation.toolCallId}
-                            >
-                              Generating the image...
-                            </TextShimmer>
-                          );
                         }
-                      }
-                    }
-                  })}
-                </div>
-                <div className="flex gap-2">
-                  {message.experimental_attachments?.map(
-                    (attachment, index) => (
-                      <div
-                        className="border rounded-xl flex gap-2 items-center p-2 group/attachment"
-                        key={`${message.id}-${index}`}
-                      >
-                        {attachment.contentType &&
-                          attachment.contentType.startsWith("image/") && (
-                            <div className="bg-accent aspect-square shrink-0 rounded-lg overflow-hidden relative">
-                              <img
-                                src={attachment.url}
-                                alt={attachment.name}
-                                className="size-10 object-cover"
-                              />
-                              <a
-                                href={attachment.url}
-                                target="_blank"
-                                download={attachment.name}
-                                className="absolute inset-0 bg-accent/80 opacity-0 group-hover/attachment:opacity-100 flex items-center justify-center"
-                              >
-                                <DownloadIcon className="size-4" />
-                              </a>
+                      })}
+                    </div>
+                    <div className="flex gap-2">
+                      {message.experimental_attachments?.map(
+                        (attachment, index) => (
+                          <div
+                            className="border rounded-xl flex gap-2 items-center p-2 group/attachment"
+                            key={`${message.id}-${index}`}
+                          >
+                            {attachment.contentType &&
+                              attachment.contentType.startsWith("image/") && (
+                                <div className="bg-accent aspect-square shrink-0 rounded-lg overflow-hidden relative">
+                                  <img
+                                    src={attachment.url}
+                                    alt={attachment.name}
+                                    className="size-10 object-cover"
+                                  />
+                                  <a
+                                    href={attachment.url}
+                                    target="_blank"
+                                    download={attachment.name}
+                                    className="absolute inset-0 bg-accent/80 opacity-0 group-hover/attachment:opacity-100 flex items-center justify-center"
+                                  >
+                                    <DownloadIcon className="size-4" />
+                                  </a>
+                                </div>
+                              )}
+                            <div className="min-w-0 gap-0.5 truncate text-[13px] font-medium">
+                              {attachment.name}
                             </div>
-                          )}
-                        <div className="min-w-0 gap-0.5 truncate text-[13px] font-medium">
-                          {attachment.name}
-                        </div>
-                        {!(
-                          attachment.contentType &&
-                          attachment.contentType.startsWith("image/")
-                        ) && (
-                          <Button variant="ghost" size="icon" asChild>
-                            <Link
-                              href={attachment.url}
-                              target="_blank"
-                              download={attachment.name}
-                            >
-                              <DownloadIcon className="size-4" />
-                            </Link>
-                          </Button>
-                        )}
-                      </div>
-                    )
-                  )}
-                </div>
-                <MessageButtons
-                  chatId={id}
-                  retryMessage={retryMessage}
-                  setMessages={setMessages}
-                  message={message}
-                  readOnly={readOnly}
-                  nextMessage={messages[msgIndex + 1]}
-                />
+                            {!(
+                              attachment.contentType &&
+                              attachment.contentType.startsWith("image/")
+                            ) && (
+                              <Button variant="ghost" size="icon" asChild>
+                                <Link
+                                  href={attachment.url}
+                                  target="_blank"
+                                  download={attachment.name}
+                                >
+                                  <DownloadIcon className="size-4" />
+                                </Link>
+                              </Button>
+                            )}
+                          </div>
+                        )
+                      )}
+                    </div>
+                    <MessageButtons
+                      chatId={id}
+                      retryMessage={retryMessage}
+                      setMessages={setMessages}
+                      message={message}
+                      readOnly={readOnly}
+                      nextMessage={messages[msgIndex + 1]}
+                      setEditingMessage={(editing) =>
+                        setEditingMessage(editing ? message.id : null)
+                      }
+                    />
+                  </>
+                )}
               </div>
             ))}
             {chatState === "loading" && !sentMessage && (

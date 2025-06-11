@@ -134,6 +134,14 @@ export async function POST(req: Request) {
     messages = chat.messages.slice(0, retryMessage);
   }
 
+  if (requestBody.message.id === messages.at(-1)?.id) {
+    messages = messages.slice(0, -1);
+    messages = appendClientMessage({
+      messages,
+      message: requestBody.message,
+    })
+  }
+
   await saveMessages(chat.id, messages, {
     state: "loading",
     visibility: requestBody.visibilityType,

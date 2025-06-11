@@ -5,6 +5,7 @@ import { ChatRequestOptions, Message as OldMessage } from "ai";
 import {
   CheckIcon,
   CopyIcon,
+  EditIcon,
   Loader2Icon,
   RefreshCw,
   SplitIcon,
@@ -27,6 +28,7 @@ export default function MessageButtons({
   retryMessage,
   chatId,
   readOnly,
+  setEditingMessage,
 }: {
   message: Message;
   nextMessage: Message;
@@ -36,6 +38,7 @@ export default function MessageButtons({
   retryMessage: (id: string) => void;
   chatId: string;
   readOnly: boolean;
+  setEditingMessage: (editing: boolean) => void;
 }) {
   const [copied, setCopied] = useState(false);
   const [branchLoading, setBranchLoading] = useState(false);
@@ -100,6 +103,20 @@ export default function MessageButtons({
             </Button>
           </TooltipTrigger>
           <TooltipContent>Retry message</TooltipContent>
+        </Tooltip>
+      )}
+      {message.role === "user" && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => setEditingMessage(true)}
+            >
+              <EditIcon />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Edit message</TooltipContent>
         </Tooltip>
       )}
       {message.role === "assistant" && (
