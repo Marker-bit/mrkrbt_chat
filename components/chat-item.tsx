@@ -1,6 +1,7 @@
 import type { Chat } from "@/lib/db/db-types";
 import { cn } from "@/lib/utils";
 import {
+  DownloadIcon,
   MoreHorizontalIcon,
   PencilIcon,
   PinIcon,
@@ -21,6 +22,8 @@ import {
   SidebarMenuItem,
 } from "./ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { format } from "date-fns";
+import { MODELS } from "@/lib/models";
 
 const PureChatItem = ({
   chat,
@@ -28,14 +31,14 @@ const PureChatItem = ({
   onPin,
   onDelete,
   setOpenMobile,
-  setTitle
+  setTitle,
 }: {
   chat: Chat;
   isActive: boolean;
   onPin: (isPinned: boolean) => void;
   onDelete: (chatId: string) => void;
   setOpenMobile: (open: boolean) => void;
-  setTitle: (chatId: string, title: string) => void
+  setTitle: (chatId: string, title: string) => void;
 }) => {
   const [editing, setEditing] = useState(false);
   const [title, setLocalTitle] = useState(chat.title);
@@ -43,6 +46,28 @@ const PureChatItem = ({
   const submit = () => {
     setEditing(false);
     setTitle(chat.id, title);
+  };
+
+  const exportChat = () => {
+    const createdAt = format(chat.createdAt, "dd-MM-yyyy, HH:mm:ss");
+    const updatedAt = format(chat.updatedAt, "dd-MM-yyyy, HH:mm:ss");
+    let markdown = `# ${chat.title}
+Created: ${createdAt}
+Last updated: ${updatedAt}
+---
+`;
+    for (const message of chat.messages) {
+      const model = message.modelId
+        ? MODELS.find((model) => model.id === message.modelId)
+        : null;
+      const roleInfo =
+        message.role === "user" ? "User" : "Assistant (" + model?.title + ")";
+      markdown += `\n### ${roleInfo}\n\n${message.content}\n\n\n---\n`;
+    }
+    const link = document.createElement("a");
+    link.download = `${chat.title}.md`;
+    link.href = "data:text/markdown;charset=utf-8," + encodeURIComponent(markdown);
+    link.click();
   };
 
   return (
@@ -103,6 +128,11 @@ const PureChatItem = ({
             >
               <PencilIcon />
               <span>Edit</span>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem onSelect={() => exportChat()}>
+              <DownloadIcon />
+              <span>Export</span>
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => onPin(chat.isPinned)}>
               {chat.isPinned ? (
