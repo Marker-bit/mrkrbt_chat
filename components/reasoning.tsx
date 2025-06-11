@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { BrainIcon, ChevronDownIcon, Loader2Icon } from "lucide-react";
 import { MemoizedMarkdown } from "./memoized-markdown";
+import { TextShimmer } from "./ui/text-shimmer";
 
 interface MessageReasoningProps {
   isLoading: boolean;
@@ -38,7 +39,7 @@ export function MessageReasoning({
       {isLoading ? (
         <div className="flex flex-row gap-2 items-center">
           <Loader2Icon className="animate-spin size-4" />
-          <div className="font-medium">Reasoning</div>
+          <TextShimmer duration={1} className="font-medium w-fit">Reasoning</TextShimmer>
         </div>
       ) : (
         <div className="flex flex-row gap-2 items-center">

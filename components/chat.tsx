@@ -344,6 +344,11 @@ export default function Chat({
                 </div>
               </div>
             )}
+            {status === "submitted" && (
+              <TextShimmer className="text-sm w-fit" duration={1}>
+                Thinking...
+              </TextShimmer>
+            )}
             {/* {error && (
               <>
                 <div>An error occurred.</div>
@@ -369,9 +374,11 @@ export default function Chat({
           ref={ref}
           setHeight={setHeight}
           onSubmit={(message) => {
-            const modelProviders = MODELS.find(m => m.id === selectedModelId)!.providers;
-            let foundKey: boolean = false
-            let providers = new URLSearchParams()
+            const modelProviders = MODELS.find(
+              (m) => m.id === selectedModelId
+            )!.providers;
+            let foundKey: boolean = false;
+            let providers = new URLSearchParams();
             for (const provider in modelProviders) {
               providers.append("providers", provider);
               if (apiKeys[provider]) {
@@ -380,7 +387,7 @@ export default function Chat({
             }
             if (!foundKey) {
               router.push("/settings/api-keys?" + providers.toString());
-              return
+              return;
             }
             if (messages.length === 0) {
               window.history.replaceState({}, "", `/chat/${id}`);

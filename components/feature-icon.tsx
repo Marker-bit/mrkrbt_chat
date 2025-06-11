@@ -17,7 +17,7 @@ export default function FeatureIcon({
   );
   return (
     <Tooltip>
-      <TooltipTrigger>
+      <TooltipTrigger asChild>
         <div
           className={cn("p-1 rounded-md bg-(--color)/20", className)}
           style={{ "--color": feature.color } as React.CSSProperties}
