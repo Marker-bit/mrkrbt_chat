@@ -28,6 +28,7 @@ import Link from "next/link";
 import { useChatVisibility } from "@/hooks/use-chat-visibility";
 import { TextShimmer } from "./ui/text-shimmer";
 import MessageWebSearch from "./message-web-search";
+import Image from "next/image";
 
 export default function Chat({
   isMain = false,
@@ -52,7 +53,7 @@ export default function Chat({
     chatId: id,
     initialVisibilityType: "private",
   });
-  const [useWebSearch, setUseWebSearch] = useState(false)
+  const [useWebSearch, setUseWebSearch] = useState(false);
 
   const {
     messages,
@@ -76,7 +77,7 @@ export default function Chat({
       message: body.messages.at(-1),
       selectedChatModel: selectedModelId,
       visibilityType,
-      useWebSearch
+      useWebSearch,
     }),
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
@@ -192,17 +193,65 @@ export default function Chat({
                               {/* <pre>
                                 {JSON.stringify(part.toolInvocation, null, 2)}
                               </pre> */}
-                              <MessageWebSearch result={part.toolInvocation.result} query={part.toolInvocation.args.query} />
+                              <MessageWebSearch
+                                result={part.toolInvocation.result}
+                                query={part.toolInvocation.args.query}
+                              />
                             </div>
                           );
                         } else {
                           return (
                             <TextShimmer
-                              className="font-mono text-sm"
+                              className="text-sm"
                               duration={1}
                               key={part.toolInvocation.toolCallId}
                             >
                               Searching the web...
+                            </TextShimmer>
+                          );
+                        }
+                      } else if (
+                        part.toolInvocation.toolName === "generateImage"
+                      ) {
+                        if (part.toolInvocation.state === "result") {
+                          return (
+                            <div
+                              className="relative rounded-xl overflow-hidden size-[400px] group/image"
+                              key={part.toolInvocation.toolCallId}
+                            >
+                              <Image
+                                src={part.toolInvocation.result.image}
+                                alt={part.toolInvocation.result.prompt}
+                                height={400}
+                                width={400}
+                              />
+                              <div
+                                className="absolute bottom-0 left-0 w-full p-2 pt-4 opacity-0 group-hover/image:opacity-100 transition"
+                                style={{
+                                  backgroundImage:
+                                    "linear-gradient(to top, color-mix(in oklab, var(--background) 100%, transparent), color-mix(in oklab, var(--background) 80%, transparent) 50%, transparent)",
+                                }}
+                              >
+                                <Button variant="ghost" size="icon" asChild>
+                                  <a
+                                    href={part.toolInvocation.result.image}
+                                    download="image.png"
+                                    target="_blank"
+                                  >
+                                    <DownloadIcon />
+                                  </a>
+                                </Button>
+                              </div>
+                            </div>
+                          );
+                        } else {
+                          return (
+                            <TextShimmer
+                              className="text-sm"
+                              duration={1}
+                              key={part.toolInvocation.toolCallId}
+                            >
+                              Generating the image...
                             </TextShimmer>
                           );
                         }

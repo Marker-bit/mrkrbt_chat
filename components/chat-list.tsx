@@ -154,6 +154,15 @@ export default function ChatList() {
   };
 
   const handlePin = async (chatId: string, isPinned: boolean) => {
+    if (
+      !isPinned &&
+      paginatedChatHistories?.flatMap(
+        (paginatedChatHistory) => paginatedChatHistory.chats
+      ).filter(chat => chat.isPinned).length === 5
+    ) {
+      toast.error("You cannot pin more than 5 chats")
+      return
+    }
     const pinPromise = pinChat(chatId!, isPinned);
 
     toast.promise(pinPromise, {
@@ -218,8 +227,6 @@ export default function ChatList() {
                 );
 
                 const groupedChats = groupChatsByDate(chatsFromHistory);
-
-                console.log(chatsFromHistory, groupedChats.pinned)
 
                 return (
                   <div className="flex flex-col gap-6">

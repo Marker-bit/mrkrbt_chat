@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { ChatSDKError } from "@/lib/errors";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { and, desc, eq, gt, lt, SQL } from "drizzle-orm";
+import { and, desc, eq, gt, lt, not, SQL } from "drizzle-orm";
 import { Chat } from "@/lib/db/db-types";
 import { db } from "@/lib/db/drizzle";
 import { chat } from "@/lib/db/schema";
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      filteredChats = await query(gt(chat.createdAt, selectedChat.createdAt));
+      filteredChats = await query(and(gt(chat.createdAt, selectedChat.createdAt), not(chat.isPinned)));
     } else if (endingBefore) {
       const [selectedChat] = await db
         .select()
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      filteredChats = await query(lt(chat.createdAt, selectedChat.createdAt));
+      filteredChats = await query(and(lt(chat.createdAt, selectedChat.createdAt), not(chat.isPinned)));
     } else {
       filteredChats = await query();
     }

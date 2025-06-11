@@ -1,3 +1,4 @@
+import { generateTitleFromUserMessage } from "@/lib/actions";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/drizzle";
 import { saveMessages } from "@/lib/db/queries";
@@ -5,6 +6,9 @@ import { account, chat as chatTable } from "@/lib/db/schema";
 import { ChatSDKError } from "@/lib/errors";
 import { createProvider, MODELS } from "@/lib/models";
 import { getTrailingMessageId } from "@/lib/utils";
+import { webSearch } from "@/lib/web-search";
+import { createOpenAI } from "@ai-sdk/openai";
+import { put } from "@vercel/blob";
 import {
   appendClientMessage,
   appendResponseMessages,
@@ -12,14 +16,13 @@ import {
   LanguageModel,
   smoothStream,
   streamText,
+  Tool,
   tool,
 } from "ai";
 import { eq } from "drizzle-orm";
 import { cookies, headers } from "next/headers";
-import { PostRequestBody, postRequestBodySchema } from "./schema";
-import { generateTitleFromUserMessage } from "@/lib/actions";
 import { z } from "zod";
-import { webSearch } from "@/lib/web-search";
+import { PostRequestBody, postRequestBodySchema } from "./schema";
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
@@ -138,16 +141,47 @@ export async function POST(req: Request) {
     return new ChatSDKError("unauthorized:provider").toResponse();
   }
 
+  const openai = createOpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+
+  let tools: Record<string, Tool> = {
+    generateImage: tool({
+      description: "Generate an image",
+      parameters: z.object({
+        prompt: z.string().describe("The prompt to generate the image from"),
+      }),
+      execute: async ({ prompt }) => {
+        const { image } = await experimental_generateImage({
+          model: openai.image("dall-e-3"),
+          prompt,
+        });
+
+        const blob = await put(
+          crypto.randomUUID() + ".png",
+          new Blob([image.uint8Array], { type: "image/png" }),
+          {
+            access: "public",
+            addRandomSuffix: true,
+          }
+        );
+        // in production, save this image to blob storage and return a URL
+        return { image: blob.url, prompt };
+      },
+    }),
+  };
+
+  if (requestBody.useWebSearch) {
+    tools.webSearch = webSearch;
+  }
+
   try {
     const result = streamText({
       model,
-      system: "You are a helpful assistant.",
+      system:
+        "You are a helpful assistant. ONLY if the user asks for an image, use the generateImage tool.",
       messages,
-      tools: requestBody.useWebSearch
-        ? {
-            webSearch,
-          }
-        : {},
+      tools,
       maxSteps: 2,
       // tools: {
       //   generateImage: tool({
@@ -211,6 +245,14 @@ export async function POST(req: Request) {
             console.error("Failed to save chat");
           }
         }
+      },
+      onError: async ({ error }) => {
+        await db
+          .update(chatTable)
+          .set({
+            state: "complete",
+          })
+          .where(eq(chatTable.id, chat.id));
       },
     });
 

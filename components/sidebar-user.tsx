@@ -23,7 +23,7 @@ export default function SidebarUser() {
       className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
       asChild
     >
-      <Link href="/settings/subscription">
+      <Link href="/settings">
         <Avatar className="h-8 w-8 rounded-lg">
           {session.user.image && (
             <AvatarImage src={session.user.image} alt={session.user.name} />
