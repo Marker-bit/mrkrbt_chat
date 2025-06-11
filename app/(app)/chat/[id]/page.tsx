@@ -39,7 +39,7 @@ export default async function Home({
     apiKeys = JSON.parse(cookiesInfo.get("apiKeys")?.value || "");
   } catch {
     apiKeys = DEFAULT_API_KEYS_COOKIE;
-    cookiesInfo.set("apiKeys", JSON.stringify(apiKeys));
+    // cookiesInfo.set("apiKeys", JSON.stringify(apiKeys));
   }
 
   return (
