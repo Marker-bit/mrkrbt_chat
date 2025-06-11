@@ -8,14 +8,17 @@ import { getTrailingMessageId } from "@/lib/utils";
 import {
   appendClientMessage,
   appendResponseMessages,
+  experimental_generateImage,
   LanguageModel,
   smoothStream,
   streamText,
+  tool,
 } from "ai";
 import { eq } from "drizzle-orm";
 import { cookies, headers } from "next/headers";
 import { PostRequestBody, postRequestBodySchema } from "./schema";
 import { generateTitleFromUserMessage } from "@/lib/actions";
+import { z } from "zod";
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
@@ -139,8 +142,29 @@ export async function POST(req: Request) {
       model,
       system: "You are a helpful assistant.",
       messages,
+      // tools: {
+      //   generateImage: tool({
+      //     description: "Generate an image",
+      //     parameters: z.object({
+      //       prompt: z
+      //         .string()
+      //         .describe("The prompt to generate the image from"),
+      //     }),
+      //     execute: async ({ prompt }) => {
+      //       const { image } = await experimental_generateImage({
+      //         model: openai.image("dall-e-3"),
+      //         prompt,
+      //       });
+      //       // in production, save this image to blob storage and return a URL
+      //       return { image: image.base64, prompt };
+      //     },
+      //   }),
+      // },
       experimental_transform: smoothStream({ chunking: "word" }),
       experimental_generateMessageId: () => crypto.randomUUID(),
+      providerOptions: {
+        google: { responseModalities: ["TEXT", "IMAGE"] },
+      },
       onFinish: async ({ response }) => {
         if (session.user?.id) {
           try {
