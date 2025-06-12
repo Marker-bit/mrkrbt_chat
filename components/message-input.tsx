@@ -15,11 +15,11 @@ import {
   SquareIcon,
   XIcon,
 } from "lucide-react";
-import { RefObject, useEffect } from "react";
+import { RefObject, useEffect, useMemo } from "react";
 import useMeasure from "react-use-measure";
 import ModelPopover from "./model-popover";
 import { formatBytes, useFileUpload } from "@/hooks/use-file-upload";
-import { ModelData } from "@/lib/models";
+import { ModelData, MODELS } from "@/lib/models";
 
 export default function MessageInput({
   value,
@@ -33,7 +33,7 @@ export default function MessageInput({
   setFiles,
   useWebSearch,
   setUseWebSearch,
-  apiKeys
+  apiKeys,
 }: {
   value: string;
   setValue: (value: string) => void;
@@ -80,13 +80,19 @@ export default function MessageInput({
   // const [optimisticModelId, setOptimisticModelId] =
   //   useOptimistic(selectedModelData);
 
-  // const selectedChatModel = useMemo(
-  //   () =>
-  //     availableChatModels.find(
-  //       (chatModel) => chatModel.id === optimisticModelId,
-  //     ),
-  //   [optimisticModelId, availableChatModels],
-  // );
+  const selectedChatModel = useMemo(
+    () =>
+      MODELS.find((chatModel) => chatModel.id === selectedModelData.modelId),
+    [selectedModelData, MODELS]
+  );
+
+  const selectedProvider = useMemo(
+    () =>
+      selectedModelData.options.provider
+        ? selectedChatModel?.providers[selectedModelData.options.provider]
+        : null,
+    [selectedChatModel, selectedModelData]
+  );
 
   useEffect(() => {
     setHeight?.(bounds.height);
@@ -173,26 +179,35 @@ export default function MessageInput({
         />
         <div className="flex justify-between w-full items-center">
           <div className="flex gap-2">
-            <ModelPopover apiKeys={apiKeys} selectedModelData={selectedModelData} />
-            <Button
-              variant={useWebSearch ? "default" : "outline"}
-              className="rounded-full"
-              aria-label="Toggle search"
-              onClick={() => setUseWebSearch(!useWebSearch)}
-            >
-              <GlobeIcon />
-              Search
-            </Button>
+            <ModelPopover
+              apiKeys={apiKeys}
+              selectedModelData={selectedModelData}
+            />
+            {selectedChatModel?.supportsTools && (
+              <Button
+                variant={useWebSearch ? "default" : "outline"}
+                className="rounded-full"
+                aria-label="Toggle search"
+                onClick={() => setUseWebSearch(!useWebSearch)}
+              >
+                <GlobeIcon />
+                Search
+              </Button>
+            )}
           </div>
           <div className="flex gap-2">
-            <Button
-              size="icon"
-              onClick={() => {
-                openFileDialog();
-              }}
-            >
-              <PaperclipIcon />
-            </Button>
+            {selectedProvider &&
+              (selectedProvider.features.includes("pdfs") ||
+                selectedProvider.features.includes("vision")) && (
+                <Button
+                  size="icon"
+                  onClick={() => {
+                    openFileDialog();
+                  }}
+                >
+                  <PaperclipIcon />
+                </Button>
+              )}
             <Button
               size="icon"
               onClick={() => {

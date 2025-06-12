@@ -9,6 +9,8 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { Brain, Eye, FileText, Settings2, ZapIcon } from "lucide-react";
+import { createMistral } from "@ai-sdk/mistral";
+import { createDeepSeek } from "@ai-sdk/deepseek";
 
 type Model = {
   id: string;
@@ -33,33 +35,39 @@ export const PROVIDERS: {
   id: string;
   title: string;
   apiKeyDescription?: string;
+  apiKeyLink?: string;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
 }[] = [
   {
     title: "OpenRouter",
     id: "openrouter",
     icon: OpenRouter,
+    apiKeyLink: "https://openrouter.ai/settings/keys",
   },
   {
     title: "Google Generative AI",
     id: "google",
     icon: Google,
+    apiKeyLink: "https://aistudio.google.com/apikey",
   },
   {
     title: "OpenAI",
     id: "openai",
     apiKeyDescription: "Required for generating images with other models",
     icon: OpenAI,
+    apiKeyLink: "https://platform.openai.com/settings/organization/api-keys",
   },
   {
     title: "DeepSeek",
     id: "deepseek",
     icon: DeepSeek,
+    apiKeyLink: "https://platform.deepseek.com/api_keys",
   },
   {
     title: "Mistral",
     id: "mistral",
     icon: MistralAI,
+    apiKeyLink: "https://console.mistral.ai/api-keys",
   },
 ];
 
@@ -217,6 +225,24 @@ const models: Model[] = [
     icon: OpenAI,
     supportsTools: true,
   },
+  {
+    id: "magistral-small",
+    title: "Magistral Small",
+    model: "Magistral",
+    version: "Small",
+    providers: {
+      openrouter: {
+        modelName: "mistralai/magistral-small-2506",
+        features: ["reasoning"],
+      },
+      mistral: {
+        modelName: "magistral-small-2506",
+        features: ["reasoning"],
+      },
+    },
+    icon: MistralAI,
+    supportsTools: false,
+  },
 ];
 
 const extractModelFeatures = (model: Model) => {
@@ -251,6 +277,12 @@ export function createProvider(providerId: string, apiKey: string) {
 
     case "openai":
       return createOpenAI({ apiKey });
+
+    case "mistral":
+      return createMistral({ apiKey });
+
+    case "deepseek":
+      return createDeepSeek({ apiKey });
 
     default:
       break;

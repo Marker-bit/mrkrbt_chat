@@ -67,6 +67,16 @@ export default function KeysForm({
               )}
             />
           </div>
+          {provider?.apiKeyLink && (
+            <a
+              href={provider.apiKeyLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline text-sm"
+            >
+              Get API Key
+            </a>
+          )}
           {provider?.apiKeyDescription && (
             <div className="text-muted-foreground/80 text-xs">
               {provider.apiKeyDescription}
