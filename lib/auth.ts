@@ -3,6 +3,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { config } from "dotenv";
 import * as schema from "@/lib/db/schema";
+import { RECOMMENDED_MODELS } from "./rec-models";
 
 config({ path: ".env" });
 
@@ -24,7 +25,7 @@ export const auth = betterAuth({
     additionalFields: {
       favouriteModels: {
         type: "string[]",
-        defaultValue: []
+        defaultValue: RECOMMENDED_MODELS
       },
     },
   },

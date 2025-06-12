@@ -7,6 +7,7 @@ import {
   json,
 } from "drizzle-orm/pg-core";
 import { Message } from "./db-types";
+import { RECOMMENDED_MODELS } from "../rec-models";
 
 // export const todo = pgTable("todo", {
 //   id: integer("id").primaryKey(),
@@ -28,7 +29,7 @@ export const user = pgTable("user", {
   updatedAt: timestamp("updated_at")
     .$defaultFn(() => /* @__PURE__ */ new Date())
     .notNull(),
- favouriteModels: text('favourite_models').array().default([])
+ favouriteModels: text('favourite_models').array().default(RECOMMENDED_MODELS)
 });
 
 export const session = pgTable("session", {
