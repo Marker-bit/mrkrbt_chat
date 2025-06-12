@@ -57,8 +57,8 @@ Last updated: ${updatedAt}
 ---
 `;
     for (const message of chat.messages) {
-      const model = message.modelId
-        ? MODELS.find((model) => model.id === message.modelId)
+      const model = message.modelData?.modelId
+        ? MODELS.find((model) => model.id === message.modelData!.modelId)
         : null;
       const roleInfo =
         message.role === "user" ? "User" : "Assistant (" + model?.title + ")";
