@@ -12,7 +12,7 @@ import { Brain, Eye, FileText, Settings2, ZapIcon } from "lucide-react";
 import { createMistral } from "@ai-sdk/mistral";
 import { createDeepSeek } from "@ai-sdk/deepseek";
 
-type Model = {
+export type Model = {
   id: string;
   title: string;
   model: string;

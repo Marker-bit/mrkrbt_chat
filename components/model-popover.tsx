@@ -207,7 +207,7 @@ export default function ModelPopover({
         <PopoverContent
           className={cn(
             big ? "w-[680px]" : "w-[420px]",
-            "max-w-screen p-0 flex flex-col"
+            "max-w-screen max-h-[calc(100vh-80px)] p-0 flex flex-col"
           )}
           style={{
             height: big
