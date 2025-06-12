@@ -45,8 +45,12 @@ export const models: Model[] = [
     model: "Gemini",
     version: "2.5 Pro",
     providers: {
+      google: {
+        modelName: "models/gemini-2.5-pro-preview-06-05",
+        features: ["vision", "pdfs", "reasoning", "effort-control"],
+      },
       openrouter: {
-        modelName: "google/gemini-2.5-pro-preview-05-06",
+        modelName: "google/gemini-2.5-pro-preview-06-05",
         features: ["vision", "pdfs", "reasoning", "effort-control"],
       },
     },
@@ -135,11 +139,11 @@ export const models: Model[] = [
     providers: {
       openrouter: {
         modelName: "mistralai/mistral-medium-2505",
-        features: ["reasoning"],
+        features: ["vision"],
       },
       mistral: {
         modelName: "mistral-medium-2505",
-        features: ["reasoning"],
+        features: ["vision"],
       },
     },
     icon: MistralAI,
@@ -154,15 +158,15 @@ export const models: Model[] = [
     providers: {
       openrouter: {
         modelName: "mistralai/codestral-2501",
-        features: ["reasoning"],
+        features: [],
       },
       mistral: {
         modelName: "codestral-2501",
-        features: ["reasoning"],
+        features: [],
       },
     },
     icon: MistralAI,
-    supportsTools: false,
+    supportsTools: true,
   },
   {
     id: "mistral-saba-2502",
@@ -172,11 +176,11 @@ export const models: Model[] = [
     providers: {
       openrouter: {
         modelName: "mistralai/mistral-saba-2502",
-        features: ["reasoning"],
+        features: [],
       },
       mistral: {
         modelName: "mistral-saba-2502",
-        features: ["reasoning"],
+        features: [],
       },
     },
     icon: MistralAI,
@@ -191,15 +195,15 @@ export const models: Model[] = [
     providers: {
       openrouter: {
         modelName: "mistralai/mistral-large-2411",
-        features: ["reasoning"],
+        features: [],
       },
       mistral: {
         modelName: "mistral-large-2411",
-        features: ["reasoning"],
+        features: [],
       },
     },
     icon: MistralAI,
-    supportsTools: false,
+    supportsTools: true,
   },
   {
     id: "pixtral-large-2411",
@@ -210,15 +214,15 @@ export const models: Model[] = [
     providers: {
       openrouter: {
         modelName: "mistralai/pixtral-large-2411",
-        features: ["reasoning", "vision"],
+        features: ["vision"],
       },
       mistral: {
         modelName: "pixtral-large-2411",
-        features: ["reasoning", "vision"],
+        features: ["vision"],
       },
     },
     icon: MistralAI,
-    supportsTools: false,
+    supportsTools: true,
   },
   {
     id: "ministral-3b-2410",
@@ -227,17 +231,13 @@ export const models: Model[] = [
     version: "",
     additionalTitle: "3B",
     providers: {
-      openrouter: {
-        modelName: "mistralai/ministral-3b-2410",
-        features: ["reasoning"],
-      },
       mistral: {
         modelName: "ministral-3b-2410",
-        features: ["reasoning"],
+        features: [],
       },
     },
     icon: MistralAI,
-    supportsTools: false,
+    supportsTools: true,
   },
   {
     id: "ministral-8b-2410",
@@ -247,16 +247,16 @@ export const models: Model[] = [
     additionalTitle: "8B",
     providers: {
       openrouter: {
-        modelName: "mistralai/ministral-8b-2410",
-        features: ["reasoning"],
+        modelName: "mistralai/ministral-8b",
+        features: [],
       },
       mistral: {
         modelName: "ministral-8b-2410",
-        features: ["reasoning"],
+        features: [],
       },
     },
     icon: MistralAI,
-    supportsTools: false,
+    supportsTools: true,
   },
   {
     id: "magistral-small-2506",
@@ -284,15 +284,15 @@ export const models: Model[] = [
     providers: {
       openrouter: {
         modelName: "mistralai/devstral-small-2506",
-        features: ["reasoning"],
+        features: [],
       },
       mistral: {
         modelName: "devstral-small-2506",
-        features: ["reasoning"],
+        features: [],
       },
     },
     icon: MistralAI,
-    supportsTools: false,
+    supportsTools: true,
   },
   {
     id: "mistral-small-2503",
@@ -303,15 +303,15 @@ export const models: Model[] = [
     providers: {
       openrouter: {
         modelName: "mistralai/mistral-small-2503",
-        features: ["reasoning"],
+        features: ["vision"],
       },
       mistral: {
         modelName: "mistral-small-2503",
-        features: ["reasoning"],
+        features: ["vision"],
       },
     },
     icon: MistralAI,
-    supportsTools: false,
+    supportsTools: true,
   },
   {
     id: "pixtral-12b-2409",
@@ -322,14 +322,14 @@ export const models: Model[] = [
     providers: {
       openrouter: {
         modelName: "mistralai/pixtral-12b-2409",
-        features: ["reasoning", "vision"],
+        features: ["vision"],
       },
       mistral: {
         modelName: "pixtral-12b-2409",
-        features: ["reasoning", "vision"],
+        features: ["vision"],
       },
     },
     icon: MistralAI,
-    supportsTools: false,
+    supportsTools: true,
   },
 ];

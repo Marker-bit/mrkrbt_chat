@@ -411,18 +411,23 @@ export default function Chat({
             )}
             <div ref={bottomRef} />
           </div>
-          <div className="fixed right-0 top-0 h-full sm:flex flex-col text-end justify-center-safe mr-4 w-60 hidden max-h-screen overflow-auto">
-            {messages
-              .filter((m) => m.role === "user")
-              .map((message) => (
-                <Link
-                  href={`#${message.id}`}
-                  key={message.id}
-                  className="truncate text-sm text-muted-foreground/50 hover:text-foreground shrink-0"
-                >
-                  {message.content.slice(0, 100)}
-                </Link>
-              ))}
+          <div className="fixed right-0 top-0 h-full sm:flex flex-col text-end justify-center-safe mr-4 w-60 hidden max-h-screen overflow-auto pointer-events-none">
+            <div className="flex flex-col pointer-events-auto">
+              <div className="text-sm text-muted-foreground/50 font-bold shrink-0">
+                Chat History
+              </div>
+              {messages
+                .filter((m) => m.role === "user")
+                .map((message) => (
+                  <Link
+                    href={`#${message.id}`}
+                    key={message.id}
+                    className="truncate text-sm text-muted-foreground/50 hover:text-foreground shrink-0"
+                  >
+                    {message.content.slice(0, 100)}
+                  </Link>
+                ))}
+            </div>
           </div>
         </div>
       )}
