@@ -77,22 +77,18 @@ export default function ModelPopover({
     filteredModels = filteredModels.filter((model) =>
       selectedFeatures.some((feature) => model.features.includes(feature))
     );
-    if (filteredFavouriteModels) {
-      filteredFavouriteModels = filteredFavouriteModels.filter((model) =>
-        selectedFeatures.some((feature) => model.features.includes(feature))
-      );
-    }
+    filteredFavouriteModels = filteredFavouriteModels.filter((model) =>
+      selectedFeatures.some((feature) => model.features.includes(feature))
+    );
   }
 
   if (search) {
     filteredModels = filteredModels.filter((model) =>
       model.title.toLowerCase().includes(search.toLowerCase())
     );
-    if (filteredFavouriteModels) {
-      filteredFavouriteModels = filteredFavouriteModels.filter((model) =>
-        model.title.toLowerCase().includes(search.toLowerCase())
-      );
-    }
+    filteredFavouriteModels = filteredFavouriteModels.filter((model) =>
+      model.title.toLowerCase().includes(search.toLowerCase())
+    );
   }
 
   const [optimisticModelData, setOptimisticModelData] =
@@ -338,8 +334,7 @@ export default function ModelPopover({
               {isLoading || !favouriteModels ? (
                 <></>
               ) : (
-                favouriteModels.map((modelId) => {
-                  const model = MODELS.find((m) => m.id === modelId)!;
+                filteredFavouriteModels.map((model) => {
                   return (
                     <Button
                       key={model.id}
