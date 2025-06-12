@@ -20,7 +20,7 @@ export default function NavTabs() {
     navigationItems[0]?.href;
 
   return (
-    <Tabs value={currentTab} className="overflow-x-auto no-scrollbar">
+    <Tabs value={currentTab} className="overflow-x-auto no-scrollbar mb-2">
       <TabsList>
         {navigationItems.map((item) => (
           <TabsTrigger

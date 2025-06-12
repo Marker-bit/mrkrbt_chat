@@ -13,8 +13,8 @@ export default async function Page() {
   }
 
   return (
-    <div className="mt-4">
-      <h1 className="text-2xl font-bold mb-4">API Keys</h1>
+    <div>
+      <h1 className="text-2xl font-bold">API Keys</h1>
       <p className="mb-4">Manage your API keys here.</p>
       <KeysForm apiKeys={apiKeys} />
     </div>

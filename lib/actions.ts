@@ -3,7 +3,7 @@
 import { cookies, headers } from "next/headers";
 import { auth } from "./auth";
 import { db } from "./db/drizzle";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { chat } from "./db/schema";
 import { generateText, LanguageModel, Provider, UIMessage } from "ai";
 import { createProvider, ModelData, PROVIDERS_TITLEGEN_MAP } from "./models";
@@ -105,4 +105,8 @@ export async function pinChat(chatId: string, isPinned: boolean) {
 
 export async function updateChatTitle(chatId: string, title: string) {
   await db.update(chat).set({ title }).where(eq(chat.id, chatId));
+}
+
+export async function deleteChats(chatIds: string[]) {
+  await db.delete(chat).where(inArray(chat.id, chatIds));
 }
