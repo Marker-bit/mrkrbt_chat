@@ -14,7 +14,6 @@ import {
   appendResponseMessages,
   experimental_generateImage,
   LanguageModel,
-  Message,
   smoothStream,
   streamText,
   Tool,
@@ -24,6 +23,7 @@ import { eq } from "drizzle-orm";
 import { cookies, headers } from "next/headers";
 import { z } from "zod";
 import { PostRequestBody, postRequestBodySchema } from "./schema";
+import { Message } from "@/lib/db/db-types";
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
@@ -297,7 +297,9 @@ export async function POST(req: Request) {
                   experimental_attachments:
                     assistantMessage.experimental_attachments,
                   createdAt: new Date(),
-                  modelId: requestBody.selectedChatModel.modelId,
+                  modelData: {
+                    ...requestBody.selectedChatModel,
+                  },
                 },
               ],
               { state: "complete" }
