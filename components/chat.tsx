@@ -199,7 +199,7 @@ export default function Chat({
                     <div
                       key={message.id}
                       className={cn(
-                        "prose dark:prose-invert prose-code:bg-secondary prose-code:p-1 prose-code:rounded-md prose-code:before:content-none! prose-code:after:content-none!",
+                        "prose dark:prose-invert prose-code:bg-secondary prose-code:p-1 prose-code:rounded-md prose-code:before:content-none! prose-code:after:content-none! prose-pre:bg-white prose-pre:dark:bg-black",
                         message.role === "user"
                           ? "bg-secondary rounded-xl px-4 py-2"
                           : ""

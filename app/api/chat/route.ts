@@ -232,7 +232,7 @@ export async function POST(req: Request) {
   }
 
   let prompt =
-    "You are a helpful assistant. ONLY if the user asks for an image, use the generateImage tool.";
+    "You are a helpful assistant.";
 
   const additionalInfo = session.user.additionalInfo;
   if (additionalInfo) {
@@ -253,29 +253,11 @@ export async function POST(req: Request) {
         openai: {
           effort: requestBody.selectedChatModel.options.effort,
         },
+      //   google: { responseModalities: ["TEXT", "IMAGE"] },
       },
-      // tools: {
-      //   generateImage: tool({
-      //     description: "Generate an image",
-      //     parameters: z.object({
-      //       prompt: z
-      //         .string()
-      //         .describe("The prompt to generate the image from"),
-      //     }),
-      //     execute: async ({ prompt }) => {
-      //       const { image } = await experimental_generateImage({
-      //         model: openai.image("dall-e-3"),
-      //         prompt,
-      //       });
-      //       // in production, save this image to blob storage and return a URL
-      //       return { image: image.base64, prompt };
-      //     },
-      //   }),
-      // },
       experimental_transform: smoothStream({ chunking: "word" }),
       experimental_generateMessageId: () => crypto.randomUUID(),
       // providerOptions: {
-      //   google: { responseModalities: ["TEXT", "IMAGE"] },
       // },
       onFinish: async ({ response }) => {
         if (session.user?.id) {
@@ -314,8 +296,9 @@ export async function POST(req: Request) {
               ],
               { state: "complete" }
             );
-          } catch (_) {
+          } catch (e) {
             console.error("Failed to save chat");
+            throw e;
           }
         }
       },

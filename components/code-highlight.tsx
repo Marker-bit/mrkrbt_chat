@@ -9,6 +9,7 @@ import {
   TextIcon,
   WrapTextIcon,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 
 interface CodeHighlightProps {
   className?: string | undefined;
@@ -37,6 +38,7 @@ export const CodeHighlight = ({
   const code = String(children);
   const language = className?.match(/language-(\w+)/)?.[1];
   const [wordWrap, setWordWrap] = useState(false);
+  const {theme} = useTheme()
 
   const isInline = node ? isInlineCode(node) : false;
 
@@ -50,7 +52,7 @@ export const CodeHighlight = ({
     },
     {
       delay: 150,
-      defaultColor: "dark",
+      defaultColor: theme,
     }
   );
 
@@ -63,13 +65,14 @@ export const CodeHighlight = ({
         wordWrap && "[&_pre]:whitespace-pre-wrap"
       )}
     >
-      <div className="p-2 px-4 flex gap-2 items-center justify-between bg-secondary">
-        {language}
+      <div className="p-2 px-4 flex gap-2 items-center justify-between bg-secondary text-black dark:text-white">
+        {language || "text"}
         <div className="flex gap-2 items-center">
           <Button variant="ghost" size="icon" onClick={() => {
             const link = document.createElement("a");
             link.href = "data:text/plain;charset=utf-8," + encodeURIComponent(code);
-            link.download = "code." + fileExtensions[language || "text"];
+            const ext = fileExtensions[language || "text"];
+            link.download = "code." + (ext ?? "txt");
             link.click();
           }}>
             <DownloadIcon />
