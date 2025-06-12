@@ -7,11 +7,9 @@ import "./globals.css";
 const mainFont = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
-  display: "swap",
 });
 
 const codeFont = Fira_Code({
-  display: 'swap',
   variable: "--font-fira-code",
   subsets: ["latin"],
 });
@@ -32,7 +30,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="mrkrbt.chat" />
       </head>
       <body
-        className={`${mainFont.className} ${codeFont.variable} antialiased`}
+        className={`${mainFont.className} ${codeFont.variable} antialiased font-sans`}
       >
         <ThemeProvider
           attribute="class"

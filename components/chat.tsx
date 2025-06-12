@@ -428,12 +428,18 @@ export default function Chat({
           ref={ref}
           setHeight={setHeight}
           onSubmit={(message) => {
-            const modelProviders = MODELS.find(
-              (m) => m.id === selectedModelData.modelId
-            )!.providers;
+            let modelProviders: string[] = [];
+            if (selectedModelData.modelId.startsWith("openrouter:")) {
+              modelProviders = ["openrouter"];
+            } else {
+              const prov = MODELS.find(
+                (m) => m.id === selectedModelData.modelId
+              )!.providers;
+              modelProviders = Object.keys(prov);
+            }
             let foundKey: boolean = false;
             let providers = new URLSearchParams();
-            for (const provider in modelProviders) {
+            for (const provider of modelProviders) {
               providers.append("providers", provider);
               if (apiKeys[provider]) {
                 foundKey = true;

@@ -7,7 +7,6 @@
 
 :root {
   --font-sans: var(--font-inter);
-  --font-mono: var(--font-fira-code);
   
   --radius: 0.5rem;
   --background: oklch(0.982 0.01 325.65);
@@ -91,7 +90,6 @@
 
 @theme inline {
   --font-sans: var(--font-sans);
-  --font-mono: var(--font-mono);
   --font-serif: var(--font-serif);
 
   --radius-sm: calc(var(--radius) - 4px);

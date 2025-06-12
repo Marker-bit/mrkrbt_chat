@@ -45,6 +45,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import useSWR from "swr";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
+import OpenRouterModel from "./openrouter-model";
 
 export default function ModelPopover({
   selectedModelData,
@@ -94,6 +95,10 @@ export default function ModelPopover({
   const [optimisticModelData, setOptimisticModelData] =
     useOptimistic(selectedModelData);
 
+  const openRouterModel =
+    optimisticModelData.modelId.startsWith("openrouter:") &&
+    optimisticModelData.modelId.slice(11);
+
   const selectedChatModel = useMemo(
     () =>
       MODELS.find((chatModel) => chatModel.id === optimisticModelData.modelId),
@@ -122,6 +127,20 @@ export default function ModelPopover({
         ...optimisticModelData,
         modelId,
         options: { ...optimisticModelData.options, provider },
+      };
+      setOptimisticModelData(newModelData);
+      saveChatModelAsCookie(newModelData);
+    });
+  };
+
+  const setOpenRouterModel = (modelId: string) => {
+    setOpen(false);
+
+    startTransition(() => {
+      const newModelData: ModelData = {
+        ...optimisticModelData,
+        modelId: `openrouter:${modelId}`,
+        options: { ...optimisticModelData.options, provider: "openrouter" },
       };
       setOptimisticModelData(newModelData);
       saveChatModelAsCookie(newModelData);
@@ -191,11 +210,17 @@ export default function ModelPopover({
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button variant="ghost" size="sm" className="text-sm" ref={buttonRef}>
-            <div>{selectedChatModel?.title}</div>
-            {selectedChatModel?.additionalTitle && (
-              <div className="text-xs text-muted-foreground max-sm:hidden">
-                ({selectedChatModel.additionalTitle})
-              </div>
+            {openRouterModel ? (
+              <div className="font-mono">{openRouterModel}</div>
+            ) : (
+              <>
+                <div>{selectedChatModel?.title}</div>
+                {selectedChatModel?.additionalTitle && (
+                  <div className="text-xs text-muted-foreground max-sm:hidden">
+                    ({selectedChatModel.additionalTitle})
+                  </div>
+                )}
+              </>
             )}
             <ChevronUpIcon className="size-4" />
           </Button>
@@ -381,119 +406,125 @@ export default function ModelPopover({
                 </>
               )}
             </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative">
-                  <FilterIcon />
+            <div className="flex gap-2 items-center">
+              {apiKeys && "openrouter" in apiKeys && apiKeys["openrouter"] && (
+                <OpenRouterModel openRouterModel={openRouterModel} setOpenRouterModel={setOpenRouterModel} />
+              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="relative">
+                    <FilterIcon />
+                    {selectedFeatures.length > 0 && (
+                      <div className="absolute top-0 right-0 h-2 w-2 bg-primary rounded-full" />
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  side="right"
+                  align="end"
+                  sideOffset={20}
+                  className="max-w-64"
+                >
                   {selectedFeatures.length > 0 && (
-                    <div className="absolute top-0 right-0 h-2 w-2 bg-primary rounded-full" />
+                    <>
+                      <DropdownMenuItem
+                        onClick={(evt) => {
+                          evt.preventDefault();
+                          setSelectedFeatures([]);
+                        }}
+                      >
+                        Clear filters
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
                   )}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                side="right"
-                align="end"
-                sideOffset={20}
-                className="max-w-64"
-              >
-                {selectedFeatures.length > 0 && (
-                  <>
+                  {FEATURES.map((feature) => (
                     <DropdownMenuItem
+                      key={feature.id}
                       onClick={(evt) => {
                         evt.preventDefault();
-                        setSelectedFeatures([]);
+                        setSelectedFeatures((prev) =>
+                          prev.includes(feature.id)
+                            ? prev.filter((id) => id !== feature.id)
+                            : [...prev, feature.id]
+                        );
                       }}
                     >
-                      Clear filters
+                      <FeatureIcon className="mr-2" id={feature.id} />
+                      {feature.name}
+                      {selectedFeatures.includes(feature.id) && (
+                        <div className="ml-auto">
+                          <CheckIcon className="size-4" />
+                        </div>
+                      )}
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                  </>
-                )}
-                {FEATURES.map((feature) => (
-                  <DropdownMenuItem
-                    key={feature.id}
-                    onClick={(evt) => {
-                      evt.preventDefault();
-                      setSelectedFeatures((prev) =>
-                        prev.includes(feature.id)
-                          ? prev.filter((id) => id !== feature.id)
-                          : [...prev, feature.id]
-                      );
-                    }}
-                  >
-                    <FeatureIcon className="mr-2" id={feature.id} />
-                    {feature.name}
-                    {selectedFeatures.includes(feature.id) && (
-                      <div className="ml-auto">
-                        <CheckIcon className="size-4" />
-                      </div>
-                    )}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </PopoverContent>
       </Popover>
-      <DropdownMenu>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="rounded-full">
-                {selectedProvider ? (
-                  <>
-                    <selectedProvider.icon />
-                    <div className="max-sm:hidden">
-                      {selectedProvider.title}
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <RouteIcon />
-                    <div className="max-sm:hidden">Provider</div>
-                  </>
-                )}
-              </Button>
-            </DropdownMenuTrigger>
-          </TooltipTrigger>
-          <DropdownMenuContent className="min-w-72">
-            {selectedChatModel &&
-              Object.keys(selectedChatModel.providers).map((providerId) => {
-                const provider = PROVIDERS.find((p) => p.id === providerId)!;
-                const hasApiKey =
-                  provider.id in apiKeys && apiKeys[provider.id].length > 0;
-                return (
-                  <DropdownMenuItem
-                    key={provider.id}
-                    onClick={() => setProvider(provider.id)}
-                    disabled={!hasApiKey}
-                  >
-                    <provider.icon className="size-4" />
-                    {provider.title}
-                    <div className="ml-auto flex gap-2 items-center">
-                      {selectedChatModel.providers[provider.id].features.map(
-                        (feature) => {
-                          const realFeature = FEATURES.find(
-                            (f) => f.id === feature
-                          );
-                          return (
-                            realFeature?.displayInModels && (
-                              <FeatureIcon key={feature} id={feature} />
-                            )
-                          );
-                        }
-                      )}
-                      {optimisticModelData.options.provider === provider.id && (
-                        <CheckIcon className="size-4" />
-                      )}
-                    </div>
-                  </DropdownMenuItem>
-                );
-              })}
-          </DropdownMenuContent>
-          <TooltipContent>Provider</TooltipContent>
-        </Tooltip>
-      </DropdownMenu>
+      {!openRouterModel && (
+        <DropdownMenu>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="rounded-full">
+                  {selectedProvider ? (
+                    <>
+                      <selectedProvider.icon />
+                      <div className="max-sm:hidden">
+                        {selectedProvider.title}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <RouteIcon />
+                      <div className="max-sm:hidden">Provider</div>
+                    </>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <DropdownMenuContent className="min-w-72">
+              {selectedChatModel &&
+                Object.keys(selectedChatModel.providers).map((providerId) => {
+                  const provider = PROVIDERS.find((p) => p.id === providerId)!;
+                  const hasApiKey =
+                    provider.id in apiKeys && apiKeys[provider.id].length > 0;
+                  return (
+                    <DropdownMenuItem
+                      key={provider.id}
+                      onClick={() => setProvider(provider.id)}
+                      disabled={!hasApiKey}
+                    >
+                      <provider.icon className="size-4" />
+                      {provider.title}
+                      <div className="ml-auto flex gap-2 items-center">
+                        {selectedChatModel.providers[provider.id].features.map(
+                          (feature) => {
+                            const realFeature = FEATURES.find(
+                              (f) => f.id === feature
+                            );
+                            return (
+                              realFeature?.displayInModels && (
+                                <FeatureIcon key={feature} id={feature} />
+                              )
+                            );
+                          }
+                        )}
+                        {optimisticModelData.options.provider ===
+                          provider.id && <CheckIcon className="size-4" />}
+                      </div>
+                    </DropdownMenuItem>
+                  );
+                })}
+            </DropdownMenuContent>
+            <TooltipContent>Provider</TooltipContent>
+          </Tooltip>
+        </DropdownMenu>
+      )}
       {selectedChatModel?.features.includes("effort-control") && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

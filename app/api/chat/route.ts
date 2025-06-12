@@ -54,6 +54,8 @@ export async function POST(req: Request) {
     return new ChatSDKError("unauthorized:api").toResponse();
   }
 
+  const isOpenRouter = requestBody.selectedChatModel.modelId.startsWith("openrouter:");
+
   const modelToRun = MODELS.find(
     (model) => model.id === requestBody.selectedChatModel.modelId
   )!;
@@ -77,34 +79,42 @@ export async function POST(req: Request) {
   let providerData: { id: string; apiKey: string; modelName: string } | null =
     null;
 
-  const chosenProvider = requestBody.selectedChatModel.options.provider;
-
-  if (
-    chosenProvider &&
-    chosenProvider in keys &&
-    keys[chosenProvider].length > 0
-  ) {
+  if (isOpenRouter) {
     providerData = {
-      id: chosenProvider,
-      apiKey: keys[chosenProvider],
-      modelName: modelToRun.providers[chosenProvider].modelName,
+      id: "openrouter",
+      apiKey: keys["openrouter"],
+      modelName: requestBody.selectedChatModel.modelId.slice(11),
     };
   } else {
-    for (const provider in modelToRun.providers) {
-      if (provider in keys) {
-        const providerApiKey = keys[provider];
+    const chosenProvider = requestBody.selectedChatModel.options.provider;
 
-        providerData = {
-          id: provider,
-          apiKey: providerApiKey,
-          modelName: modelToRun.providers[provider].modelName,
-        };
-        break;
+    if (
+      chosenProvider &&
+      chosenProvider in keys &&
+      keys[chosenProvider].length > 0
+    ) {
+      providerData = {
+        id: chosenProvider,
+        apiKey: keys[chosenProvider],
+        modelName: modelToRun.providers[chosenProvider].modelName,
+      };
+    } else {
+      for (const provider in modelToRun.providers) {
+        if (provider in keys) {
+          const providerApiKey = keys[provider];
+
+          providerData = {
+            id: provider,
+            apiKey: providerApiKey,
+            modelName: modelToRun.providers[provider].modelName,
+          };
+          break;
+        }
       }
-    }
 
-    if (!providerData) {
-      return new ChatSDKError("unauthorized:provider").toResponse();
+      if (!providerData) {
+        return new ChatSDKError("unauthorized:provider").toResponse();
+      }
     }
   }
 
@@ -234,7 +244,7 @@ export async function POST(req: Request) {
       model,
       system: prompt,
       messages,
-      tools: modelToRun.supportsTools ? tools : undefined,
+      tools: (isOpenRouter || modelToRun.supportsTools) ? tools : undefined,
       maxSteps: 2,
       providerOptions: {
         openrouter: {
@@ -336,6 +346,7 @@ export async function POST(req: Request) {
       },
     });
   } catch (error) {
+    console.error(error)
     return new ChatSDKError("bad_request:stream").toResponse();
   }
 }
