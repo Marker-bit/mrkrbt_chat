@@ -61,6 +61,7 @@ export default function Chat({
     status,
     stop,
     reload,
+    error
   } = useChat({
     credentials: "include",
     experimental_throttle: 50,
@@ -130,8 +131,8 @@ export default function Chat({
   }, []);
 
   const editMessage = (messageId: string, text: string) => {
-    const nextMessage =
-      messages.findIndex((message) => message.id === messageId) + 1;
+    const msgIndex =
+      messages.findIndex((message) => message.id === messageId);
     setMessages((messages) =>
       messages
         .map((message) => {
@@ -144,10 +145,9 @@ export default function Chat({
           }
           return message;
         })
-        .slice(0, nextMessage)
+        .slice(0, msgIndex + 1)
     );
-    setMessages((messages) => messages.slice(0, nextMessage));
-    retryMessage(messages[nextMessage].id);
+    retryMessage(messageId);
     setEditingMessage(null);
   };
 
@@ -401,14 +401,14 @@ export default function Chat({
                 Thinking...
               </TextShimmer>
             )}
-            {/* {error && (
+            {error && (
               <>
                 <div>An error occurred.</div>
                 <Button type="button" onClick={() => reload()}>
                   Retry
                 </Button>
               </>
-            )} */}
+            )}
             <div ref={bottomRef} />
           </div>
         </div>

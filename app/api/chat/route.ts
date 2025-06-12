@@ -150,14 +150,19 @@ export async function POST(req: Request) {
       message: requestBody.message,
     });
   } else {
-    const retryMessage = chat.messages.findIndex(
+    let retryMessageIndex = chat.messages.findIndex(
       (message) => message.id === requestBody.retryMessageId
     );
-    if (retryMessage === -1) {
+    if (retryMessageIndex === -1) {
       return new ChatSDKError("bad_request:api").toResponse();
     }
 
-    messages = chat.messages.slice(0, retryMessage);
+    const retryMessage = chat.messages[retryMessageIndex];
+    if (retryMessage.role !== "assistant") {
+      retryMessageIndex++;
+    }
+
+    messages = chat.messages.slice(0, retryMessageIndex);
   }
 
   if (requestBody.message.id === messages.at(-1)?.id) {
