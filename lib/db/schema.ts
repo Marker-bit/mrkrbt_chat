@@ -29,7 +29,8 @@ export const user = pgTable("user", {
   updatedAt: timestamp("updated_at")
     .$defaultFn(() => /* @__PURE__ */ new Date())
     .notNull(),
- favouriteModels: text('favourite_models').array().default(RECOMMENDED_MODELS)
+  favouriteModels: text("favourite_models").array().default(RECOMMENDED_MODELS),
+  additionalInfo: text("additional_info").default(""),
 });
 
 export const session = pgTable("session", {
@@ -61,7 +62,9 @@ export const account = pgTable("account", {
   password: text("password"),
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at").notNull(),
-  messagesSent: integer("messages_sent").$default(() => 0).notNull(),
+  messagesSent: integer("messages_sent")
+    .$default(() => 0)
+    .notNull(),
 });
 
 export const verification = pgTable("verification", {
@@ -79,14 +82,24 @@ export const verification = pgTable("verification", {
 
 export const chat = pgTable("chat", {
   id: text("id").primaryKey(),
-  createdAt: timestamp("created_at").$defaultFn(() => new Date()).notNull(),
-  updatedAt: timestamp("updated_at").$defaultFn(() => new Date()).notNull(),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   messages: json("messages").notNull().default([]).$type<Message[]>(),
-  state: text("state").notNull().default("complete").$type<"loading" | "complete">(),
+  state: text("state")
+    .notNull()
+    .default("complete")
+    .$type<"loading" | "complete">(),
   title: text("title").notNull().default("Unnamed").$type<string>(),
-  visibility: text("visibility").notNull().default("private").$type<"public" | "private">(),
+  visibility: text("visibility")
+    .notNull()
+    .default("private")
+    .$type<"public" | "private">(),
   isPinned: boolean("is_pinned").notNull().default(false).$type<boolean>(),
 });

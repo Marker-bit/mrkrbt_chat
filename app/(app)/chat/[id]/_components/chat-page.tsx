@@ -29,7 +29,6 @@ export default function ChatPage({
   return (
     <div
       className="flex flex-col h-full"
-      style={{ minHeight: "calc(100svh + env(safe-area-inset-top))" }}
     >
       <div className="absolute top-4 left-4 p-1 flex gap-1 border bg-background rounded-md">
         <SidebarTrigger />

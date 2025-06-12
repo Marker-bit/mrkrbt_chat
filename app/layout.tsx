@@ -6,9 +6,12 @@ import "./globals.css";
 
 const mainFont = Inter({
   subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
 });
 
 const codeFont = Fira_Code({
+  display: 'swap',
   variable: "--font-fira-code",
   subsets: ["latin"],
 });

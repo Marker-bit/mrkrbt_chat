@@ -9,6 +9,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           "--sidebar-width": "19rem",
         } as React.CSSProperties
       }
+      className="max-h-svh"
     >
       <AppSidebar />
       <SidebarInset>{children}</SidebarInset>

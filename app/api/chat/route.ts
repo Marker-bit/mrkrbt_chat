@@ -221,11 +221,18 @@ export async function POST(req: Request) {
     tools.webSearch = webSearch;
   }
 
+  let prompt =
+    "You are a helpful assistant. ONLY if the user asks for an image, use the generateImage tool.";
+
+  const additionalInfo = session.user.additionalInfo;
+  if (additionalInfo) {
+    prompt += `\nThe user has some preferences:\n${additionalInfo}`;
+  }
+
   try {
     const result = streamText({
       model,
-      system:
-        "You are a helpful assistant. ONLY if the user asks for an image, use the generateImage tool.",
+      system: prompt,
       messages,
       tools: modelToRun.supportsTools ? tools : undefined,
       maxSteps: 2,

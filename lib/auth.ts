@@ -27,6 +27,10 @@ export const auth = betterAuth({
         type: "string[]",
         defaultValue: RECOMMENDED_MODELS
       },
+      additionalInfo: {
+        type: "string",
+        defaultValue: ""
+      }
     },
   },
 });
