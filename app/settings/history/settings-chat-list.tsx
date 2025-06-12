@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { deleteChats } from "@/lib/actions";
 import { Chat } from "@/lib/db/db-types";
+import { chat } from "@/lib/db/schema";
 import { DownloadIcon, TrashIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use, useState } from "react";
@@ -19,11 +20,32 @@ export default function SettingsChatList({
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  const exportChats = () => {
+    const selectedChats = chats.filter((chat) => checked.includes(chat.id));
+    const data = JSON.stringify(
+      selectedChats.map((chat) => ({
+        ...chat,
+        messages: undefined,
+        state: undefined,
+        userId: undefined,
+      })),
+      null,
+      2
+    );
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "chats.json";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const deleteChatsRun = async () => {
     setLoading(true);
     await deleteChats(checked);
     setLoading(false);
-    setChecked([])
+    setChecked([]);
     router.refresh();
   };
 
@@ -51,11 +73,18 @@ export default function SettingsChatList({
           </div>
         </div>
         <div className="flex gap-2 items-center">
-          <Button variant="outline" disabled={checked.length === 0}>
+          <Button
+            variant="outline"
+            disabled={checked.length === 0}
+            onClick={exportChats}
+          >
             <DownloadIcon />
             Export
           </Button>
-          <Button disabled={checked.length === 0 || loading} onClick={deleteChatsRun}>
+          <Button
+            disabled={checked.length === 0 || loading}
+            onClick={deleteChatsRun}
+          >
             <TrashIcon />
             Delete
           </Button>
