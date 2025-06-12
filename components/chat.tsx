@@ -50,6 +50,7 @@ export default function Chat({
   });
   const [useWebSearch, setUseWebSearch] = useState(false);
   const retryMessageId = useRef<string | null>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   const {
     messages,
@@ -117,6 +118,10 @@ export default function Chat({
       router.refresh();
     }
   }, [chatState, sentMessage]);
+  
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "instant" });
+  }, [messages]);
 
   const editMessage = (messageId: string, text: string) => {
     const nextMessage =
@@ -398,6 +403,7 @@ export default function Chat({
                 </Button>
               </>
             )} */}
+            <div ref={bottomRef} />
           </div>
         </div>
       )}
