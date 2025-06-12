@@ -118,10 +118,16 @@ export default function Chat({
       router.refresh();
     }
   }, [chatState, sentMessage]);
-  
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "instant" });
   }, [messages]);
+
+  useEffect(() => {
+    setTimeout(() => {
+      bottomRef.current?.scrollIntoView({ behavior: "instant" });
+    }, 200); // for the code blocks to load
+  }, []);
 
   const editMessage = (messageId: string, text: string) => {
     const nextMessage =
