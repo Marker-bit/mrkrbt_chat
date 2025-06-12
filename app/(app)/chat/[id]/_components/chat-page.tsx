@@ -27,14 +27,14 @@ export default function ChatPage({
 }) {
   const { open } = useSidebar();
   return (
-    <div
-      className="flex flex-col h-full"
-    >
+    <div className="flex flex-col h-full">
       <div className="absolute top-4 left-4 p-1 flex gap-1 border bg-background rounded-md">
         <SidebarTrigger />
         {!open && (
-          <Button variant="ghost" size="icon" className="size-7">
-            <PlusIcon />
+          <Button variant="ghost" size="icon" className="size-7" asChild>
+            <Link href="/">
+              <PlusIcon />
+            </Link>
           </Button>
         )}
         {!readOnly && (
