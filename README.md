@@ -30,14 +30,20 @@ git clone https://github.com/Marker-bit/mrkrbt_chat.git
 pnpm install
 ```
 
-3. Copy `.env.example` to `.env` and fill it
-4. Push schema to DB
+3. Start the development services (adminer on localhost:8080 and postgres on localhost:5433)
+
+```bash
+docker compose up
+```
+
+4. Copy `.env.example` to `.env` and fill it
+5. Push schema to DB
 
 ```bash
 pnpm drizzle-kit push
 ```
 
-5. Run the app
+6. Run the app
 
 ```bash
 pnpm dev
