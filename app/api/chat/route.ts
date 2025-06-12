@@ -244,7 +244,7 @@ export async function POST(req: Request) {
       model,
       system: prompt,
       messages,
-      tools: (isOpenRouter || modelToRun.supportsTools) ? tools : undefined,
+      tools: (!isOpenRouter && modelToRun.supportsTools) ? tools : undefined,
       maxSteps: 2,
       providerOptions: {
         openrouter: {
