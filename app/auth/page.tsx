@@ -2,7 +2,7 @@ import GitHubButton from "./_components/github-button";
 
 export default function AuthPage() {
   return (
-    <div className="flex flex-col h-svh items-center justify-center bg-secondary/30 p-2">
+    <div className="flex flex-col h-full items-center justify-center bg-secondary/30 p-2">
       {/* <Button variant="ghost" className="absolute top-4 left-4">
         <ArrowLeft />
         Back to chat

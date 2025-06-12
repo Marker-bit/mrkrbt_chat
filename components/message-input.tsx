@@ -191,7 +191,7 @@ export default function MessageInput({
                 onClick={() => setUseWebSearch(!useWebSearch)}
               >
                 <GlobeIcon />
-                Search
+                <div className="max-sm:hidden">Search</div>
               </Button>
             )}
           </div>

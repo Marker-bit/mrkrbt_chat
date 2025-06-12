@@ -191,13 +191,13 @@ export default function ModelPopover({
   };
 
   return (
-    <>
+    <div className="flex gap-2 items-center">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button variant="ghost" size="sm" ref={buttonRef}>
+          <Button variant="ghost" size="sm" className="text-sm" ref={buttonRef}>
             <div>{selectedChatModel?.title}</div>
             {selectedChatModel?.additionalTitle && (
-              <div className="text-xs text-muted-foreground">
+              <div className="text-xs text-muted-foreground max-sm:hidden">
                 ({selectedChatModel.additionalTitle})
               </div>
             )}
@@ -205,7 +205,10 @@ export default function ModelPopover({
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className={cn(big ? "w-[680px]" : "w-[420px]", "p-0 flex flex-col")}
+          className={cn(
+            big ? "w-[680px]" : "w-[420px]",
+            "max-w-screen p-0 flex flex-col"
+          )}
           style={{
             height: big
               ? `calc(100vh - ${buttonRef.current?.offsetTop || 0}px)`
@@ -229,7 +232,7 @@ export default function ModelPopover({
             />
           </div>
           {big ? (
-            <div className="flex flex-col gap-2 overflow-y-auto grow p-4">
+            <div className="flex flex-col gap-2 overflow-y-auto grow p-4 w-full">
               <div className="text-primary-foreground text-lg flex gap-2 items-center">
                 <PinIcon className="size-4" />
                 Favorites
@@ -242,7 +245,7 @@ export default function ModelPopover({
                   >
                     <Button
                       variant="outline"
-                      className="flex flex-col gap-2 text-start hover:bg-accent w-full h-full relative"
+                      className="flex flex-col gap-2 text-start hover:bg-accent w-full h-full relative p-4"
                       onClick={() => setModel(model.id)}
                     >
                       <model.icon className="size-8" />
@@ -290,7 +293,7 @@ export default function ModelPopover({
                   >
                     <Button
                       variant="outline"
-                      className="flex flex-col gap-2 text-start hover:bg-accent w-full h-full relative"
+                      className="flex flex-col gap-2 text-start hover:bg-accent w-full h-full relative p-4"
                       onClick={() => setModel(model.id)}
                     >
                       <model.icon className="size-8" />
@@ -396,7 +399,7 @@ export default function ModelPopover({
                 side="right"
                 align="end"
                 sideOffset={20}
-                className="w-64"
+                className="max-w-64"
               >
                 {selectedFeatures.length > 0 && (
                   <>
@@ -445,12 +448,14 @@ export default function ModelPopover({
                 {selectedProvider ? (
                   <>
                     <selectedProvider.icon />
-                    {selectedProvider.title}
+                    <div className="max-sm:hidden">
+                      {selectedProvider.title}
+                    </div>
                   </>
                 ) : (
                   <>
                     <RouteIcon />
-                    Provider
+                    <div className="max-sm:hidden">Provider</div>
                   </>
                 )}
               </Button>
@@ -499,7 +504,9 @@ export default function ModelPopover({
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="rounded-full">
               <BrainCogIcon />
-              {effortToString(selectedModelData.options.effort)}
+              <div className="max-sm:hidden">
+                {effortToString(selectedModelData.options.effort)}
+              </div>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
@@ -518,6 +525,6 @@ export default function ModelPopover({
           </DropdownMenuContent>
         </DropdownMenu>
       )}
-    </>
+    </div>
   );
 }
