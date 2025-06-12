@@ -61,7 +61,7 @@ export default function Chat({
     status,
     stop,
     reload,
-    error
+    error,
   } = useChat({
     credentials: "include",
     experimental_throttle: 50,
@@ -131,8 +131,7 @@ export default function Chat({
   }, []);
 
   const editMessage = (messageId: string, text: string) => {
-    const msgIndex =
-      messages.findIndex((message) => message.id === messageId);
+    const msgIndex = messages.findIndex((message) => message.id === messageId);
     setMessages((messages) =>
       messages
         .map((message) => {
@@ -185,6 +184,7 @@ export default function Chat({
                   "flex flex-col gap-2 group",
                   message.role === "user" && "items-end"
                 )}
+                id={message.id}
               >
                 {editingMessage === message.id ? (
                   <EditingMessage
@@ -410,6 +410,19 @@ export default function Chat({
               </>
             )}
             <div ref={bottomRef} />
+          </div>
+          <div className="fixed right-0 top-0 h-full sm:flex flex-col text-end justify-center-safe mr-4 w-60 hidden max-h-screen overflow-auto">
+            {messages
+              .filter((m) => m.role === "user")
+              .map((message) => (
+                <Link
+                  href={`#${message.id}`}
+                  key={message.id}
+                  className="truncate text-sm text-muted-foreground/50 hover:text-foreground shrink-0"
+                >
+                  {message.content.slice(0, 100)}
+                </Link>
+              ))}
           </div>
         </div>
       )}

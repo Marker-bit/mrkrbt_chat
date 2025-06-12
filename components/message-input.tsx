@@ -99,9 +99,9 @@ export default function MessageInput({
   }, [bounds.height, setHeight]);
 
   return (
-    <div className="w-full absolute bottom-0 left-0 px-2">
+    <div className="w-full absolute bottom-0 left-0 px-2 pointer-events-none">
       <div
-        className="border-8 border-accent border-b-0 p-4 w-full max-w-3xl mx-auto rounded-3xl rounded-b-none flex flex-col gap-2 backdrop-blur-lg bg-background/50"
+        className="pointer-events-auto border-8 border-accent border-b-0 p-4 w-full max-w-3xl mx-auto rounded-3xl rounded-b-none flex flex-col gap-2 backdrop-blur-lg bg-background/50"
         ref={measureRef}
       >
         <input

@@ -38,7 +38,7 @@ export const CodeHighlight = ({
   const code = String(children);
   const language = className?.match(/language-(\w+)/)?.[1];
   const [wordWrap, setWordWrap] = useState(false);
-  const {theme} = useTheme()
+  const {resolvedTheme} = useTheme()
 
   const isInline = node ? isInlineCode(node) : false;
 
@@ -52,7 +52,7 @@ export const CodeHighlight = ({
     },
     {
       delay: 150,
-      defaultColor: theme,
+      defaultColor: resolvedTheme,
     }
   );
 
