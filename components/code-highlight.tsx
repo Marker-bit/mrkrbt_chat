@@ -75,7 +75,7 @@ export const CodeHighlight = ({
             const link = document.createElement("a");
             link.href = "data:text/plain;charset=utf-8," + encodeURIComponent(code);
             const ext = fileExtensions[language || "text"];
-            link.download = "code." + (ext ?? "txt");
+            link.download = "code." + (ext ?? language);
             link.click();
           }}>
             <DownloadIcon />
