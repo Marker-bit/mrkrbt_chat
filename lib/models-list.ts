@@ -33,14 +33,14 @@ export const models: Model[] = [
     providers: {
       google: {
         modelName: "models/gemini-2.5-flash-preview-05-20",
-        features: ["vision", "pdfs", "reasoning"],
+        features: ["vision", "pdfs", "reasoning", "effort-control"],
         additionalData: {
           thinking: true
         }
       },
       openrouter: {
         modelName: "google/gemini-2.5-flash-preview-05-20:thinking",
-        features: ["vision", "pdfs", "reasoning"],
+        features: ["vision", "pdfs", "reasoning", "effort-control"],
       },
     },
     icon: Gemini,

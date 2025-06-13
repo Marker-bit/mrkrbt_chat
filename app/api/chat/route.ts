@@ -259,21 +259,37 @@ export async function POST(req: Request) {
 
   let googleProviderOptions: GoogleGenerativeAIProviderOptions = {};
 
-  if (
-    providerData.id === "google" &&
-    providerData.additionalData &&
-    "thinking" in providerData.additionalData &&
-    providerData.additionalData.thinking === true
-  ) {
-    googleProviderOptions = {
-      thinkingConfig: {
-        thinkingBudget: 1024,
-        includeThoughts: true
+  if (providerData.id === "google") {
+    if (
+      providerData.additionalData &&
+      "thinking" in providerData.additionalData &&
+      providerData.additionalData.thinking === true
+    ) {
+      googleProviderOptions = {
+        thinkingConfig: {
+          thinkingBudget: 1024,
+          includeThoughts: true,
+        },
+      };
+    }
+    if (requestBody.selectedChatModel.options.effort) {
+      let thinkingBudget = 1024;
+      if (requestBody.selectedChatModel.options.effort === "high") {
+        thinkingBudget = 16384;
+      } else if (requestBody.selectedChatModel.options.effort === "medium") {
+        thinkingBudget = 8192;
+      } else if (requestBody.selectedChatModel.options.effort === "low") {
+        thinkingBudget = 1024;
       }
-    };
-  }
 
-  console.log(googleProviderOptions)
+      googleProviderOptions = {
+        thinkingConfig: {
+          thinkingBudget,
+          includeThoughts: true,
+        },
+      };
+    }
+  }
 
   try {
     const result = streamText({
@@ -290,7 +306,7 @@ export async function POST(req: Request) {
         //   effort: requestBody.selectedChatModel.options.effort,
         // },
         google: {
-          ...googleProviderOptions
+          ...googleProviderOptions,
         },
       },
       experimental_transform: smoothStream({ chunking: "word" }),
