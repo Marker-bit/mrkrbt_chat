@@ -58,7 +58,7 @@ export async function generateTitleFromUserMessage({
 }) {
   let model: LanguageModel | undefined;
   for (const provider in PROVIDERS_TITLEGEN_MAP) {
-    if (apiKeys[provider] === undefined) {
+    if (!(provider in apiKeys) || (apiKeys[provider] === "" || apiKeys[provider] === undefined)) {
       continue;
     }
     model = createModel(PROVIDERS_TITLEGEN_MAP[provider], provider, apiKeys[provider], {});
