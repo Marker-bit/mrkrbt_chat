@@ -4,7 +4,6 @@ import { Message } from "@/lib/db/db-types";
 import { db } from "@/lib/db/drizzle";
 import { saveMessages } from "@/lib/db/queries";
 import { account, chat as chatTable } from "@/lib/db/schema";
-import { ChatSDKError } from "@/lib/errors";
 import { createModel, MODELS, PROVIDERS } from "@/lib/models";
 import { getTrailingMessageId } from "@/lib/utils";
 import { webSearch } from "@/lib/web-search";
@@ -25,6 +24,7 @@ import { eq } from "drizzle-orm";
 import { cookies, headers } from "next/headers";
 import { z } from "zod";
 import { PostRequestBody, postRequestBodySchema } from "./schema";
+import { NextResponse } from "next/server";
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
@@ -35,7 +35,12 @@ export async function POST(req: Request) {
   });
 
   if (!session) {
-    return new ChatSDKError("unauthorized:auth").toResponse();
+    return NextResponse.json(
+      {
+        error: "Unauthorized",
+      },
+      { status: 401 }
+    );
   }
 
   let requestBody: PostRequestBody;
@@ -44,7 +49,12 @@ export async function POST(req: Request) {
     const json = await req.json();
     requestBody = postRequestBodySchema.parse(json);
   } catch (e) {
-    return new ChatSDKError("bad_request:api").toResponse();
+    return NextResponse.json(
+      {
+        error: "Invalid request body",
+      },
+      { status: 400 }
+    );
   }
 
   const currentAccount = await db.query.account.findFirst({
@@ -52,7 +62,12 @@ export async function POST(req: Request) {
   });
 
   if (!currentAccount) {
-    return new ChatSDKError("unauthorized:api").toResponse();
+    return NextResponse.json(
+      {
+        error: "Unauthorized",
+      },
+      { status: 401 }
+    );
   }
 
   const isOpenRouter =
@@ -67,7 +82,12 @@ export async function POST(req: Request) {
   const apiKeys = cookiesInfo.get("apiKeys")?.value;
 
   if (!apiKeys) {
-    return new ChatSDKError("unauthorized:provider").toResponse();
+    return NextResponse.json(
+      {
+        error: "API keys not found",
+      },
+      { status: 400 }
+    );
   }
 
   let keys: any;
@@ -75,7 +95,12 @@ export async function POST(req: Request) {
   try {
     keys = JSON.parse(apiKeys);
   } catch (e) {
-    return new ChatSDKError("unauthorized:provider").toResponse();
+    return NextResponse.json(
+      {
+        error: "Failed to parse API keys",
+      },
+      { status: 400 }
+    );
   }
 
   let providerData: {
@@ -121,7 +146,12 @@ export async function POST(req: Request) {
       }
 
       if (!providerData) {
-        return new ChatSDKError("unauthorized:provider").toResponse();
+        return NextResponse.json(
+          {
+            error: "Failed to find a provider with an API key",
+          },
+          { status: 400 }
+        );
       }
     }
   }
@@ -131,7 +161,12 @@ export async function POST(req: Request) {
   });
 
   if (chat && chat.userId !== session.user.id) {
-    return new ChatSDKError("unauthorized:chat").toResponse();
+    return NextResponse.json(
+      {
+        error: "Chat not found",
+      },
+      { status: 404 }
+    );
   }
 
   if (!chat) {
@@ -162,7 +197,12 @@ export async function POST(req: Request) {
       (message) => message.id === requestBody.retryMessageId
     );
     if (retryMessageIndex === -1) {
-      return new ChatSDKError("bad_request:api").toResponse();
+      return NextResponse.json(
+        {
+          error: "Retry message not found",
+        },
+        { status: 404 }
+      );
     }
 
     const retryMessage = chat.messages[retryMessageIndex];
@@ -199,12 +239,21 @@ export async function POST(req: Request) {
       }
     );
   } catch (e) {
-    console.error(e);
-    return new ChatSDKError("unauthorized:provider").toResponse();
+    return NextResponse.json(
+      {
+        error: "Failed to create a model",
+      },
+      { status: 500 }
+    );
   }
 
   if (!model) {
-    return new ChatSDKError("unauthorized:provider").toResponse();
+    return NextResponse.json(
+      {
+        error: "Failed to create a model",
+      },
+      { status: 500 }
+    );
   }
 
   let tools: Record<string, Tool> = {
@@ -388,6 +437,11 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error(error);
-    return new ChatSDKError("bad_request:stream").toResponse();
+    return NextResponse.json(
+      {
+        error: "Encountered an error while getting the response",
+      },
+      { status: 500 }
+    );
   }
 }

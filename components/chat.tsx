@@ -2,7 +2,6 @@ import { MemoizedMarkdown } from "@/components/memoized-markdown";
 import { AutosizeTextAreaRef } from "@/components/ui/autosize-textarea";
 import { useChatVisibility } from "@/hooks/use-chat-visibility";
 import { Message } from "@/lib/db/db-types";
-import { ChatSDKError } from "@/lib/errors";
 import { fetchWithErrorHandlers } from "@/lib/fetch";
 import { ModelData, MODELS } from "@/lib/models";
 import { cn, convertFileArrayToFileList, fetcher } from "@/lib/utils";
@@ -86,12 +85,7 @@ export default function Chat({
     },
     onError: (error) => {
       retryMessageId.current = null;
-      if (error instanceof ChatSDKError) {
-        toast.error(error.message);
-      } else {
-        console.error(error);
-        toast.error("Unknown error");
-      }
+      toast.error(error.message);
     },
   });
 

@@ -1,5 +1,4 @@
-import type { NextRequest } from "next/server";
-import { ChatSDKError } from "@/lib/errors";
+import { NextResponse, type NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { and, desc, eq, gt, lt, not, SQL } from "drizzle-orm";
@@ -15,16 +14,17 @@ export async function GET(request: NextRequest) {
   const endingBefore = searchParams.get("ending_before");
 
   if (startingAfter && endingBefore) {
-    return new ChatSDKError(
-      "bad_request:api",
-      "Only one of starting_after or ending_before can be provided."
-    ).toResponse();
+    return NextResponse.json({
+      error: "You can only pass one of 'starting_after' or 'ending_before'",
+    }, { status: 400 });
   }
 
   const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session) {
-    return new ChatSDKError("unauthorized:chat").toResponse();
+    return NextResponse.json({
+      error: "Unauthorized",
+    }, { status: 401 });
   }
 
   const userId = session.user.id;
@@ -54,13 +54,17 @@ export async function GET(request: NextRequest) {
         .limit(1);
 
       if (!selectedChat) {
-        throw new ChatSDKError(
-          "not_found:database",
-          `Chat with id ${startingAfter} not found`
+        return NextResponse.json(
+          {
+            error: "Chat (starting_after) not found",
+          },
+          { status: 404 }
         );
       }
 
-      filteredChats = await query(and(gt(chat.createdAt, selectedChat.createdAt), not(chat.isPinned)));
+      filteredChats = await query(
+        and(gt(chat.createdAt, selectedChat.createdAt), not(chat.isPinned))
+      );
     } else if (endingBefore) {
       const [selectedChat] = await db
         .select()
@@ -69,13 +73,17 @@ export async function GET(request: NextRequest) {
         .limit(1);
 
       if (!selectedChat) {
-        throw new ChatSDKError(
-          "not_found:database",
-          `Chat with id ${endingBefore} not found`
+        return NextResponse.json(
+          {
+            error: "Chat (ending_before) not found",
+          },
+          { status: 404 }
         );
       }
 
-      filteredChats = await query(and(lt(chat.createdAt, selectedChat.createdAt), not(chat.isPinned)));
+      filteredChats = await query(
+        and(lt(chat.createdAt, selectedChat.createdAt), not(chat.isPinned))
+      );
     } else {
       filteredChats = await query();
     }
@@ -87,9 +95,11 @@ export async function GET(request: NextRequest) {
       hasMore,
     });
   } catch (error) {
-    throw new ChatSDKError(
-      "bad_request:database",
-      "Failed to get chats by user id"
+    return NextResponse.json(
+      {
+        error: "Failed to get chats",
+      },
+      { status: 500 }
     );
   }
 }

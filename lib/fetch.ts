@@ -1,5 +1,3 @@
-import { ChatSDKError, ErrorCode } from "./errors";
-
 export async function fetchWithErrorHandlers(
   input: RequestInfo | URL,
   init?: RequestInit,
@@ -8,14 +6,14 @@ export async function fetchWithErrorHandlers(
     const response = await fetch(input, init);
 
     if (!response.ok) {
-      const { code, cause } = await response.json();
-      throw new ChatSDKError(code as ErrorCode, cause);
+      const { message } = await response.json();
+      throw new Error(message);
     }
 
     return response;
   } catch (error: unknown) {
     if (typeof navigator !== 'undefined' && !navigator.onLine) {
-      throw new ChatSDKError('offline:chat');
+      throw new Error("No internet connection");
     }
 
     throw error;
