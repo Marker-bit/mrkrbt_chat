@@ -26,8 +26,8 @@ import { z } from "zod";
 import { PostRequestBody, postRequestBodySchema } from "./schema";
 import { NextResponse } from "next/server";
 
-// Allow streaming responses up to 30 seconds
-export const maxDuration = 30;
+// Allow streaming responses up to 60 seconds
+export const maxDuration = 60;
 
 export async function POST(req: Request) {
   const session = await auth.api.getSession({
