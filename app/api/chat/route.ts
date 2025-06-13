@@ -432,7 +432,7 @@ export async function POST(req: Request) {
       sendReasoning: true,
       getErrorMessage: (err) => {
         console.error(err);
-        return "Something went wrong. Please try again later.";
+        return "Failed to get response. Please try again later.";
       },
     });
   } catch (error) {

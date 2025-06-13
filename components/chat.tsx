@@ -396,12 +396,13 @@ export default function Chat({
               </TextShimmer>
             )}
             {error && (
-              <>
+              <div className="flex flex-col gap-1">
                 <div>An error occurred.</div>
+                <div className="text-muted-foreground text-xs mb-2">{error.message}</div>
                 <Button type="button" onClick={() => reload()}>
                   Retry
                 </Button>
-              </>
+              </div>
             )}
             <div ref={bottomRef} />
           </div>

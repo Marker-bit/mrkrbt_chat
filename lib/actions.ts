@@ -15,7 +15,9 @@ export async function setApiKeysAsCookie(
   cookieStore.set("apiKeys", JSON.stringify(apiKeys));
 }
 
-export async function saveChatModelAsCookie(modelData: ModelData): Promise<void> {
+export async function saveChatModelAsCookie(
+  modelData: ModelData
+): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.set("selectedModelData", JSON.stringify(modelData));
 }
@@ -58,10 +60,19 @@ export async function generateTitleFromUserMessage({
 }) {
   let model: LanguageModel | undefined;
   for (const provider in PROVIDERS_TITLEGEN_MAP) {
-    if (!(provider in apiKeys) || (apiKeys[provider] === "" || apiKeys[provider] === undefined)) {
+    if (
+      !(provider in apiKeys) ||
+      apiKeys[provider] === "" ||
+      apiKeys[provider] === undefined
+    ) {
       continue;
     }
-    model = createModel(PROVIDERS_TITLEGEN_MAP[provider], provider, apiKeys[provider], {});
+    model = createModel(
+      PROVIDERS_TITLEGEN_MAP[provider],
+      provider,
+      apiKeys[provider],
+      {}
+    );
     if (model) {
       break;
     }
@@ -71,17 +82,21 @@ export async function generateTitleFromUserMessage({
     return "Unnamed";
   }
 
-  const { text: title } = await generateText({
-    model,
-    system: `\n
+  try {
+    const { text: title } = await generateText({
+      model,
+      system: `\n
     - you will generate a short title based on the first message a user begins a conversation with
     - ensure it is not more than 80 characters long
     - the title should be a summary of the user's message
     - do not use quotes or colons`,
-    prompt: JSON.stringify(message),
-  });
+      prompt: JSON.stringify(message),
+    });
 
-  return title;
+    return title;
+  } catch (error) {
+    return "Unnamed";
+  }
 }
 
 export async function updateChatVisibility({

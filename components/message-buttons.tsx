@@ -53,7 +53,7 @@ export default function MessageButtons({
         message.role === "assistant" ? index : index + 1
       );
     });
-    retryMessage(message.role === "assistant" ? message.id : nextMessage.id);
+    retryMessage(message.id);
   };
 
   const branchOff = async () => {
