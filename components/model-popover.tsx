@@ -11,6 +11,7 @@ import {
 } from "@/lib/models";
 import { cn, fetcher } from "@/lib/utils";
 import {
+  BrainCircuitIcon,
   BrainCogIcon,
   CheckIcon,
   ChevronLeftIcon,
@@ -210,19 +211,24 @@ export default function ModelPopover({
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button variant="ghost" size="sm" className="text-sm" ref={buttonRef}>
-            {openRouterModel ? (
-              <div className="font-mono">{openRouterModel}</div>
-            ) : (
-              <>
-                <div>{selectedChatModel?.title}</div>
-                {selectedChatModel?.additionalTitle && (
-                  <div className="text-xs text-muted-foreground max-sm:hidden">
-                    ({selectedChatModel.additionalTitle})
-                  </div>
-                )}
-              </>
-            )}
-            <ChevronUpIcon className="size-4" />
+            <div className="hidden sm:flex gap-2 items-center">
+              {openRouterModel ? (
+                <div className="font-mono">{openRouterModel}</div>
+              ) : (
+                <>
+                  <div>{selectedChatModel?.title}</div>
+                  {selectedChatModel?.additionalTitle && (
+                    <div className="text-xs text-muted-foreground max-sm:hidden">
+                      ({selectedChatModel.additionalTitle})
+                    </div>
+                  )}
+                </>
+              )}
+              <ChevronUpIcon className="size-4" />
+            </div>
+            <div className="sm:hidden">
+              <BrainCircuitIcon />
+            </div>
           </Button>
         </PopoverTrigger>
         <PopoverContent
@@ -408,7 +414,10 @@ export default function ModelPopover({
             </Button>
             <div className="flex gap-2 items-center">
               {apiKeys && "openrouter" in apiKeys && apiKeys["openrouter"] && (
-                <OpenRouterModel openRouterModel={openRouterModel} setOpenRouterModel={setOpenRouterModel} />
+                <OpenRouterModel
+                  openRouterModel={openRouterModel}
+                  setOpenRouterModel={setOpenRouterModel}
+                />
               )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

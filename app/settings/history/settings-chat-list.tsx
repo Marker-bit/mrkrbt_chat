@@ -103,7 +103,7 @@ export default function SettingsChatList({
             }
           />
           {chat.title}
-          <div className="ml-auto text-xs text-muted-foreground/80 font-mono">
+          <div className="ml-auto text-xs text-muted-foreground/80 font-mono text-end">
             {new Date(chat.createdAt).toLocaleString()}
           </div>
         </div>

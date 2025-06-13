@@ -2,15 +2,21 @@
 
 import FeatureIcon from "@/components/feature-icon";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth-client";
 import { FeatureId, FEATURES, MODELS } from "@/lib/models";
+import { RECOMMENDED_MODELS } from "@/lib/rec-models";
 import { fetcher } from "@/lib/utils";
-import { CheckIcon } from "lucide-react";
+import { CheckIcon, CopyXIcon, FilterIcon } from "lucide-react";
 import { useState } from "react";
 import useSWR from "swr";
 import ModelCard from "./model-card";
-import { RECOMMENDED_MODELS } from "@/lib/rec-models";
 
 export default function ModelsList({
   initialFavouriteModels,
@@ -33,11 +39,14 @@ export default function ModelsList({
       <div className="flex gap-2 justify-between">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline">Filter by features</Button>
+            <Button variant="outline">
+              <div className="sm:hidden">
+                <FilterIcon />
+              </div>
+              <div className="hidden sm:block">Filter by features</div>
+            </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="max-w-64"
-          >
+          <DropdownMenuContent className="max-w-64">
             {selectedFeatures.length > 0 && (
               <>
                 <DropdownMenuItem
@@ -83,6 +92,7 @@ export default function ModelsList({
               });
               mutate(RECOMMENDED_MODELS);
             }}
+            className="hidden sm:block"
           >
             Select recommended models
           </Button>
@@ -96,7 +106,10 @@ export default function ModelsList({
               mutate([]);
             }}
           >
-            Unselect all
+            <div className="sm:hidden">
+              <CopyXIcon />
+            </div>
+            <div className="hidden sm:block">Unselect all</div>
           </Button>
         </div>
       </div>
