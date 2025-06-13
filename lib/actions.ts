@@ -1,12 +1,12 @@
 "use server";
 
+import { generateText, LanguageModel, UIMessage } from "ai";
+import { and, eq, inArray } from "drizzle-orm";
 import { cookies, headers } from "next/headers";
 import { auth } from "./auth";
 import { db } from "./db/drizzle";
-import { and, eq, inArray } from "drizzle-orm";
 import { chat } from "./db/schema";
-import { generateText, LanguageModel, Provider, UIMessage } from "ai";
-import { createProvider, ModelData, PROVIDERS_TITLEGEN_MAP } from "./models";
+import { createModel, ModelData, PROVIDERS_TITLEGEN_MAP } from "./models";
 
 export async function setApiKeysAsCookie(
   apiKeys: Record<string, string>
@@ -56,14 +56,13 @@ export async function generateTitleFromUserMessage({
   message: UIMessage;
   apiKeys: Record<string, string>;
 }) {
-  let model: LanguageModel | null = null;
+  let model: LanguageModel | undefined;
   for (const provider in PROVIDERS_TITLEGEN_MAP) {
     if (apiKeys[provider] === undefined) {
       continue;
     }
-    const newP = createProvider(provider, apiKeys[provider]);
-    if (newP) {
-      model = newP.chat(PROVIDERS_TITLEGEN_MAP[provider]);
+    model = createModel(PROVIDERS_TITLEGEN_MAP[provider], provider, apiKeys[provider], {});
+    if (model) {
       break;
     }
   }

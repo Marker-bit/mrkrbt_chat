@@ -4,7 +4,7 @@ import { db } from "@/lib/db/drizzle";
 import { saveMessages } from "@/lib/db/queries";
 import { account, chat as chatTable } from "@/lib/db/schema";
 import { ChatSDKError } from "@/lib/errors";
-import { createProvider, MODELS } from "@/lib/models";
+import { createModel, MODELS } from "@/lib/models";
 import { getTrailingMessageId } from "@/lib/utils";
 import { webSearch } from "@/lib/web-search";
 import { createOpenAI } from "@ai-sdk/openai";
@@ -24,6 +24,7 @@ import { cookies, headers } from "next/headers";
 import { z } from "zod";
 import { PostRequestBody, postRequestBodySchema } from "./schema";
 import { Message } from "@/lib/db/db-types";
+import { GoogleGenerativeAIProviderOptions } from "@ai-sdk/google";
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
@@ -54,7 +55,8 @@ export async function POST(req: Request) {
     return new ChatSDKError("unauthorized:api").toResponse();
   }
 
-  const isOpenRouter = requestBody.selectedChatModel.modelId.startsWith("openrouter:");
+  const isOpenRouter =
+    requestBody.selectedChatModel.modelId.startsWith("openrouter:");
 
   const modelToRun = MODELS.find(
     (model) => model.id === requestBody.selectedChatModel.modelId
@@ -76,8 +78,12 @@ export async function POST(req: Request) {
     return new ChatSDKError("unauthorized:provider").toResponse();
   }
 
-  let providerData: { id: string; apiKey: string; modelName: string } | null =
-    null;
+  let providerData: {
+    id: string;
+    apiKey: string;
+    modelName: string;
+    additionalData?: Record<string, unknown>;
+  } | null = null;
 
   if (isOpenRouter) {
     providerData = {
@@ -97,6 +103,7 @@ export async function POST(req: Request) {
         id: chosenProvider,
         apiKey: keys[chosenProvider],
         modelName: modelToRun.providers[chosenProvider].modelName,
+        additionalData: modelToRun.providers[chosenProvider].additionalData,
       };
     } else {
       for (const provider in modelToRun.providers) {
@@ -107,6 +114,7 @@ export async function POST(req: Request) {
             id: provider,
             apiKey: providerApiKey,
             modelName: modelToRun.providers[provider].modelName,
+            additionalData: modelToRun.providers[provider].additionalData,
           };
           break;
         }
@@ -178,18 +186,24 @@ export async function POST(req: Request) {
     visibility: requestBody.visibilityType,
   });
 
-  const provider = createProvider(providerData.id, providerData.apiKey);
+  let model: LanguageModel | undefined;
 
-  if (!provider) {
+  try {
+    model = createModel(
+      providerData.modelName,
+      providerData.id,
+      providerData.apiKey,
+      {
+        ...providerData.additionalData,
+        effort: requestBody.selectedChatModel.options.effort,
+      }
+    );
+  } catch (e) {
+    console.error(e);
     return new ChatSDKError("unauthorized:provider").toResponse();
   }
 
-  let model: LanguageModel;
-
-  try {
-    model = provider.chat(providerData.modelName);
-  } catch (e) {
-    console.error(e);
+  if (!model) {
     return new ChatSDKError("unauthorized:provider").toResponse();
   }
 
@@ -236,29 +250,48 @@ export async function POST(req: Request) {
     tools.webSearch = webSearch;
   }
 
-  let prompt =
-    "You are a helpful assistant.";
+  let prompt = "You are a helpful assistant.";
 
   const additionalInfo = session.user.additionalInfo;
   if (additionalInfo) {
     prompt += `\nThe user has some preferences:\n${additionalInfo}`;
   }
 
+  let googleProviderOptions: GoogleGenerativeAIProviderOptions = {};
+
+  if (
+    providerData.id === "google" &&
+    providerData.additionalData &&
+    "thinking" in providerData.additionalData &&
+    providerData.additionalData.thinking === true
+  ) {
+    googleProviderOptions = {
+      thinkingConfig: {
+        thinkingBudget: 1024,
+        includeThoughts: true
+      }
+    };
+  }
+
+  console.log(googleProviderOptions)
+
   try {
     const result = streamText({
       model,
       system: prompt,
       messages,
-      tools: (!isOpenRouter && modelToRun.supportsTools) ? tools : undefined,
+      tools: !isOpenRouter && modelToRun.supportsTools ? tools : undefined,
       maxSteps: 2,
       providerOptions: {
-        openrouter: {
-          effort: requestBody.selectedChatModel.options.effort,
+        // openrouter: {
+        //   effort: requestBody.selectedChatModel.options.effort,
+        // },
+        // openai: {
+        //   effort: requestBody.selectedChatModel.options.effort,
+        // },
+        google: {
+          ...googleProviderOptions
         },
-        openai: {
-          effort: requestBody.selectedChatModel.options.effort,
-        },
-      //   google: { responseModalities: ["TEXT", "IMAGE"] },
       },
       experimental_transform: smoothStream({ chunking: "word" }),
       experimental_generateMessageId: () => crypto.randomUUID(),
@@ -334,7 +367,7 @@ export async function POST(req: Request) {
       },
     });
   } catch (error) {
-    console.error(error)
+    console.error(error);
     return new ChatSDKError("bad_request:stream").toResponse();
   }
 }
