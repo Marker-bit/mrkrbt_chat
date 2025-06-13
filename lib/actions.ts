@@ -52,6 +52,7 @@ export async function branchOffChat(
     userId: session.user.id,
     messages: newMessages,
     state: "complete",
+    title: oldChat.title,
   });
   return { chatId: newId };
 }
