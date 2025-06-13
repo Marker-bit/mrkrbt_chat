@@ -48,3 +48,7 @@ pnpm drizzle-kit push
 ```bash
 pnpm dev
 ```
+
+## Sources
+
+Since it is a cloneathon of [T3 Chat](https://t3.chat/), my app looks similar to it. Also, my prompt was created by looking at theirs.
