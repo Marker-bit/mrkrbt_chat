@@ -6,6 +6,7 @@ import {
   PencilIcon,
   PinIcon,
   PinOffIcon,
+  RefreshCcw,
   TrashIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -24,6 +25,11 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { format } from "date-fns";
 import { MODELS } from "@/lib/models";
+import { toast } from "sonner";
+import { regenerateChatTitle } from "@/lib/actions";
+import { mutate } from "swr";
+import { unstable_serialize } from "swr/infinite";
+import { getChatHistoryPaginationKey } from "./chat-list";
 
 const PureChatItem = ({
   chat,
@@ -66,8 +72,23 @@ Last updated: ${updatedAt}
     }
     const link = document.createElement("a");
     link.download = `${chat.title}.md`;
-    link.href = "data:text/markdown;charset=utf-8," + encodeURIComponent(markdown);
+    link.href =
+      "data:text/markdown;charset=utf-8," + encodeURIComponent(markdown);
     link.click();
+  };
+
+  const regenTitle = () => {
+    toast.promise(
+      () => regenerateChatTitle(chat.id),
+      {
+        loading: "Regenerating title...",
+        success: () => {
+          mutate(unstable_serialize(getChatHistoryPaginationKey));
+          return "Title regenerated successfully";
+        },
+        error: "Failed to regenerate title",
+      }
+    );
   };
 
   return (
@@ -129,7 +150,10 @@ Last updated: ${updatedAt}
               <PencilIcon />
               <span>Edit</span>
             </DropdownMenuItem>
-
+            <DropdownMenuItem onSelect={() => regenTitle()}>
+              <RefreshCcw />
+              <span>Regenerate title</span>
+            </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => exportChat()}>
               <DownloadIcon />
               <span>Export</span>

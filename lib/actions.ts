@@ -6,7 +6,12 @@ import { cookies, headers } from "next/headers";
 import { auth } from "./auth";
 import { db } from "./db/drizzle";
 import { chat } from "./db/schema";
-import { createModel, ModelData, PROVIDERS_TITLEGEN_MAP } from "./models";
+import {
+  createModel,
+  DEFAULT_API_KEYS_COOKIE,
+  ModelData,
+  PROVIDERS_TITLEGEN_MAP,
+} from "./models";
 
 export async function setApiKeysAsCookie(
   apiKeys: Record<string, string>
@@ -55,7 +60,7 @@ export async function generateTitleFromUserMessage({
   message,
   apiKeys,
 }: {
-  message: UIMessage;
+  message: UIMessage | UIMessage[];
   apiKeys: Record<string, string>;
 }) {
   let model: LanguageModel | undefined;
@@ -82,14 +87,22 @@ export async function generateTitleFromUserMessage({
     return "Unnamed";
   }
 
-  try {
-    const { text: title } = await generateText({
-      model,
-      system: `\n
+  const system = Array.isArray(message)
+    ? `\n
+    - you will generate a short title based on all messages in a chat
+    - ensure it is not more than 80 characters long
+    - the title should be a summary of the user's message
+    - do not use quotes or colons`
+    : `\n
     - you will generate a short title based on the first message a user begins a conversation with
     - ensure it is not more than 80 characters long
     - the title should be a summary of the user's message
-    - do not use quotes or colons`,
+    - do not use quotes or colons`;
+
+  try {
+    const { text: title } = await generateText({
+      model,
+      system,
       prompt: JSON.stringify(message),
     });
 
@@ -123,4 +136,26 @@ export async function updateChatTitle(chatId: string, title: string) {
 
 export async function deleteChats(chatIds: string[]) {
   await db.delete(chat).where(inArray(chat.id, chatIds));
+}
+
+export async function regenerateChatTitle(chatId: string) {
+  const chatFound = await db.query.chat.findFirst({
+    where: eq(chat.id, chatId),
+  });
+  if (!chatFound) {
+    return { error: "Chat not found" };
+  }
+  const cookiesInfo = await cookies();
+  let apiKeys: Record<string, string>;
+  try {
+    apiKeys = JSON.parse(cookiesInfo.get("apiKeys")?.value || "");
+  } catch {
+    apiKeys = DEFAULT_API_KEYS_COOKIE;
+  }
+  const title = await generateTitleFromUserMessage({
+    message: chatFound.messages as unknown as UIMessage[],
+    apiKeys,
+  });
+  await updateChatTitle(chatId, title);
+  return { title };
 }
