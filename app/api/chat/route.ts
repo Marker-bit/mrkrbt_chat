@@ -1,12 +1,14 @@
 import { generateTitleFromUserMessage } from "@/lib/actions";
 import { auth } from "@/lib/auth";
+import { Message } from "@/lib/db/db-types";
 import { db } from "@/lib/db/drizzle";
 import { saveMessages } from "@/lib/db/queries";
 import { account, chat as chatTable } from "@/lib/db/schema";
 import { ChatSDKError } from "@/lib/errors";
-import { createModel, MODELS } from "@/lib/models";
+import { createModel, MODELS, PROVIDERS } from "@/lib/models";
 import { getTrailingMessageId } from "@/lib/utils";
 import { webSearch } from "@/lib/web-search";
+import { GoogleGenerativeAIProviderOptions } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import { put } from "@vercel/blob";
 import {
@@ -23,8 +25,6 @@ import { eq } from "drizzle-orm";
 import { cookies, headers } from "next/headers";
 import { z } from "zod";
 import { PostRequestBody, postRequestBodySchema } from "./schema";
-import { Message } from "@/lib/db/db-types";
-import { GoogleGenerativeAIProviderOptions } from "@ai-sdk/google";
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
@@ -250,11 +250,21 @@ export async function POST(req: Request) {
     tools.webSearch = webSearch;
   }
 
-  let prompt = "You are a helpful assistant.";
+  const providerTitle = PROVIDERS.find(
+    (provider) => provider.id === providerData.id
+  )?.title;
+
+  let PROMPT = `I am mrkrbt.chat, an AI assistant powered by the ${modelToRun.title} model. My role is to assist and engage in conversation while being helpful, respectful, and engaging.
+- If you are specifically asked about the model I am using, I may mention that I use the ${modelToRun.title} model running on ${providerTitle} provider. If I am not asked specifically about the model I am using, I do not need to mention it.
+- Always use LaTeX for mathematical expressions:
+  - Math must be wrapped in double dollar signs: $$ content $$
+- Do not use the backslash character to escape parenthesis. Use the actual parentheses instead.
+- Ensure code is properly formatted using Prettier with a print width of 80 characters
+- Present code in Markdown code blocks with the correct language extension indicated`;
 
   const additionalInfo = session.user.additionalInfo;
   if (additionalInfo) {
-    prompt += `\nThe user has some preferences:\n${additionalInfo}`;
+    PROMPT += `\n- Additional context:\n${additionalInfo}`;
   }
 
   let googleProviderOptions: GoogleGenerativeAIProviderOptions = {};
@@ -265,36 +275,30 @@ export async function POST(req: Request) {
       "thinking" in providerData.additionalData &&
       providerData.additionalData.thinking === true
     ) {
-      googleProviderOptions = {
-        thinkingConfig: {
-          thinkingBudget: 1024,
-          includeThoughts: true,
-        },
-      };
-    }
-    if (requestBody.selectedChatModel.options.effort) {
-      let thinkingBudget = 1024;
-      if (requestBody.selectedChatModel.options.effort === "high") {
-        thinkingBudget = 16384;
-      } else if (requestBody.selectedChatModel.options.effort === "medium") {
-        thinkingBudget = 8192;
-      } else if (requestBody.selectedChatModel.options.effort === "low") {
-        thinkingBudget = 1024;
-      }
+      if (requestBody.selectedChatModel.options.effort) {
+        let thinkingBudget = 1024;
+        if (requestBody.selectedChatModel.options.effort === "high") {
+          thinkingBudget = 16384;
+        } else if (requestBody.selectedChatModel.options.effort === "medium") {
+          thinkingBudget = 8192;
+        } else if (requestBody.selectedChatModel.options.effort === "low") {
+          thinkingBudget = 1024;
+        }
 
-      googleProviderOptions = {
-        thinkingConfig: {
-          thinkingBudget,
-          includeThoughts: true,
-        },
-      };
+        googleProviderOptions = {
+          thinkingConfig: {
+            thinkingBudget,
+            includeThoughts: true,
+          },
+        };
+      }
     }
   }
 
   try {
     const result = streamText({
       model,
-      system: prompt,
+      system: PROMPT,
       messages,
       tools: !isOpenRouter && modelToRun.supportsTools ? tools : undefined,
       maxSteps: 2,

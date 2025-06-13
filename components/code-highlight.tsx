@@ -37,6 +37,9 @@ export const CodeHighlight = ({
 }: CodeHighlightProps) => {
   const code = String(children);
   const language = className?.match(/language-(\w+)/)?.[1];
+  if (language === "math") {
+    return code
+  }
   const [wordWrap, setWordWrap] = useState(false);
   const {resolvedTheme} = useTheme()
 
