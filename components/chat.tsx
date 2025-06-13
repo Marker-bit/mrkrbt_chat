@@ -23,6 +23,7 @@ import { MessageReasoning } from "./reasoning";
 import { Button } from "./ui/button";
 import { TextShimmer } from "./ui/text-shimmer";
 import EditingMessage from "./editing-message";
+import { motion } from "motion/react";
 
 export default function Chat({
   isMain = false,
@@ -50,6 +51,7 @@ export default function Chat({
   const [useWebSearch, setUseWebSearch] = useState(false);
   const retryMessageId = useRef<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const [onBottom, setOnBottom] = useState(false);
 
   const {
     messages,
@@ -115,7 +117,9 @@ export default function Chat({
   }, [chatState, sentMessage]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "instant" });
+    if (onBottom) {
+      bottomRef.current?.scrollIntoView({ behavior: "instant" });
+    }
   }, [messages]);
 
   useEffect(() => {
@@ -398,13 +402,19 @@ export default function Chat({
             {error && (
               <div className="flex flex-col gap-1">
                 <div>An error occurred.</div>
-                <div className="text-muted-foreground text-xs mb-2">{error.message}</div>
+                <div className="text-muted-foreground text-xs mb-2">
+                  {error.message}
+                </div>
                 <Button type="button" onClick={() => reload()}>
                   Retry
                 </Button>
               </div>
             )}
-            <div ref={bottomRef} />
+            <motion.div
+              onViewportEnter={() => setOnBottom(true)}
+              onViewportLeave={() => setOnBottom(false)}
+              ref={bottomRef}
+            />
           </div>
         </div>
       )}
