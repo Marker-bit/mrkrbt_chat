@@ -263,34 +263,40 @@ export async function POST(req: Request) {
         prompt: z.string().describe("The prompt to generate the image from"),
       }),
       execute: async ({ prompt }) => {
-        if (!("openai" in keys) || keys.openai.length === 0) {
+        try {
+          if (!("openai" in keys) || keys.openai.length === 0) {
+            return {
+              error: "API key for OpenAI not found",
+            };
+          }
+          const openai = createOpenAI({
+            apiKey: keys.openai,
+          });
+          const { image } = await experimental_generateImage({
+            model: openai.image("dall-e-3"),
+            prompt,
+            providerOptions: {
+              openai: {
+                quality: "standard",
+              },
+            },
+          });
+
+          const blob = await put(
+            crypto.randomUUID() + ".png",
+            new Blob([image.uint8Array], { type: "image/png" }),
+            {
+              access: "public",
+              addRandomSuffix: true,
+            }
+          );
+          // in production, save this image to blob storage and return a URL
+          return { image: blob.url, prompt };
+        } catch (e) {
           return {
-            error: "API key for OpenAI not found",
+            error: "Failed to generate image",
           };
         }
-        const openai = createOpenAI({
-          apiKey: keys.openai,
-        });
-        const { image } = await experimental_generateImage({
-          model: openai.image("dall-e-3"),
-          prompt,
-          providerOptions: {
-            openai: {
-              quality: "standard",
-            },
-          },
-        });
-
-        const blob = await put(
-          crypto.randomUUID() + ".png",
-          new Blob([image.uint8Array], { type: "image/png" }),
-          {
-            access: "public",
-            addRandomSuffix: true,
-          }
-        );
-        // in production, save this image to blob storage and return a URL
-        return { image: blob.url, prompt };
       },
     }),
   };
