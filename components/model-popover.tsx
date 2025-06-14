@@ -1,6 +1,7 @@
 "use client";
 
 import { saveChatModelAsCookie } from "@/lib/actions";
+import { authClient } from "@/lib/auth-client";
 import {
   effortToString,
   FeatureId,
@@ -32,7 +33,10 @@ import {
   useRef,
   useState,
 } from "react";
+import { toast } from "sonner";
+import useSWR from "swr";
 import FeatureIcon from "./feature-icon";
+import OpenRouterModel from "./openrouter-model";
 import { Button } from "./ui/button";
 import {
   DropdownMenu,
@@ -43,10 +47,6 @@ import {
 } from "./ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import useSWR from "swr";
-import { authClient } from "@/lib/auth-client";
-import { toast } from "sonner";
-import OpenRouterModel from "./openrouter-model";
 
 export default function ModelPopover({
   selectedModelData,
