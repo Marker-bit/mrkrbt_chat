@@ -260,7 +260,7 @@ export default function ModelPopover({
           </div>
           {big ? (
             <div className="flex flex-col gap-2 overflow-y-auto grow p-4 w-full">
-              <div className="text-primary-foreground text-lg flex gap-2 items-center">
+              <div className="text-primary text-lg flex gap-2 items-center">
                 <PinIcon className="size-4" />
                 Favorites
               </div>
@@ -280,7 +280,7 @@ export default function ModelPopover({
                         <div className="font-bold">{model.model}</div>
                         <div className="text-sm">{model.version}</div>
                         {model.additionalTitle && (
-                          <div className="text-primary-foreground text-xs">
+                          <div className="text-primary text-xs">
                             ({model.additionalTitle})
                           </div>
                         )}
@@ -311,7 +311,7 @@ export default function ModelPopover({
                   </div>
                 ))}
               </div>
-              <div className="text-primary-foreground text-lg">Others</div>
+              <div className="text-primary text-lg">Others</div>
               <div className="grid grid-cols-5 auto-rows-[160px] gap-2">
                 {filteredModels.map((model) => (
                   <div
@@ -328,7 +328,7 @@ export default function ModelPopover({
                         <div className="font-bold">{model.model}</div>
                         <div className="text-sm">{model.version}</div>
                         {model.additionalTitle && (
-                          <div className="text-primary-foreground text-xs">
+                          <div className="text-primary text-xs">
                             ({model.additionalTitle})
                           </div>
                         )}
