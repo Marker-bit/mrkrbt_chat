@@ -4,10 +4,10 @@ import { marked } from "marked";
 import { memo, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import { CodeHighlight } from "./code-highlight";
-import remarkMath from 'remark-math'
-import rehypeMathjax from 'rehype-mathjax'
-import remarkBreaks from 'remark-breaks'
-import remarkGfm from 'remark-gfm'
+import remarkMath from "remark-math";
+import rehypeMathjax from "rehype-mathjax";
+import remarkBreaks from "remark-breaks";
+import remarkGfm from "remark-gfm";
 
 function parseMarkdownIntoBlocks(markdown: string): string[] {
   const tokens = marked.lexer(markdown);
@@ -18,7 +18,11 @@ const MemoizedMarkdownBlock = memo(
   ({ content }: { content: string }) => {
     return (
       <ReactMarkdown
-        remarkPlugins={[remarkMath, remarkBreaks, remarkGfm]}
+        remarkPlugins={[
+          [remarkMath, { singleDollarTextMath: false }],
+          remarkBreaks,
+          remarkGfm,
+        ]}
         rehypePlugins={[rehypeMathjax]}
         components={{
           code: CodeHighlight,

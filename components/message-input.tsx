@@ -28,7 +28,6 @@ export default function MessageInput({
   setHeight,
   onSubmit,
   status,
-  stop,
   selectedModelData,
   setFiles,
   useWebSearch,
@@ -41,7 +40,6 @@ export default function MessageInput({
   setHeight?: (height: number) => void;
   onSubmit?: (message: string) => void;
   status: "submitted" | "streaming" | "ready" | "error";
-  stop: () => void;
   selectedModelData: ModelData;
   setFiles: (files: File[]) => void;
   useWebSearch: boolean;
@@ -55,7 +53,7 @@ export default function MessageInput({
     multiple: true,
     maxFiles: 5,
     maxSize: 5 * 1024 * 1024, // 5MB
-    accept: "*",
+    accept: "image/*,application/pdf",
   });
   const [measureRef, bounds] = useMeasure();
 
@@ -219,17 +217,9 @@ export default function MessageInput({
                   clearFiles();
                 }
               }}
-              disabled={
-                status === "ready"
-                  ? value.trim() === ""
-                  : status === "submitted"
-              }
+              disabled={status !== "ready" || value.trim() === ""}
             >
-              {status === "submitted" || status === "streaming" ? (
-                <SquareIcon className="size-5" />
-              ) : (
-                <ArrowUpIcon className="size-5" />
-              )}
+              <ArrowUpIcon className="size-5" />
             </Button>
           </div>
         </div>

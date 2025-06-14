@@ -60,7 +60,6 @@ export default function Chat({
     input,
     setInput,
     status,
-    stop,
     reload,
     error,
   } = useChat({
@@ -383,7 +382,7 @@ export default function Chat({
                 )}
               </div>
             ))}
-            {chatState === "loading" && !sentMessage && (
+            {chatState === "loading" && messages.at(-1)?.role === "user" && (
               <div className="border p-2 rounded-xl flex items-center gap-2">
                 <Loader2Icon className="animate-spin size-4" />
                 <div className="flex flex-col">
@@ -426,7 +425,6 @@ export default function Chat({
           setUseWebSearch={setUseWebSearch}
           setFiles={setFiles}
           selectedModelData={selectedModelData}
-          stop={stop}
           status={status}
           value={input}
           setValue={(value) => setInput(value)}

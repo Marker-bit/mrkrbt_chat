@@ -122,18 +122,19 @@ export const models: Model[] = [
   },
   {
     id: "magistral-medium",
-    title: "Magistral Small",
+    title: "Magistral Medium",
     model: "Magistral",
-    version: "Small",
+    version: "Medium",
     providers: {
       openrouter: {
         modelName: "mistralai/magistral-medium-2506",
         features: ["reasoning"],
       },
-      mistral: {
-        modelName: "magistral-medium-2506",
-        features: ["reasoning"],
-      },
+      // mistral: {
+      //   modelName: "magistral-medium-2506",
+      //   features: ["reasoning"],
+      // },
+      // commented out because AI SDK doesn't support Magistral reasoning yet
     },
     icon: MistralAI,
     supportsTools: false,
@@ -275,10 +276,11 @@ export const models: Model[] = [
         modelName: "mistralai/magistral-small-2506",
         features: ["reasoning"],
       },
-      mistral: {
-        modelName: "magistral-small-2506",
-        features: ["reasoning"],
-      },
+      // mistral: {
+      //   modelName: "magistral-small-2506",
+      //   features: ["reasoning"],
+      // },
+      // commented out because AI SDK doesn't support Magistral reasoning yet
     },
     icon: MistralAI,
     supportsTools: false,

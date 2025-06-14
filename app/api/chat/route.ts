@@ -307,6 +307,7 @@ export async function POST(req: Request) {
 - If you are specifically asked about the model I am using, I may mention that I use the ${modelToRun.title} model running on ${providerTitle} provider. If I am not asked specifically about the model I am using, I do not need to mention it.
 - Always use LaTeX for mathematical expressions:
   - Math must be wrapped in double dollar signs: $$ content $$
+  - Always put things like \\boxed also in double dollar signs
 - Do not use the backslash character to escape parenthesis. Use the actual parentheses instead.
 - Ensure code is properly formatted using Prettier with a print width of 80 characters
 - Present code in Markdown code blocks with the correct language extension indicated`;
