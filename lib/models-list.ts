@@ -312,11 +312,11 @@ export const models: Model[] = [
     providers: {
       openrouter: {
         modelName: "mistralai/mistral-small-2503",
-        features: ["vision"],
+        features: ["vision", "fast"],
       },
       mistral: {
         modelName: "mistral-small-2503",
-        features: ["vision"],
+        features: ["vision", "fast"],
       },
     },
     icon: MistralAI,

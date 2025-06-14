@@ -263,7 +263,7 @@ export async function POST(req: Request) {
         prompt: z.string().describe("The prompt to generate the image from"),
       }),
       execute: async ({ prompt }) => {
-        if (!("openai" in keys)) {
+        if (!("openai" in keys) || keys.openai.length === 0) {
           return {
             error: "API key for OpenAI not found",
           };
