@@ -10,7 +10,7 @@ import {
   TrashIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,6 +48,10 @@ const PureChatItem = ({
 }) => {
   const [editing, setEditing] = useState(false);
   const [title, setLocalTitle] = useState(chat.title);
+
+  useEffect(() => {
+    setLocalTitle(chat.title);
+  }, [chat.title]);
 
   const submit = () => {
     setEditing(false);
