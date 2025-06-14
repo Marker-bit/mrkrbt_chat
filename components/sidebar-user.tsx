@@ -34,9 +34,6 @@ export default function SidebarUser() {
         </Avatar>
         <div className="grid flex-1 text-left text-sm leading-tight">
           <span className="truncate font-medium">{session.user.name}</span>
-          <span className="truncate text-muted-foreground text-xs">
-            {session.user.email}
-          </span>
         </div>
       </Link>
     </SidebarMenuButton>
