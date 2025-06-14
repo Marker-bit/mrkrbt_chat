@@ -11,6 +11,7 @@ import { GoogleGenerativeAIProviderOptions } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import { put } from "@vercel/blob";
 import {
+  APICallError,
   appendClientMessage,
   appendResponseMessages,
   experimental_generateImage,
@@ -277,7 +278,7 @@ export async function POST(req: Request) {
             prompt,
             providerOptions: {
               openai: {
-                quality: "standard",
+                quality: "low",
               },
             },
           });
@@ -293,8 +294,13 @@ export async function POST(req: Request) {
           // in production, save this image to blob storage and return a URL
           return { image: blob.url, prompt };
         } catch (e) {
+          if (e instanceof APICallError) {
+            return {
+              error: e.message,
+            };
+          }
           return {
-            error: "Failed to generate image",
+            error: "Something happened",
           };
         }
       },
