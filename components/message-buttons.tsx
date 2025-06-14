@@ -84,7 +84,7 @@ export default function MessageButtons({
   );
 
   return (
-    <div className="flex gap-1 items-center opacity-0 group-hover:opacity-100 transition">
+    <div className="flex gap-1 items-center opacity-0 group-hover:opacity-100 max-sm:opacity-100 transition">
       <Tooltip>
         <TooltipTrigger asChild>
           <Button

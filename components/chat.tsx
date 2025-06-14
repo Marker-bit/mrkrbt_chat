@@ -278,7 +278,7 @@ export default function Chat({
                               }
                               return (
                                 <div
-                                  className="relative rounded-xl overflow-hidden size-[400px] group/image"
+                                  className="relative rounded-xl overflow-hidden size-[400px] max-w-full group/image"
                                   key={part.toolInvocation.toolCallId}
                                 >
                                   <Image
@@ -288,7 +288,7 @@ export default function Chat({
                                     width={400}
                                   />
                                   <div
-                                    className="absolute bottom-0 left-0 w-full p-2 pt-4 opacity-0 group-hover/image:opacity-100 transition"
+                                    className="absolute bottom-0 left-0 w-full p-2 pt-4 opacity-0 group-hover/image:opacity-100 max-sm:opacity-100 transition"
                                     style={{
                                       backgroundImage:
                                         "linear-gradient(to top, color-mix(in oklab, var(--background) 100%, transparent), color-mix(in oklab, var(--background) 80%, transparent) 50%, transparent)",
