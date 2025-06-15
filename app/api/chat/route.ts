@@ -320,6 +320,7 @@ export async function POST(req: Request) {
 - Always use LaTeX for mathematical expressions:
   - Math must be wrapped in double dollar signs: $$ content $$
   - Always put things like \\boxed also in double dollar signs
+  - Never use single dollar signs for math
 - Do not use the backslash character to escape parenthesis. Use the actual parentheses instead.
 - Ensure code is properly formatted using Prettier with a print width of 80 characters
 - Present code in Markdown code blocks with the correct language extension indicated`;
