@@ -340,7 +340,7 @@ export default function Chat({
                                     href={attachment.url}
                                     target="_blank"
                                     download={attachment.name}
-                                    className="absolute inset-0 bg-accent/80 opacity-0 group-hover/attachment:opacity-100 flex items-center justify-center"
+                                    className="absolute inset-0 bg-accent/80 opacity-0 group-hover/attachment:opacity-100 transition flex items-center justify-center"
                                   >
                                     <DownloadIcon className="size-4" />
                                   </a>

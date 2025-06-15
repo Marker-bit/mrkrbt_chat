@@ -1,6 +1,6 @@
 "use client";
 
-import { saveChatModelAsCookie } from "@/lib/actions";
+import { useSelectedModelData } from "@/hooks/use-selected-model-data";
 import { authClient } from "@/lib/auth-client";
 import {
   effortToString,
@@ -29,9 +29,8 @@ import {
 import {
   startTransition,
   useMemo,
-  useOptimistic,
   useRef,
-  useState,
+  useState
 } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
@@ -93,45 +92,37 @@ export default function ModelPopover({
     );
   }
 
-  const [optimisticModelData, setOptimisticModelData] =
-    useOptimistic(selectedModelData);
+  const { modelData, setModelData } = useSelectedModelData({
+    initialModelData: selectedModelData,
+  });
 
   const openRouterModel =
-    optimisticModelData.modelId.startsWith("openrouter:") &&
-    optimisticModelData.modelId.slice(11);
+    modelData.modelId.startsWith("openrouter:") && modelData.modelId.slice(11);
 
   const selectedChatModel = useMemo(
-    () =>
-      MODELS.find((chatModel) => chatModel.id === optimisticModelData.modelId),
-    [optimisticModelData, MODELS]
+    () => MODELS.find((chatModel) => chatModel.id === modelData.modelId),
+    [modelData, MODELS]
   );
 
   const setModel = (modelId: string) => {
     setOpen(false);
 
-    startTransition(() => {
-      const chosenModel = MODELS.find((model) => model.id === modelId)!;
-      const modelAvailableProviders = Object.keys(chosenModel.providers);
-      let provider: string | undefined;
-      if (
-        !modelAvailableProviders.includes(
-          optimisticModelData.options.provider || ""
-        )
-      ) {
-        provider = Object.keys(chosenModel.providers).find(
-          (provider) => provider in apiKeys && apiKeys[provider].length > 0
-        );
-      } else {
-        provider = optimisticModelData.options.provider;
-      }
-      const newModelData: ModelData = {
-        ...optimisticModelData,
-        modelId,
-        options: { ...optimisticModelData.options, provider },
-      };
-      setOptimisticModelData(newModelData);
-      saveChatModelAsCookie(newModelData);
-    });
+    const chosenModel = MODELS.find((model) => model.id === modelId)!;
+    const modelAvailableProviders = Object.keys(chosenModel.providers);
+    let provider: string | undefined;
+    if (!modelAvailableProviders.includes(modelData.options.provider || "")) {
+      provider = Object.keys(chosenModel.providers).find(
+        (provider) => provider in apiKeys && apiKeys[provider].length > 0
+      );
+    } else {
+      provider = modelData.options.provider;
+    }
+    const newModelData: ModelData = {
+      ...modelData,
+      modelId,
+      options: { ...modelData.options, provider },
+    };
+    setModelData(newModelData);
   };
 
   const setOpenRouterModel = (modelId: string) => {
@@ -139,50 +130,37 @@ export default function ModelPopover({
 
     startTransition(() => {
       const newModelData: ModelData = {
-        ...optimisticModelData,
+        ...modelData,
         modelId: `openrouter:${modelId}`,
-        options: { ...optimisticModelData.options, provider: "openrouter" },
+        options: { ...modelData.options, provider: "openrouter" },
       };
-      setOptimisticModelData(newModelData);
-      saveChatModelAsCookie(newModelData);
+      setModelData(newModelData);
     });
   };
 
   const setEffort = (effort: ModelData["options"]["effort"]) => {
     setOpen(false);
-    startTransition(() => {
-      setOptimisticModelData({
-        ...optimisticModelData,
-        options: { ...optimisticModelData.options, effort },
-      });
-      saveChatModelAsCookie({
-        ...optimisticModelData,
-        options: { ...optimisticModelData.options, effort },
-      });
+    setModelData({
+      ...modelData,
+      options: { ...modelData.options, effort },
     });
   };
 
   const setProvider = (providerId: string) => {
-    startTransition(() => {
-      setOptimisticModelData({
-        ...optimisticModelData,
-        options: { ...optimisticModelData.options, provider: providerId },
-      });
-      saveChatModelAsCookie({
-        ...optimisticModelData,
-        options: { ...optimisticModelData.options, provider: providerId },
-      });
+    setModelData({
+      ...modelData,
+      options: { ...modelData.options, provider: providerId },
     });
   };
 
   const selectedProvider = useMemo(
     () =>
-      optimisticModelData.options.provider
+      modelData.options.provider
         ? PROVIDERS.find(
-            (provider) => provider.id === optimisticModelData.options.provider
+            (provider) => provider.id === modelData.options.provider
           )!
         : null,
-    [optimisticModelData, PROVIDERS]
+    [modelData, PROVIDERS]
   );
 
   const setPinned = async (pinned: boolean, modelId: string) => {
@@ -523,8 +501,9 @@ export default function ModelPopover({
                             );
                           }
                         )}
-                        {optimisticModelData.options.provider ===
-                          provider.id && <CheckIcon className="size-4" />}
+                        {modelData.options.provider === provider.id && (
+                          <CheckIcon className="size-4" />
+                        )}
                       </div>
                     </DropdownMenuItem>
                   );

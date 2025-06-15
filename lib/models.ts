@@ -4,14 +4,10 @@ import MistralAI from "@/components/icons/mistral";
 import OpenAI from "@/components/icons/openai";
 import OpenRouter from "@/components/icons/openrouter";
 import { createDeepSeek } from "@ai-sdk/deepseek";
-import {
-  createGoogleGenerativeAI
-} from "@ai-sdk/google";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createMistral } from "@ai-sdk/mistral";
 import { createOpenAI } from "@ai-sdk/openai";
-import {
-  createOpenRouter
-} from "@openrouter/ai-sdk-provider";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { LanguageModel } from "ai";
 import { Brain, Eye, FileText, Settings2, ZapIcon } from "lucide-react";
 import { models } from "./models-list";
@@ -22,7 +18,14 @@ export type Model = {
   model: string;
   version: string;
   additionalTitle?: string;
-  providers: Record<string, { modelName: string; features: FeatureId[]; additionalData?: Record<string, unknown> }>;
+  providers: Record<
+    string,
+    {
+      modelName: string;
+      features: FeatureId[];
+      additionalData?: Record<string, unknown>;
+    }
+  >;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   supportsTools: boolean;
 };
@@ -189,11 +192,11 @@ export function createModel(
 
     case "mistral":
       const mistral = createMistral({ apiKey });
-      return mistral.chat(modelId)
+      return mistral.chat(modelId);
 
     case "deepseek":
       const deepseek = createDeepSeek({ apiKey });
-      return deepseek.chat(modelId)
+      return deepseek.chat(modelId);
 
     default:
       break;

@@ -1,10 +1,10 @@
 import { auth } from "@/lib/auth";
+import { getAPIKeys, getModelData } from "@/lib/cookie-utils";
 import { db } from "@/lib/db/drizzle";
 import { and, or } from "drizzle-orm";
-import { cookies, headers } from "next/headers";
+import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import ChatPage from "./_components/chat-page";
-import { DEFAULT_API_KEYS_COOKIE, parseModelData } from "@/lib/models";
 
 export default async function Home({
   params,
@@ -33,24 +33,15 @@ export default async function Home({
     return notFound();
   }
 
-  const cookiesInfo = await cookies();
-  let apiKeys: Record<string, string>;
-  try {
-    apiKeys = JSON.parse(cookiesInfo.get("apiKeys")?.value || "");
-  } catch {
-    apiKeys = DEFAULT_API_KEYS_COOKIE;
-    // cookiesInfo.set("apiKeys", JSON.stringify(apiKeys));
-  }
+  const apiKeys = await getAPIKeys()
+  const selectedModelData = await getModelData();
 
   return (
     <ChatPage
       id={id}
       chat={chat}
       readOnly={chat.visibility === "public" && session.user.id !== chat.userId}
-      // readOnly={chat.visibility === "public"}
-      selectedModelData={parseModelData(
-        cookiesInfo.get("selectedModelData")?.value || ""
-      )}
+      selectedModelData={selectedModelData}
       initialVisibilityType={chat.visibility}
       apiKeys={apiKeys}
     />

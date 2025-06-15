@@ -3,23 +3,19 @@ import {
   AutosizeTextAreaRef,
 } from "@/components/ui/autosize-textarea";
 import { Button } from "@/components/ui/button";
-import { Toggle } from "@/components/ui/toggle";
+import { formatBytes, useFileUpload } from "@/hooks/use-file-upload";
+import { ModelData, MODELS } from "@/lib/models";
 import {
   AlertCircleIcon,
   ArrowUpIcon,
-  ChevronUpIcon,
   GlobeIcon,
-  Paperclip,
   PaperclipIcon,
   PlusIcon,
-  SquareIcon,
-  XIcon,
+  XIcon
 } from "lucide-react";
 import { RefObject, useEffect, useMemo } from "react";
 import useMeasure from "react-use-measure";
 import ModelPopover from "./model-popover";
-import { formatBytes, useFileUpload } from "@/hooks/use-file-upload";
-import { ModelData, MODELS } from "@/lib/models";
 
 export default function MessageInput({
   value,
@@ -72,11 +68,6 @@ export default function MessageInput({
   useEffect(() => {
     setFiles(files.map((file) => file.file as File));
   }, [files]);
-
-  // const availableChatModels = MODELS;
-
-  // const [optimisticModelId, setOptimisticModelId] =
-  //   useOptimistic(selectedModelData);
 
   const selectedChatModel = useMemo(
     () =>
