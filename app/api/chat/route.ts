@@ -231,7 +231,7 @@ export async function POST(req: Request) {
 
   try {
     model = createModel(
-      providerData.modelName,
+      modelToRun,
       providerData.id,
       providerData.apiKey,
       {

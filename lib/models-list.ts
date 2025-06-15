@@ -7,6 +7,25 @@ import { Model } from "./models";
 
 export const models: Model[] = [
   {
+    id: "gemini-2.0-flash-lite",
+    title: "Gemini 2.0 Flash",
+    model: "Gemini",
+    version: "2.0 Flash",
+    additionalTitle: "Lite",
+    providers: {
+      google: {
+        modelName: "models/gemini-2.0-flash-lite",
+        features: ["vision", "pdfs"],
+      },
+      openrouter: {
+        modelName: "google/gemini-2.0-flash-lite-001",
+        features: ["vision", "pdfs"],
+      },
+    },
+    icon: Gemini,
+    supportsTools: true,
+  },
+  {
     id: "gemini-2.5-flash",
     title: "Gemini 2.5 Flash",
     model: "Gemini",
@@ -103,21 +122,6 @@ export const models: Model[] = [
       openrouter: { modelName: "qwen/qwen3-32b", features: ["reasoning"] },
     },
     icon: Qwen,
-    supportsTools: true,
-  },
-  {
-    id: "chatgpt-4.1",
-    title: "GPT 4.1 Nano",
-    model: "GPT",
-    version: "4.1 Nano",
-    providers: {
-      openrouter: { modelName: "qwen/qwen3-32b", features: ["reasoning"] },
-      openai: {
-        modelName: "gpt-4.1-nano-2025-04-14",
-        features: ["reasoning", "pdfs", "vision"],
-      },
-    },
-    icon: OpenAI,
     supportsTools: true,
   },
   {
@@ -339,6 +343,39 @@ export const models: Model[] = [
       },
     },
     icon: MistralAI,
+    supportsTools: true,
+  },
+  {
+    id: "gpt-4.1",
+    title: "GPT 4.1",
+    model: "GPT",
+    version: "4.1",
+    providers: {
+      openrouter: {
+        modelName: "openai/gpt-4.1-2025-04-14",
+        features: ["vision"],
+      },
+      openai: {
+        modelName: "gpt-4.1-2025-04-14",
+        features: ["vision"],
+      },
+    },
+    icon: OpenAI,
+    supportsTools: true,
+  },
+  {
+    id: "gpt-4.1-nano",
+    title: "GPT 4.1 Nano",
+    model: "GPT",
+    version: "4.1 Nano",
+    providers: {
+      openrouter: { modelName: "openai/gpt-4.1-nano-2025-04-14", features: ["vision"] },
+      openai: {
+        modelName: "gpt-4.1-nano-2025-04-14",
+        features: ["vision"],
+      },
+    },
+    icon: OpenAI,
     supportsTools: true,
   },
 ];

@@ -145,13 +145,12 @@ export const MODELS = models.map((model) => ({
   features: extractModelFeatures(model),
 }));
 
-export const PROVIDERS_TITLEGEN_MAP: Record<string, string> = {
-  openrouter: "google/gemini-2.0-flash-001",
-  google: "models/gemini-2.0-flash-lite",
-};
+export const TITLEGEN_MODELS: string[] = [
+  "gemini-2.0-flash-lite",
+]
 
 export function createModel(
-  modelId: string,
+  model: Model,
   providerId: string,
   apiKey: string,
   additionalData: Record<string, unknown>
@@ -163,6 +162,11 @@ export function createModel(
   ) {
     throw new Error("Invalid effort");
   }
+
+  const provider = model.providers[providerId];
+
+  const modelId = provider.modelName;
+
   switch (providerId) {
     case "openrouter":
       const openRouter = createOpenRouter({ apiKey });
@@ -180,7 +184,7 @@ export function createModel(
       const openAI = createOpenAI({ apiKey });
       return openAI.chat(
         modelId,
-        additionalData.effort
+        (additionalData.effort && provider.features.includes("reasoning"))
           ? {
               reasoningEffort: additionalData.effort as
                 | "high"

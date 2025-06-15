@@ -10,7 +10,8 @@ import {
   createModel,
   DEFAULT_API_KEYS_COOKIE,
   ModelData,
-  PROVIDERS_TITLEGEN_MAP,
+  MODELS,
+  TITLEGEN_MODELS,
 } from "./models";
 
 export async function setApiKeysAsCookie(
@@ -65,22 +66,25 @@ export async function generateTitleFromUserMessage({
   apiKeys: Record<string, string>;
 }) {
   let model: LanguageModel | undefined;
-  for (const provider in PROVIDERS_TITLEGEN_MAP) {
-    if (
-      !(provider in apiKeys) ||
-      apiKeys[provider] === "" ||
-      apiKeys[provider] === undefined
-    ) {
-      continue;
-    }
-    model = createModel(
-      PROVIDERS_TITLEGEN_MAP[provider],
-      provider,
-      apiKeys[provider],
-      {}
-    );
-    if (model) {
-      break;
+  for (const modelId of TITLEGEN_MODELS) {
+    const modelFound = MODELS.find((model) => model.id === modelId)!;
+    for (const provider in modelFound.providers) {
+      if (
+        !(provider in apiKeys) ||
+        apiKeys[provider] === "" ||
+        apiKeys[provider] === undefined
+      ) {
+        continue;
+      }
+      model = createModel(
+        modelFound,
+        provider,
+        apiKeys[provider],
+        {}
+      );
+      if (model) {
+        break;
+      }
     }
   }
 
