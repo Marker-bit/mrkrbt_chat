@@ -68,7 +68,7 @@ export async function encryptData(data: string): Promise<{ encrypted: string, se
 export async function decryptData(encrypted: string, secret: string): Promise<string> {
     // 1. Decode the Base64 secret key and import it
     const decodedKey = Uint8Array.from(atob(secret), c => c.charCodeAt(0));
-    const key = await crypto.subtle.importKey(
+    const key = await window.crypto.subtle.importKey(
         "raw",
         decodedKey,
         { name: "AES-GCM" },
@@ -84,7 +84,7 @@ export async function decryptData(encrypted: string, secret: string): Promise<st
     const ciphertext = fullCiphertext.slice(16);
 
     // 4. Decrypt the data
-    const decryptedBuffer = await crypto.subtle.decrypt(
+    const decryptedBuffer = await window.crypto.subtle.decrypt(
         {
             name: "AES-GCM",
             iv: iv,

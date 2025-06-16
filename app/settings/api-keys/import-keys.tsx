@@ -12,12 +12,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { setApiKeysAsCookie } from "@/lib/actions";
-import * as crypto from "crypto";
 import { Loader2Icon, UploadIcon } from "lucide-react";
-import { useState } from "react";
-import { decryptData } from "./encryption";
-import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
+import { decryptData } from "./encryption";
 
 export default function ImportKeysDialog({
   className,
