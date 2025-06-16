@@ -26,20 +26,25 @@ export default function ImportKeysDialog({
   const [data, setData] = useState("");
   const [secret, setSecret] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter()
+  const router = useRouter();
 
   const handleImport = async () => {
     if (!data || !secret) return;
 
     setLoading(true);
 
-    const apiKeys = await decryptData(data, secret);
     try {
-      await setApiKeysAsCookie(JSON.parse(apiKeys));
-      toast.success("API keys imported successfully");
-      router.refresh()
+      const apiKeys = await decryptData(data, secret);
+      try {
+        await setApiKeysAsCookie(JSON.parse(apiKeys));
+        toast.success("API keys imported successfully");
+        router.refresh();
+      } catch (error) {
+        toast.error("Error parsing API keys");
+      }
     } catch (error) {
-      toast.error("Error parsing API keys");
+      console.error(error);
+      toast.error("Error decrypting API keys");
     }
 
     setLoading(false);
