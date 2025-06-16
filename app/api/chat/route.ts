@@ -276,11 +276,6 @@ export async function POST(req: Request) {
           const { image } = await experimental_generateImage({
             model: openai.image("dall-e-3"),
             prompt,
-            providerOptions: {
-              openai: {
-                quality: "low",
-              },
-            },
           });
 
           const blob = await put(
