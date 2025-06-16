@@ -83,6 +83,14 @@ export default function Chat({
       if (isMain) {
         router.push(`/chat/${id}`, { scroll: false });
       }
+      setMessages((messages) => {
+        const previousMessages = messages.slice(0, messages.length - 1);
+        const lastMessage = messages[messages.length - 1];
+        return [
+          ...previousMessages,
+          { ...lastMessage, modelData: selectedModelData },
+        ];
+      });
     },
     onError: (error) => {
       retryMessageId.current = null;
@@ -367,17 +375,19 @@ export default function Chat({
                         )
                       )}
                     </div>
-                    <MessageButtons
-                      chatId={id}
-                      retryMessage={retryMessage}
-                      setMessages={setMessages}
-                      message={message}
-                      readOnly={readOnly}
-                      nextMessage={messages[msgIndex + 1]}
-                      setEditingMessage={(editing) =>
-                        setEditingMessage(editing ? message.id : null)
-                      }
-                    />
+                    {(status === "ready" || msgIndex < messages.length - 1) && (
+                      <MessageButtons
+                        chatId={id}
+                        retryMessage={retryMessage}
+                        setMessages={setMessages}
+                        message={message}
+                        readOnly={readOnly}
+                        nextMessage={messages[msgIndex + 1]}
+                        setEditingMessage={(editing) =>
+                          setEditingMessage(editing ? message.id : null)
+                        }
+                      />
+                    )}
                   </>
                 )}
               </div>
