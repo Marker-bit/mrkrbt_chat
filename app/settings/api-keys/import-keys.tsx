@@ -27,6 +27,7 @@ export default function ImportKeysDialog({
   const [secret, setSecret] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [open, setOpen] = useState(false);
 
   const handleImport = async () => {
     if (!data || !secret) return;
@@ -38,6 +39,7 @@ export default function ImportKeysDialog({
       try {
         await setApiKeysAsCookie(JSON.parse(apiKeys));
         toast.success("API keys imported successfully");
+        setOpen(false);
         router.refresh();
       } catch (error) {
         toast.error("Error parsing API keys");
@@ -51,7 +53,7 @@ export default function ImportKeysDialog({
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" className={className}>
           <UploadIcon />
