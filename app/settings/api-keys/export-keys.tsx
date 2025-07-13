@@ -32,7 +32,7 @@ export default function ExportKeysDialog({
         <DialogHeader>
           <DialogTitle>Export keys</DialogTitle>
           <DialogDescription>
-            Copy the secret and the info encoded in SHA256 below and import them on another device
+            Copy the secret and the info encoded in AES-256-GCM below and import them on another device
             or in another browser.
           </DialogDescription>
         </DialogHeader>
