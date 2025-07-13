@@ -5,7 +5,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import { cookies, headers } from "next/headers";
 import { auth } from "./auth";
 import { db } from "./db/drizzle";
-import { chat } from "./db/schema";
+import { attachment, chat } from "./db/schema";
 import {
   createModel,
   DEFAULT_API_KEYS_COOKIE,
@@ -13,6 +13,7 @@ import {
   MODELS,
   TITLEGEN_MODELS,
 } from "./models";
+import { del } from "@vercel/blob";
 
 export async function setApiKeysAsCookie(
   apiKeys: Record<string, string>
@@ -163,4 +164,23 @@ export async function regenerateChatTitle(chatId: string) {
   });
   await updateChatTitle(chatId, title);
   return { title };
+}
+
+export async function deleteImages(imageIds: string[]) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) {
+    return { error: "Unauthorized" };
+  }
+
+  const attachments = await db.query.attachment.findMany({
+    where: (attachment, { eq }) => eq(attachment.userId, session.user.id),
+  });
+  
+  await db.delete(attachment).where(and(inArray(attachment.id, imageIds), eq(attachment.userId, session.user.id)));
+
+  for (const attachment of attachments) {
+    await del(attachment.url);
+  }
+
+  return { success: true };
 }

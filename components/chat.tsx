@@ -94,6 +94,7 @@ export default function Chat({
     },
     onError: (error) => {
       retryMessageId.current = null;
+      console.log(error)
       toast.error(error.message);
     },
   });

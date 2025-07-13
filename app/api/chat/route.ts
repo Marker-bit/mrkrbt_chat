@@ -1,15 +1,15 @@
-import { generateTitleFromUserMessage } from "@/lib/actions";
-import { auth } from "@/lib/auth";
-import { Message } from "@/lib/db/db-types";
-import { db } from "@/lib/db/drizzle";
-import { saveMessages } from "@/lib/db/queries";
-import { account, chat as chatTable } from "@/lib/db/schema";
-import { createModel, MODELS, PROVIDERS } from "@/lib/models";
-import { getTrailingMessageId } from "@/lib/utils";
-import { webSearch } from "@/lib/web-search";
-import { GoogleGenerativeAIProviderOptions } from "@ai-sdk/google";
-import { createOpenAI } from "@ai-sdk/openai";
-import { put } from "@vercel/blob";
+import { generateTitleFromUserMessage } from "@/lib/actions"
+import { auth } from "@/lib/auth"
+import { Message } from "@/lib/db/db-types"
+import { db } from "@/lib/db/drizzle"
+import { saveMessages } from "@/lib/db/queries"
+import { account, chat as chatTable } from "@/lib/db/schema"
+import { createModel, MODELS, PROVIDERS } from "@/lib/models"
+import { getTrailingMessageId } from "@/lib/utils"
+import { webSearch } from "@/lib/web-search"
+import { GoogleGenerativeAIProviderOptions } from "@ai-sdk/google"
+import { createOpenAI } from "@ai-sdk/openai"
+import { put } from "@vercel/blob"
 import {
   APICallError,
   appendClientMessage,
@@ -20,105 +20,106 @@ import {
   streamText,
   Tool,
   tool,
-} from "ai";
-import { eq } from "drizzle-orm";
-import { cookies, headers } from "next/headers";
-import { z } from "zod";
-import { PostRequestBody, postRequestBodySchema } from "./schema";
-import { NextResponse } from "next/server";
+} from "ai"
+import { eq } from "drizzle-orm"
+import { cookies, headers } from "next/headers"
+import { z } from "zod"
+import { PostRequestBody, postRequestBodySchema } from "./schema"
+import { NextResponse } from "next/server"
+import { createOpenRouter } from "@openrouter/ai-sdk-provider"
 
 // Allow streaming responses up to 60 seconds
-export const maxDuration = 60;
+export const maxDuration = 60
 
 export async function POST(req: Request) {
   const session = await auth.api.getSession({
     headers: await headers(),
-  });
+  })
 
   if (!session) {
     return NextResponse.json(
       {
-        error: "Unauthorized",
+        message: "Unauthorized",
       },
       { status: 401 }
-    );
+    )
   }
 
-  let requestBody: PostRequestBody;
+  let requestBody: PostRequestBody
 
   try {
-    const json = await req.json();
-    requestBody = postRequestBodySchema.parse(json);
+    const json = await req.json()
+    requestBody = postRequestBodySchema.parse(json)
   } catch (e) {
     return NextResponse.json(
       {
-        error: "Invalid request body",
+        message: "Invalid request body",
       },
       { status: 400 }
-    );
+    )
   }
 
   const currentAccount = await db.query.account.findFirst({
     where: (account, { eq }) => eq(account.userId, session.user.id),
-  });
+  })
 
   if (!currentAccount) {
     return NextResponse.json(
       {
-        error: "Unauthorized",
+        message: "Unauthorized",
       },
       { status: 401 }
-    );
+    )
   }
 
   const isOpenRouter =
-    requestBody.selectedChatModel.modelId.startsWith("openrouter:");
+    requestBody.selectedChatModel.modelId.startsWith("openrouter:")
 
   const modelToRun = MODELS.find(
     (model) => model.id === requestBody.selectedChatModel.modelId
-  )!;
+  )!
 
-  const cookiesInfo = await cookies();
+  const cookiesInfo = await cookies()
 
-  const apiKeys = cookiesInfo.get("apiKeys")?.value;
+  const apiKeys = cookiesInfo.get("apiKeys")?.value
 
   if (!apiKeys) {
     return NextResponse.json(
       {
-        error: "API keys not found",
+        message: "API keys not found",
       },
       { status: 400 }
-    );
+    )
   }
 
-  let keys: any;
+  let keys: any
 
   try {
-    keys = JSON.parse(apiKeys);
+    keys = JSON.parse(apiKeys)
   } catch (e) {
     return NextResponse.json(
       {
-        error: "Failed to parse API keys",
+        message: "Failed to parse API keys",
       },
       { status: 400 }
-    );
+    )
   }
 
   let providerData: {
-    id: string;
-    apiKey: string;
-    modelName: string;
-    additionalData?: Record<string, unknown>;
-  } | null = null;
+    id: string
+    apiKey: string
+    modelName: string
+    additionalData?: Record<string, unknown>
+  } | null = null
 
   if (isOpenRouter) {
     providerData = {
       id: "openrouter",
       apiKey: keys["openrouter"],
       modelName: requestBody.selectedChatModel.modelId.slice(11),
-    };
+    }
   } else {
-    const chosenProvider = requestBody.selectedChatModel.options.provider;
+    const chosenProvider = requestBody.selectedChatModel.options.provider
 
     if (
       chosenProvider &&
@@ -130,52 +131,52 @@ export async function POST(req: Request) {
         apiKey: keys[chosenProvider],
         modelName: modelToRun.providers[chosenProvider].modelName,
         additionalData: modelToRun.providers[chosenProvider].additionalData,
-      };
+      }
     } else {
       for (const provider in modelToRun.providers) {
         if (provider in keys) {
-          const providerApiKey = keys[provider];
+          const providerApiKey = keys[provider]
 
           providerData = {
             id: provider,
             apiKey: providerApiKey,
             modelName: modelToRun.providers[provider].modelName,
             additionalData: modelToRun.providers[provider].additionalData,
-          };
-          break;
+          }
+          break
         }
       }
 
       if (!providerData) {
         return NextResponse.json(
           {
-            error: "Failed to find a provider with an API key",
+            message: "Failed to find a provider with an API key",
           },
           { status: 400 }
-        );
+        )
       }
     }
   }
 
   let chat = await db.query.chat.findFirst({
     where: (chat, { eq }) => eq(chat.id, requestBody.id),
-  });
+  })
 
   if (chat && chat.userId !== session.user.id) {
     return NextResponse.json(
       {
-        error: "Chat not found",
+        message: "Chat not found",
       },
       { status: 404 }
-    );
+    )
   }
 
   if (!chat) {
     const title = await generateTitleFromUserMessage({
       message: requestBody.message,
       apiKeys: keys,
-    });
-    [chat] = await db
+    })
+    ;[chat] = await db
       .insert(chatTable)
       .values({
         id: requestBody.id,
@@ -183,78 +184,82 @@ export async function POST(req: Request) {
         messages: [],
         title,
       })
-      .returning();
+      .returning()
   }
 
-  let messages: Message[];
+  let messages: Message[]
 
   if (!requestBody.retryMessageId) {
     messages = appendClientMessage({
       messages: chat.messages,
       message: requestBody.message,
-    });
+    })
   } else {
     let retryMessageIndex = chat.messages.findIndex(
       (message) => message.id === requestBody.retryMessageId
-    );
+    )
     if (retryMessageIndex === -1) {
       return NextResponse.json(
         {
-          error: "Retry message not found",
+          message: "Retry message not found",
         },
         { status: 404 }
-      );
+      )
     }
 
-    const retryMessage = chat.messages[retryMessageIndex];
+    const retryMessage = chat.messages[retryMessageIndex]
     if (retryMessage.role !== "assistant") {
-      retryMessageIndex++;
+      retryMessageIndex++
     }
 
-    messages = chat.messages.slice(0, retryMessageIndex);
+    messages = chat.messages.slice(0, retryMessageIndex)
   }
 
   if (requestBody.message.id === messages.at(-1)?.id) {
-    messages = messages.slice(0, -1);
+    messages = messages.slice(0, -1)
     messages = appendClientMessage({
       messages,
       message: requestBody.message,
-    });
+    })
   }
 
   await saveMessages(chat.id, messages, {
     state: "loading",
     visibility: requestBody.visibilityType,
-  });
+  })
 
-  let model: LanguageModel | undefined;
+  let model: LanguageModel | undefined
 
-  try {
-    model = createModel(
-      modelToRun,
-      providerData.id,
-      providerData.apiKey,
-      {
+  if (isOpenRouter) {
+    const openRouter = createOpenRouter({ apiKey: providerData.apiKey })
+    model = openRouter.chat(providerData.modelName, {
+      reasoning: requestBody.selectedChatModel.options.effort
+        ? { effort: requestBody.selectedChatModel.options.effort }
+        : undefined,
+    })
+  } else {
+    try {
+      model = createModel(modelToRun, providerData.id, providerData.apiKey, {
         ...providerData.additionalData,
         effort: requestBody.selectedChatModel.options.effort,
-      }
-    );
-  } catch (e) {
-    return NextResponse.json(
-      {
-        error: "Failed to create a model",
-      },
-      { status: 500 }
-    );
+      })
+    } catch (e) {
+      return NextResponse.json(
+        {
+          message: "Failed to create a model",
+        },
+        { status: 500 }
+      )
+    }
   }
 
   if (!model) {
     return NextResponse.json(
       {
-        error: "Failed to create a model",
+        message: "Failed to create a model",
       },
       { status: 500 }
-    );
+    )
   }
 
   let tools: Record<string, Tool> = {
@@ -267,16 +272,16 @@ export async function POST(req: Request) {
         try {
           if (!("openai" in keys) || keys.openai.length === 0) {
             return {
-              error: "API key for OpenAI not found",
-            };
+              message: "API key for OpenAI not found",
+            }
           }
           const openai = createOpenAI({
             apiKey: keys.openai,
-          });
+          })
           const { image } = await experimental_generateImage({
             model: openai.image("dall-e-3"),
             prompt,
-          });
+          })
 
           const blob = await put(
             crypto.randomUUID() + ".png",
@@ -285,47 +290,51 @@ export async function POST(req: Request) {
               access: "public",
               addRandomSuffix: true,
             }
-          );
+          )
           // in production, save this image to blob storage and return a URL
-          return { image: blob.url, prompt };
+          return { image: blob.url, prompt }
         } catch (e) {
           if (e instanceof APICallError) {
             return {
               error: e.message,
-            };
+            }
           }
           return {
             error: "Something happened",
-          };
+          }
         }
       },
     }),
-  };
+  }
 
   if (requestBody.useWebSearch) {
-    tools.webSearch = webSearch;
+    tools.webSearch = webSearch
   }
 
   const providerTitle = PROVIDERS.find(
     (provider) => provider.id === providerData.id
-  )?.title;
+  )?.title
 
-  let PROMPT = `I am mrkrbt.chat, an AI assistant powered by the ${modelToRun.title} model. My role is to assist and engage in conversation while being helpful, respectful, and engaging.
-- If you are specifically asked about the model I am using, I may mention that I use the ${modelToRun.title} model running on ${providerTitle} provider. If I am not asked specifically about the model I am using, I do not need to mention it.
+  const modelTitle = isOpenRouter
+    ? requestBody.selectedChatModel.modelId.slice(11)
+    : modelToRun.title
+
+  let PROMPT = `I am mrkrbt.chat, an AI assistant powered by the ${modelTitle} model. My role is to assist and engage in conversation while being helpful, respectful, and engaging.
+- If you are specifically asked about the model I am using, I may mention that I use the ${modelTitle} model running on ${providerTitle} provider. If I am not asked specifically about the model I am using, I do not need to mention it.
 - Always use LaTeX for mathematical expressions:
   - Math must be wrapped in double dollar signs: $$ content $$
   - Always put things like \\boxed also in double dollar signs
   - Never use single dollar signs for math
 - Do not use the backslash character to escape parenthesis. Use the actual parentheses instead.
 - Ensure code is properly formatted using Prettier with a print width of 80 characters
-- Present code in Markdown code blocks with the correct language extension indicated`;
+- Present code in Markdown code blocks with the correct language extension indicated`
 
-  const additionalInfo = session.user.additionalInfo;
+  const additionalInfo = session.user.additionalInfo
   if (additionalInfo) {
-    PROMPT += `\n- Additional context:\n${additionalInfo}`;
+    PROMPT += `\n- Additional context:\n${additionalInfo}`
   }
 
-  let googleProviderOptions: GoogleGenerativeAIProviderOptions = {};
+  let googleProviderOptions: GoogleGenerativeAIProviderOptions = {}
 
   if (providerData.id === "google") {
     if (
@@ -334,13 +343,13 @@ export async function POST(req: Request) {
       providerData.additionalData.thinking === true
     ) {
       if (requestBody.selectedChatModel.options.effort) {
-        let thinkingBudget = 1024;
+        let thinkingBudget = 1024
         if (requestBody.selectedChatModel.options.effort === "high") {
-          thinkingBudget = 16384;
+          thinkingBudget = 16384
         } else if (requestBody.selectedChatModel.options.effort === "medium") {
-          thinkingBudget = 8192;
+          thinkingBudget = 8192
         } else if (requestBody.selectedChatModel.options.effort === "low") {
-          thinkingBudget = 1024;
+          thinkingBudget = 1024
         }
 
         googleProviderOptions = {
@@ -348,7 +357,7 @@ export async function POST(req: Request) {
             thinkingBudget,
             includeThoughts: true,
           },
-        };
+        }
       }
     }
   }
@@ -382,16 +391,16 @@ export async function POST(req: Request) {
               messages: response.messages.filter(
                 (message) => message.role === "assistant"
               ),
-            });
+            })
 
             if (!assistantId) {
-              throw new Error("No assistant message found!");
+              throw new Error("No assistant message found!")
             }
 
             const [, assistantMessage] = appendResponseMessages({
               messages: [requestBody.message],
               responseMessages: response.messages,
-            });
+            })
 
             await saveMessages(
               chat.id,
@@ -411,10 +420,10 @@ export async function POST(req: Request) {
                 },
               ],
               { state: "complete" }
-            );
+            )
           } catch (e) {
-            console.error("Failed to save chat");
-            throw e;
+            console.error("Failed to save chat")
+            throw e
           }
         }
       },
@@ -424,33 +433,33 @@ export async function POST(req: Request) {
           .set({
             state: "complete",
           })
-          .where(eq(chatTable.id, chat.id));
+          .where(eq(chatTable.id, chat.id))
       },
-    });
+    })
 
-    result.consumeStream();
+    result.consumeStream()
 
     await db
       .update(account)
       .set({
         messagesSent: currentAccount.messagesSent + 1,
       })
-      .where(eq(account.id, currentAccount.id));
+      .where(eq(account.id, currentAccount.id))
 
     return result.toDataStreamResponse({
       sendReasoning: true,
       getErrorMessage: (err) => {
-        console.error(err);
-        return "Failed to get response. Please try again later.";
+        console.error(err)
+        return "Failed to get response. Please try again later."
       },
-    });
+    })
   } catch (error) {
-    console.error(error);
+    console.error(error)
     return NextResponse.json(
       {
-        error: "Encountered an error while getting the response",
+        message: "Encountered an error while getting the response",
       },
       { status: 500 }
-    );
+    )
   }
 }

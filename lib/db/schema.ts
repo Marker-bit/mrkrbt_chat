@@ -5,15 +5,11 @@ import {
   pgTable,
   timestamp,
   json,
+  uuid,
+  pgEnum,
 } from "drizzle-orm/pg-core";
 import { Message } from "./db-types";
 import { RECOMMENDED_MODELS } from "../rec-models";
-
-// export const todo = pgTable("todo", {
-//   id: integer("id").primaryKey(),
-//   text: text("text").notNull(),
-//   done: boolean("done").default(false).notNull(),
-// });
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -103,3 +99,22 @@ export const chat = pgTable("chat", {
     .$type<"public" | "private">(),
   isPinned: boolean("is_pinned").notNull().default(false).$type<boolean>(),
 });
+
+export const attachmentTypeEnum = pgEnum('attachment_type', ['user_attached', 'generated']);
+
+export const attachment = pgTable("attachment", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  chatId: text("chat_id")
+    .notNull()
+    .references(() => chat.id, { onDelete: "cascade" }),
+  messageId: text("message_id")
+    .notNull(),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+  url: text("url").notNull(),
+  attachmentType: attachmentTypeEnum("attachment_type").notNull().default('user_attached'),
+  userId: text("user_id")
+    .notNull(),
+  size: integer("size").notNull().default(0),
+})

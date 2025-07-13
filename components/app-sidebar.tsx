@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import {
   Sidebar,
@@ -8,16 +8,19 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem
-} from "@/components/ui/sidebar";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import ChatList from "./chat-list";
-import SidebarUser from "./sidebar-user";
-import { Button } from "./ui/button";
+  SidebarMenuItem,
+  useSidebar,
+} from "@/components/ui/sidebar"
+import Link from "next/link"
+import { usePathname, useRouter } from "next/navigation"
+import ChatList from "./chat-list"
+import SidebarUser from "./sidebar-user"
+import { Button } from "./ui/button"
+import { ImageIcon } from "lucide-react"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const router = useRouter();
+  const router = useRouter()
+  const pathname = usePathname()
 
   return (
     <Sidebar variant="inset" {...props}>
@@ -37,12 +40,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <Button
                 className="w-full"
                 onClick={() => {
-                  router.replace("/");
-                  router.refresh();
+                  router.replace("/")
+                  router.refresh()
                 }}
               >
                 New Chat
               </Button>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={pathname === "/library"}>
+                <Link href="/library">
+                  <ImageIcon />
+                  Library
+                </Link>
+              </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
@@ -81,5 +92,5 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarUser />
       </SidebarFooter>
     </Sidebar>
-  );
+  )
 }
