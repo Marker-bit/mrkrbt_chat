@@ -1,11 +1,11 @@
 import { db } from "@/lib/db/drizzle";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { config } from "dotenv";
 import * as schema from "@/lib/db/schema";
 import { RECOMMENDED_MODELS } from "./rec-models";
+import { initEnv } from "./env";
 
-config({ path: ".env" });
+initEnv()
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
