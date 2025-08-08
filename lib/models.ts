@@ -28,6 +28,9 @@ export type Model = {
   >;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   supportsTools: boolean;
+  tags?: {
+    new?: boolean;
+  }
 };
 
 export type ModelData = {

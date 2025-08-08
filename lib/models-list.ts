@@ -378,4 +378,91 @@ export const models: Model[] = [
     icon: OpenAI,
     supportsTools: true,
   },
+  {
+    id: "gpt-5",
+    title: "GPT 5",
+    model: "GPT",
+    version: "5",
+    providers: {
+      openrouter: {
+        modelName: "openai/gpt-5",
+        features: ["vision"],
+      },
+      openai: {
+        modelName: "gpt-5-latest",
+        features: ["vision"],
+      },
+    },
+    icon: OpenAI,
+    supportsTools: true,
+    tags: {
+      new: true,
+    }
+  },
+  {
+    id: "gpt-5-chat",
+    title: "GPT 5",
+    model: "GPT",
+    version: "5",
+    additionalTitle: "Chat",
+    providers: {
+      openrouter: {
+        modelName: "openai/gpt-5-chat",
+        features: ["vision"],
+      },
+      openai: {
+        modelName: "gpt-5-chat-latest",
+        features: ["vision"],
+      },
+    },
+    icon: OpenAI,
+    supportsTools: false,
+    tags: {
+      new: true,
+    }
+  },
+  {
+    id: "gpt-5-nano",
+    title: "GPT 5",
+    model: "GPT",
+    version: "5",
+    additionalTitle: "Nano",
+    providers: {
+      openrouter: {
+        modelName: "openai/gpt-5-nano",
+        features: ["vision", "fast"],
+      },
+      openai: {
+        modelName: "gpt-5-nano-latest",
+        features: ["vision", "fast"],
+      },
+    },
+    icon: OpenAI,
+    supportsTools: true,
+    tags: {
+      new: true,
+    }
+  },
+  {
+    id: "gpt-5-mini",
+    title: "GPT 5",
+    model: "GPT",
+    version: "5",
+    additionalTitle: "Mini",
+    providers: {
+      openrouter: {
+        modelName: "openai/gpt-5-mini",
+        features: ["vision"],
+      },
+      openai: {
+        modelName: "gpt-5-mini-latest",
+        features: ["vision"],
+      },
+    },
+    icon: OpenAI,
+    supportsTools: true,
+    tags: {
+      new: true,
+    }
+  }
 ];

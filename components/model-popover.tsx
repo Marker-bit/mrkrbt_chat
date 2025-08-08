@@ -253,6 +253,11 @@ export default function ModelPopover({
                       className="flex flex-col gap-2 text-start hover:bg-accent w-full h-full relative p-4"
                       onClick={() => setModel(model.id)}
                     >
+                      {model.tags?.new && (
+                        <div className="absolute top-0 left-0 bg-primary text-primary-foreground text-xs px-2 py-1 rounded-br-md rounded-tl-md">
+                          New
+                        </div>
+                      )}
                       <model.icon className="size-8" />
                       <div className="flex flex-col text-center">
                         <div className="font-bold">{model.model}</div>
@@ -301,6 +306,11 @@ export default function ModelPopover({
                       className="flex flex-col gap-2 text-start hover:bg-accent w-full h-full relative p-4"
                       onClick={() => setModel(model.id)}
                     >
+                      {model.tags?.new && (
+                        <div className="absolute top-0 left-0 bg-primary text-primary-foreground text-xs px-2 py-1 rounded-br-md rounded-tl-md">
+                          New
+                        </div>
+                      )}
                       <model.icon className="size-8" />
                       <div className="flex flex-col text-center">
                         <div className="font-bold">{model.model}</div>
@@ -355,6 +365,11 @@ export default function ModelPopover({
                       {model.title}
                       {model.additionalTitle && ` (${model.additionalTitle})`}
                       <div className="ml-auto flex gap-2 items-center">
+                        {model.tags?.new && (
+                          <div className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded-md">
+                            New
+                          </div>
+                        )}
                         {model.features.map((feature) => {
                           const realFeature = FEATURES.find(
                             (f) => f.id === feature

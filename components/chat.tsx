@@ -55,6 +55,8 @@ export default function Chat({
   const [onBottom, setOnBottom] = useState(false)
   const [input, setInput] = useState("")
 
+  console.log(selectedModelData)
+
   const { messages, setMessages, sendMessage, status, regenerate, error } =
     useChat<Message>({
       transport: new DefaultChatTransport({
