@@ -1,23 +1,25 @@
-import { Message } from "@/lib/db/db-types";
-import React, { useState } from "react";
-import { AutosizeTextarea } from "./ui/autosize-textarea";
-import { Button } from "./ui/button";
+import { Message } from "@/lib/db/db-types"
+import React, { useState } from "react"
+import { AutosizeTextarea } from "./ui/autosize-textarea"
+import { Button } from "./ui/button"
 
 export default function EditingMessage({
   message,
   setEditingMessage,
-  editMessage
+  editMessage,
 }: {
-  message: Message;
-  setEditingMessage: (editing: boolean) => void;
-  editMessage: (text: string) => void;
+  message: Message
+  setEditingMessage: (editing: boolean) => void
+  editMessage: (text: string) => void
 }) {
-  const [currentMessage, setCurrentMessage] = useState(message.content);
+  const [currentMessage, setCurrentMessage] = useState(
+    message.parts[0].type === "text" ? message.parts[0].text : ""
+  )
 
   const save = () => {
-    editMessage(currentMessage);
-    setEditingMessage(false);
-  };
+    editMessage(currentMessage)
+    setEditingMessage(false)
+  }
 
   return (
     <div className="border rounded-xl w-full">
@@ -35,5 +37,5 @@ export default function EditingMessage({
         <Button onClick={save}>Save</Button>
       </div>
     </div>
-  );
+  )
 }

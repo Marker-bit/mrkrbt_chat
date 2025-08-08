@@ -8,10 +8,10 @@ export default function MessageWebSearch({
   query,
 }: {
   result: {
-    title: string;
+    title: string | null;
     url: string;
     content: string;
-    publishedDate: string;
+    publishedDate: string | undefined;
   }[];
   query: string;
 }) {

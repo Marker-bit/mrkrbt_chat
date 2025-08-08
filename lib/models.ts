@@ -171,7 +171,7 @@ export function createModel(
     case "openrouter":
       const openRouter = createOpenRouter({ apiKey });
       return openRouter.chat(modelId, {
-        reasoning: additionalData.effort
+        reasoningText: additionalData.effort
           ? { effort: additionalData.effort as "high" | "medium" | "low" }
           : undefined,
       });

@@ -36,7 +36,7 @@ export const models: Model[] = [
         features: ["vision", "pdfs"],
       },
       openrouter: {
-        modelName: "google/gemini-2.5-flash-preview-05-20",
+        modelName: "google/gemini-2.5-flash",
         features: ["vision", "pdfs"],
       },
     },

@@ -12,8 +12,7 @@ import { createOpenAI } from "@ai-sdk/openai"
 import { put } from "@vercel/blob"
 import {
   APICallError,
-  appendClientMessage,
-  appendResponseMessages,
+  convertToModelMessages,
   experimental_generateImage,
   LanguageModel,
   smoothStream,
@@ -50,7 +49,7 @@ export async function POST(req: Request) {
   try {
     const json = await req.json()
     requestBody = postRequestBodySchema.parse(json)
-  } catch (e) {
+  } catch (e: any) {
     return NextResponse.json(
       {
         message: "Invalid request body",
@@ -190,10 +189,7 @@ export async function POST(req: Request) {
   let messages: Message[]
 
   if (!requestBody.retryMessageId) {
-    messages = appendClientMessage({
-      messages: chat.messages,
-      message: requestBody.message,
-    })
+    messages = [...chat.messages, requestBody.message]
   } else {
     let retryMessageIndex = chat.messages.findIndex(
       (message) => message.id === requestBody.retryMessageId
@@ -215,13 +211,10 @@ export async function POST(req: Request) {
     messages = chat.messages.slice(0, retryMessageIndex)
   }
 
-  if (requestBody.message.id === messages.at(-1)?.id) {
-    messages = messages.slice(0, -1)
-    messages = appendClientMessage({
-      messages,
-      message: requestBody.message,
-    })
-  }
+  // if (requestBody.message.id === messages.at(-1)?.id) {
+  //   messages = messages.slice(0, -1)
+  //   messages = [...messages, requestBody.message]
+  // }
 
   await saveMessages(chat.id, messages, {
     state: "loading",
@@ -234,7 +227,10 @@ export async function POST(req: Request) {
     const openRouter = createOpenRouter({ apiKey: providerData.apiKey })
     model = openRouter.chat(providerData.modelName, {
       reasoning: requestBody.selectedChatModel.options.effort
-        ? { effort: requestBody.selectedChatModel.options.effort }
+        ? {
+            enabled: true,
+            effort: requestBody.selectedChatModel.options.effort,
+          }
         : undefined,
     })
   } else {
@@ -265,7 +261,7 @@ export async function POST(req: Request) {
   let tools: Record<string, Tool> = {
     generateImage: tool({
       description: "Generate an image",
-      parameters: z.object({
+      inputSchema: z.object({
         prompt: z.string().describe("The prompt to generate the image from"),
       }),
       execute: async ({ prompt }) => {
@@ -292,7 +288,7 @@ export async function POST(req: Request) {
             }
           )
           // in production, save this image to blob storage and return a URL
-          return { image: blob.url, prompt }
+          return { image: blob.url }
         } catch (e) {
           if (e instanceof APICallError) {
             return {
@@ -366,67 +362,14 @@ export async function POST(req: Request) {
     const result = streamText({
       model,
       system: PROMPT,
-      messages,
+      messages: convertToModelMessages(messages),
       tools: !isOpenRouter && modelToRun.supportsTools ? tools : undefined,
-      maxSteps: 2,
       providerOptions: {
-        // openrouter: {
-        //   effort: requestBody.selectedChatModel.options.effort,
-        // },
-        // openai: {
-        //   effort: requestBody.selectedChatModel.options.effort,
-        // },
         google: {
           ...googleProviderOptions,
         },
       },
       experimental_transform: smoothStream({ chunking: "word" }),
-      experimental_generateMessageId: () => crypto.randomUUID(),
-      // providerOptions: {
-      // },
-      onFinish: async ({ response }) => {
-        if (session.user?.id) {
-          try {
-            const assistantId = getTrailingMessageId({
-              messages: response.messages.filter(
-                (message) => message.role === "assistant"
-              ),
-            })
-
-            if (!assistantId) {
-              throw new Error("No assistant message found!")
-            }
-
-            const [, assistantMessage] = appendResponseMessages({
-              messages: [requestBody.message],
-              responseMessages: response.messages,
-            })
-
-            await saveMessages(
-              chat.id,
-              [
-                ...messages,
-                {
-                  id: assistantId,
-                  role: assistantMessage.role,
-                  parts: assistantMessage.parts,
-                  content: assistantMessage.content,
-                  experimental_attachments:
-                    assistantMessage.experimental_attachments,
-                  createdAt: new Date(),
-                  modelData: {
-                    ...requestBody.selectedChatModel,
-                  },
-                },
-              ],
-              { state: "complete" }
-            )
-          } catch (e) {
-            console.error("Failed to save chat")
-            throw e
-          }
-        }
-      },
       onError: async ({ error }) => {
         await db
           .update(chatTable)
@@ -446,12 +389,35 @@ export async function POST(req: Request) {
       })
       .where(eq(account.id, currentAccount.id))
 
-    return result.toDataStreamResponse({
-      sendReasoning: true,
-      getErrorMessage: (err) => {
+    return result.toUIMessageStreamResponse<Message>({
+      messageMetadata: ({ part }) => {
+        if (part.type === "start") {
+          return {
+            model: requestBody.selectedChatModel,
+            createdAt: new Date(),
+          }
+        }
+        return {
+          model: requestBody.selectedChatModel,
+        }
+      },
+      onError: (err) => {
         console.error(err)
         return "Failed to get response. Please try again later."
       },
+      onFinish: async ({ responseMessage }) => {
+        if (session.user?.id) {
+          try {
+            await saveMessages(chat.id, [...messages, responseMessage], {
+              state: "complete",
+            })
+          } catch (e) {
+            console.error("Failed to save chat")
+            throw e
+          }
+        }
+      },
+      generateMessageId: () => crypto.randomUUID(),
     })
   } catch (error) {
     console.error(error)
