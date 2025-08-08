@@ -171,7 +171,7 @@ export function createModel(
     case "openrouter":
       const openRouter = createOpenRouter({ apiKey });
       return openRouter.chat(modelId, {
-        reasoningText: additionalData.effort
+        reasoning: additionalData.effort
           ? { effort: additionalData.effort as "high" | "medium" | "low" }
           : undefined,
       });
@@ -184,14 +184,14 @@ export function createModel(
       const openAI = createOpenAI({ apiKey });
       return openAI.chat(
         modelId,
-        (additionalData.effort && provider.features.includes("reasoning"))
-          ? {
-              reasoningEffort: additionalData.effort as
-                | "high"
-                | "medium"
-                | "low",
-            }
-          : undefined
+        // (additionalData.effort && provider.features.includes("reasoning"))
+        //   ? {
+        //       reasoningEffort: additionalData.effort as
+        //         | "high"
+        //         | "medium"
+        //         | "low",
+        //     }
+        //   : undefined
       );
 
     case "mistral":

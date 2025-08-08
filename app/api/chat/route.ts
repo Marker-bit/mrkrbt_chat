@@ -7,7 +7,7 @@ import { account, chat as chatTable } from "@/lib/db/schema";
 import { createModel, MODELS, PROVIDERS } from "@/lib/models";
 import { webSearch } from "@/lib/web-search";
 import { GoogleGenerativeAIProviderOptions } from "@ai-sdk/google";
-import { createOpenAI } from "@ai-sdk/openai";
+import { createOpenAI, OpenAIProvider, OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { put } from "@vercel/blob";
 import {
@@ -367,6 +367,9 @@ export async function POST(req: Request) {
         google: {
           ...googleProviderOptions,
         },
+        openai: {
+          reasoningEffort: requestBody.selectedChatModel.options.effort,
+        } as OpenAIResponsesProviderOptions
       },
       experimental_transform: smoothStream({ chunking: "word" }),
       onError: async ({ error }) => {
