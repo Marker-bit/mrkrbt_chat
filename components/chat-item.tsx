@@ -1,5 +1,5 @@
-import type { Chat } from "@/lib/db/db-types";
-import { cn } from "@/lib/utils";
+import type { Chat } from "@/lib/db/db-types"
+import { cn } from "@/lib/utils"
 import {
   DownloadIcon,
   MoreHorizontalIcon,
@@ -8,28 +8,28 @@ import {
   PinOffIcon,
   RefreshCcw,
   TrashIcon,
-} from "lucide-react";
-import Link from "next/link";
-import { memo, useEffect, useState } from "react";
+} from "lucide-react"
+import Link from "next/link"
+import { memo, useEffect, useState } from "react"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
+} from "./ui/dropdown-menu"
 import {
   SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "./ui/sidebar";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { format } from "date-fns";
-import { MODELS } from "@/lib/models";
-import { toast } from "sonner";
-import { regenerateChatTitle } from "@/lib/actions";
-import { mutate } from "swr";
-import { unstable_serialize } from "swr/infinite";
-import { getChatHistoryPaginationKey } from "./chat-list";
+} from "./ui/sidebar"
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
+import { format } from "date-fns"
+import { MODELS, PROVIDERS } from "@/lib/models"
+import { toast } from "sonner"
+import { regenerateChatTitle } from "@/lib/actions"
+import { mutate } from "swr"
+import { unstable_serialize } from "swr/infinite"
+import { getChatHistoryPaginationKey } from "./chat-list"
 
 const PureChatItem = ({
   chat,
@@ -39,61 +39,104 @@ const PureChatItem = ({
   setOpenMobile,
   setTitle,
 }: {
-  chat: Chat;
-  isActive: boolean;
-  onPin: (isPinned: boolean) => void;
-  onDelete: (chatId: string) => void;
-  setOpenMobile: (open: boolean) => void;
-  setTitle: (chatId: string, title: string) => void;
+  chat: Chat
+  isActive: boolean
+  onPin: (isPinned: boolean) => void
+  onDelete: (chatId: string) => void
+  setOpenMobile: (open: boolean) => void
+  setTitle: (chatId: string, title: string) => void
 }) => {
-  const [editing, setEditing] = useState(false);
-  const [title, setLocalTitle] = useState(chat.title);
+  const [editing, setEditing] = useState(false)
+  const [title, setLocalTitle] = useState(chat.title)
 
   useEffect(() => {
-    setLocalTitle(chat.title);
-  }, [chat.title]);
+    setLocalTitle(chat.title)
+  }, [chat.title])
 
   const submit = () => {
-    setEditing(false);
-    setTitle(chat.id, title);
-  };
+    setEditing(false)
+    setTitle(chat.id, title)
+  }
 
   const exportChat = () => {
-    const createdAt = format(chat.createdAt, "dd-MM-yyyy, HH:mm:ss");
-    const updatedAt = format(chat.updatedAt, "dd-MM-yyyy, HH:mm:ss");
+    const createdAt = format(chat.createdAt, "dd-MM-yyyy, HH:mm:ss")
+    const updatedAt = format(chat.updatedAt, "dd-MM-yyyy, HH:mm:ss")
     let markdown = `# ${chat.title}
-Created: ${createdAt}
-Last updated: ${updatedAt}
+Created: **${createdAt}**
+
+Last updated: **${updatedAt}**
+
 ---
-`;
+`
     for (const message of chat.messages) {
-      const model = message.modelData?.modelId
-        ? MODELS.find((model) => model.id === message.modelData!.modelId)
-        : null;
+      const modelData = message.metadata?.model
+      const modelId = modelData?.modelId
+      const model = modelId
+        ? MODELS.find((model) => model.id === modelId)
+        : null
+      const generatedByModel = MODELS.find((m) => m.id === modelData?.modelId)
+
+      const generatedByProvider = PROVIDERS.find(
+        (p) => p.id === modelData?.options?.provider
+      )
+      const modelText = generatedByModel?.title
+        ? ` (${generatedByModel?.title}${
+            generatedByModel?.additionalTitle &&
+            ` (*${generatedByModel?.additionalTitle}*)`
+          }${generatedByProvider?.title && ` on ${generatedByProvider.title}`})`
+        : ""
       const roleInfo =
-        message.role === "user" ? "User" : "Assistant (" + model?.title + ")";
-      markdown += `\n### ${roleInfo}\n\n${message.content}\n\n\n---\n`;
+        message.role === "user" ? "User" : `Assistant${modelText}`
+      markdown += `\n### ${roleInfo}\n\n${message.parts
+        .map((p) => {
+          switch (p.type) {
+            case "reasoning":
+              return p.text
+                .split("\n")
+                .map((line) => `> ${line}`)
+                .join("\n")
+            case "text":
+              return p.text
+            case "file":
+              return `[${p.filename || "attached file"}](${p.url})`
+            case "tool-generateImage":
+              if (!p.output || !("image" in p.output)) return ""
+              return `[${p.input?.prompt || "Generated Image"}](${
+                p.output.image
+              })`
+            case "tool-webSearch":
+              let res = `Searched the web for: ${p.input?.query}\n`
+              if (p.output) {
+                for (const result of p.output) {
+                  res += `- [${result.title}](${result.url})\n`
+                }
+              }
+              return res
+            case "step-start":
+              return ""
+            default:
+              return `Unknown part type \`${p.type}\``
+          }
+        })
+        .join("\n\n")}\n\n\n---\n`
     }
-    const link = document.createElement("a");
-    link.download = `${chat.title}.md`;
+    const link = document.createElement("a")
+    link.download = `${chat.title}.md`
     link.href =
-      "data:text/markdown;charset=utf-8," + encodeURIComponent(markdown);
-    link.click();
-  };
+      "data:text/markdown;charset=utf-8," + encodeURIComponent(markdown)
+    link.click()
+  }
 
   const regenTitle = () => {
-    toast.promise(
-      () => regenerateChatTitle(chat.id),
-      {
-        loading: "Regenerating title...",
-        success: () => {
-          mutate(unstable_serialize(getChatHistoryPaginationKey));
-          return "Title regenerated successfully";
-        },
-        error: "Failed to regenerate title",
-      }
-    );
-  };
+    toast.promise(() => regenerateChatTitle(chat.id), {
+      loading: "Regenerating title...",
+      success: () => {
+        mutate(unstable_serialize(getChatHistoryPaginationKey))
+        return "Title regenerated successfully"
+      },
+      error: "Failed to regenerate title",
+    })
+  }
 
   return (
     <SidebarMenuItem>
@@ -101,8 +144,8 @@ Last updated: ${updatedAt}
         <form
           className="p-2"
           onSubmit={(evt) => {
-            evt.preventDefault();
-            submit();
+            evt.preventDefault()
+            submit()
           }}
         >
           <input
@@ -148,7 +191,7 @@ Last updated: ${updatedAt}
           <DropdownMenuContent side="bottom" align="end">
             <DropdownMenuItem
               onSelect={() => {
-                setEditing(true);
+                setEditing(true)
               }}
             >
               <PencilIcon />
@@ -187,12 +230,12 @@ Last updated: ${updatedAt}
         </DropdownMenu>
       )}
     </SidebarMenuItem>
-  );
-};
+  )
+}
 
 export const ChatItem = memo(PureChatItem, (prevProps, nextProps) => {
-  if (prevProps.isActive !== nextProps.isActive) return false;
-  if (prevProps.chat.isPinned !== nextProps.chat.isPinned) return false;
-  if (prevProps.chat.title !== nextProps.chat.title) return false;
-  return true;
-});
+  if (prevProps.isActive !== nextProps.isActive) return false
+  if (prevProps.chat.isPinned !== nextProps.chat.isPinned) return false
+  if (prevProps.chat.title !== nextProps.chat.title) return false
+  return true
+})
