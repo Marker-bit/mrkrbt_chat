@@ -124,11 +124,20 @@ export async function POST(req: Request) {
       chosenProvider in keys &&
       keys[chosenProvider].length > 0
     ) {
+      const modelProvider = modelToRun.providers[chosenProvider];
+      if (!modelProvider) {
+        return NextResponse.json(
+          {
+            message: "Failed to find provider",
+          },
+          { status: 400 }
+        )
+      }
       providerData = {
         id: chosenProvider,
         apiKey: keys[chosenProvider],
-        modelName: modelToRun.providers[chosenProvider].modelName,
-        additionalData: modelToRun.providers[chosenProvider].additionalData,
+        modelName: modelProvider.modelName,
+        additionalData: modelProvider.additionalData,
       }
     } else {
       for (const provider in modelToRun.providers) {

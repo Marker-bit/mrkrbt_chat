@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { BrainIcon, ChevronDownIcon, Loader2Icon } from "lucide-react";
 import { MemoizedMarkdown } from "./memoized-markdown";
@@ -33,6 +33,12 @@ export function MessageReasoning({
       marginBottom: "0.5rem",
     },
   };
+
+  useEffect(() => {
+    if (!isLoading) {
+      setIsExpanded(false);
+    }
+  }, [reasoningText])
 
   return (
     <div className="flex flex-col">
