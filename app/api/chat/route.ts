@@ -1,15 +1,15 @@
-import { generateTitleFromUserMessage } from "@/lib/actions"
-import { auth } from "@/lib/auth"
-import { Message } from "@/lib/db/db-types"
-import { db } from "@/lib/db/drizzle"
-import { saveMessages } from "@/lib/db/queries"
-import { account, chat as chatTable } from "@/lib/db/schema"
-import { createModel, MODELS, PROVIDERS } from "@/lib/models"
-import { getTrailingMessageId } from "@/lib/utils"
-import { webSearch } from "@/lib/web-search"
-import { GoogleGenerativeAIProviderOptions } from "@ai-sdk/google"
-import { createOpenAI } from "@ai-sdk/openai"
-import { put } from "@vercel/blob"
+import { generateTitleFromUserMessage } from "@/lib/actions";
+import { auth } from "@/lib/auth";
+import { Message } from "@/lib/db/db-types";
+import { db } from "@/lib/db/drizzle";
+import { saveMessages } from "@/lib/db/queries";
+import { account, chat as chatTable } from "@/lib/db/schema";
+import { createModel, MODELS, PROVIDERS } from "@/lib/models";
+import { webSearch } from "@/lib/web-search";
+import { GoogleGenerativeAIProviderOptions } from "@ai-sdk/google";
+import { createOpenAI } from "@ai-sdk/openai";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { put } from "@vercel/blob";
 import {
   APICallError,
   convertToModelMessages,
@@ -19,13 +19,12 @@ import {
   streamText,
   Tool,
   tool,
-} from "ai"
-import { eq } from "drizzle-orm"
-import { cookies, headers } from "next/headers"
-import { z } from "zod"
-import { PostRequestBody, postRequestBodySchema } from "./schema"
-import { NextResponse } from "next/server"
-import { createOpenRouter } from "@openrouter/ai-sdk-provider"
+} from "ai";
+import { eq } from "drizzle-orm";
+import { cookies, headers } from "next/headers";
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { PostRequestBody, postRequestBodySchema } from "./schema";
 
 // Allow streaming responses up to 60 seconds
 export const maxDuration = 60

@@ -1,21 +1,32 @@
 import {
   AutosizeTextarea,
   AutosizeTextAreaRef,
-} from "@/components/ui/autosize-textarea";
-import { Button } from "@/components/ui/button";
-import { formatBytes, useFileUpload } from "@/hooks/use-file-upload";
-import { ModelData, MODELS } from "@/lib/models";
+} from "@/components/ui/autosize-textarea"
+import { Button } from "@/components/ui/button"
+import { formatBytes, useFileUpload } from "@/hooks/use-file-upload"
+import { ModelData, MODELS } from "@/lib/models"
+import { upload } from "@vercel/blob/client"
 import {
   AlertCircleIcon,
   ArrowUpIcon,
   GlobeIcon,
+  Loader2Icon,
   PaperclipIcon,
   PlusIcon,
-  XIcon
-} from "lucide-react";
-import { RefObject, useEffect, useMemo } from "react";
-import useMeasure from "react-use-measure";
-import ModelPopover from "./model-popover";
+  XIcon,
+} from "lucide-react"
+import { RefObject, useEffect, useMemo, useRef, useState } from "react"
+import useMeasure from "react-use-measure"
+import ModelPopover from "./model-popover"
+
+export type SuccessFile = {
+  filename: string
+  id: string
+  size: number
+  mediaType: string
+  url: string
+  state: "success"
+}
 
 export default function MessageInput({
   value,
@@ -25,55 +36,53 @@ export default function MessageInput({
   onSubmit,
   status,
   selectedModelData,
-  setFiles,
   useWebSearch,
   setUseWebSearch,
   apiKeys,
 }: {
-  value: string;
-  setValue: (value: string) => void;
-  ref?: RefObject<AutosizeTextAreaRef | null>;
-  setHeight?: (height: number) => void;
-  onSubmit?: (message: string) => void;
-  status: "submitted" | "streaming" | "ready" | "error";
-  selectedModelData: ModelData;
-  setFiles: (files: File[]) => void;
-  useWebSearch: boolean;
-  setUseWebSearch: (value: boolean) => void;
-  apiKeys: Record<string, string>;
+  value: string
+  setValue: (value: string) => void
+  ref?: RefObject<AutosizeTextAreaRef | null>
+  setHeight?: (height: number) => void
+  onSubmit?: (message: string, files: SuccessFile[]) => void
+  status: "submitted" | "streaming" | "ready" | "error"
+  selectedModelData: ModelData
+  useWebSearch: boolean
+  setUseWebSearch: (value: boolean) => void
+  apiKeys: Record<string, string>
 }) {
-  const [
-    { files, errors },
-    { openFileDialog, removeFile, getInputProps, clearFiles },
-  ] = useFileUpload({
-    multiple: true,
-    maxFiles: 5,
-    maxSize: 5 * 1024 * 1024, // 5MB
-    accept: "image/*,application/pdf",
-  });
-  const [measureRef, bounds] = useMeasure();
+  const inputRef = useRef<HTMLInputElement | null>(null)
+  const [files, setFiles] = useState<
+    ({ filename: string; id: string; size: number; mediaType: string } & (
+      | { state: "success"; url: string }
+      | {
+          state: "uploading"
+        }
+    ))[]
+  >([])
+  const [measureRef, bounds] = useMeasure()
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter") {
       if (e.shiftKey || window.innerWidth < 768) {
-        return;
+        return
       } else {
-        e.preventDefault();
-        onSubmit?.(value);
-        setValue("");
+        e.preventDefault()
+        onSubmit?.(
+          value,
+          files.filter((f) => f.state === "success")
+        )
+        setValue("")
+        setFiles([])
       }
     }
-  };
-
-  useEffect(() => {
-    setFiles(files.map((file) => file.file as File));
-  }, [files]);
+  }
 
   const selectedChatModel = useMemo(
     () =>
       MODELS.find((chatModel) => chatModel.id === selectedModelData.modelId),
     [selectedModelData, MODELS]
-  );
+  )
 
   const selectedProvider = useMemo(
     () =>
@@ -81,11 +90,11 @@ export default function MessageInput({
         ? selectedChatModel?.providers[selectedModelData.options.provider]
         : null,
     [selectedChatModel, selectedModelData]
-  );
+  )
 
   useEffect(() => {
-    setHeight?.(bounds.height);
-  }, [bounds.height, setHeight]);
+    setHeight?.(bounds.height)
+  }, [bounds.height, setHeight])
 
   return (
     <div className="w-full absolute bottom-0 left-0 px-2">
@@ -94,7 +103,50 @@ export default function MessageInput({
         ref={measureRef}
       >
         <input
-          {...getInputProps()}
+          type="file"
+          onChange={async (e) => {
+            console.log(e.target.files)
+            if (e.target.files && e.target.files.length > 0) {
+              let promises: Promise<void>[] = []
+              for (const file of e.target.files) {
+                const id = crypto.randomUUID()
+                setFiles((oldF) => [
+                  ...oldF,
+                  {
+                    state: "uploading",
+                    filename: file.name,
+                    id,
+                    size: file.size,
+                    mediaType: file.type,
+                  },
+                ])
+                promises.push(
+                  (async () => {
+                    const newBlob = await upload(file.name, file, {
+                      access: "public",
+                      handleUploadUrl: "/api/attachments/upload",
+                    })
+
+                    const newFile = {
+                      state: "success" as const,
+                      filename: file.name,
+                      id,
+                      size: file.size,
+                      mediaType: file.type,
+                      url: newBlob.url,
+                    }
+                    setFiles((oldF) =>
+                      oldF.map((f) => (f.id === newFile.id ? newFile : f))
+                    )
+                  })()
+                )
+              }
+              await Promise.all(promises)
+            }
+          }}
+          ref={inputRef}
+          accept="*"
+          multiple
           className="sr-only"
           aria-label="Upload file"
         />
@@ -107,22 +159,27 @@ export default function MessageInput({
                 className="bg-background flex items-center justify-between gap-2 rounded-lg border p-2 pe-3"
               >
                 <div className="flex items-center gap-3 overflow-hidden">
-                  {file.file.type.startsWith("image") && (
-                    <div className="bg-accent aspect-square shrink-0 rounded">
-                      <img
-                        src={file.preview}
-                        alt={file.file.name}
-                        className="size-10 rounded-[inherit] object-cover"
-                      />
-                    </div>
-                  )}
+                  {file.mediaType.startsWith("image") &&
+                    (file.state === "success" ? (
+                      <div className="bg-accent aspect-square shrink-0 rounded">
+                        <img
+                          src={file.url}
+                          alt={file.filename}
+                          className="size-10 rounded-[inherit] object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="size-10 flex items-center justify-center">
+                        <Loader2Icon className="animate-spin size-4" />
+                      </div>
+                    ))}
 
                   <div className="flex min-w-0 flex-col gap-0.5">
                     <p className="truncate text-[13px] font-medium">
-                      {file.file.name}
+                      {file.filename}
                     </p>
                     <p className="text-muted-foreground text-xs">
-                      {formatBytes(file.file.size)}
+                      {formatBytes(file.size)}
                     </p>
                   </div>
                 </div>
@@ -131,7 +188,9 @@ export default function MessageInput({
                   size="icon"
                   variant="ghost"
                   className="text-muted-foreground/80 hover:text-foreground -me-2 size-8 hover:bg-transparent"
-                  onClick={() => removeFile(file.id)}
+                  onClick={() =>
+                    setFiles((files) => files.filter((f) => f.id !== file.id))
+                  }
                   aria-label="Remove file"
                 >
                   <XIcon aria-hidden="true" />
@@ -139,7 +198,11 @@ export default function MessageInput({
               </div>
             ))}
             <Button
-              onClick={openFileDialog}
+              onClick={() => {
+                if (inputRef.current) {
+                  inputRef.current.click()
+                }
+              }}
               variant="outline"
               className="h-auto flex"
             >
@@ -148,15 +211,6 @@ export default function MessageInput({
           </div>
         )}
 
-        {errors.length > 0 && (
-          <div
-            className="text-red-700 dark:text-red-300 flex items-center gap-1 text-xs bg-red-500/20 rounded px-2 py-1"
-            role="alert"
-          >
-            <AlertCircleIcon className="size-3 shrink-0" />
-            <span>{errors[0]}</span>
-          </div>
-        )}
         <AutosizeTextarea
           className="w-full resize-none outline-0 border-0 bg-transparent"
           placeholder="Type a message..."
@@ -190,8 +244,11 @@ export default function MessageInput({
                 selectedProvider.features.includes("vision")) && (
                 <Button
                   size="icon"
+                  variant="outline"
                   onClick={() => {
-                    openFileDialog();
+                    if (inputRef.current) {
+                      inputRef.current.click()
+                    }
                   }}
                 >
                   <PaperclipIcon />
@@ -201,11 +258,14 @@ export default function MessageInput({
               size="icon"
               onClick={() => {
                 if (status === "streaming") {
-                  stop();
+                  stop()
                 } else {
-                  onSubmit?.(value);
-                  setValue("");
-                  clearFiles();
+                  onSubmit?.(
+                    value,
+                    files.filter((f) => f.state === "success")
+                  )
+                  setValue("")
+                  setFiles([])
                 }
               }}
               disabled={status !== "ready" || value.trim() === ""}
@@ -216,5 +276,5 @@ export default function MessageInput({
         </div>
       </div>
     </div>
-  );
+  )
 }

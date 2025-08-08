@@ -126,7 +126,6 @@ export default function Chat({
   const empty = useMemo(() => input === "", [input])
   const [sentMessage, setSentMessage] = useState(false)
   const router = useRouter()
-  const [files, setFiles] = useState<File[]>([])
   const [editingMessage, setEditingMessage] = useState<string | null>(null)
 
   useEffect(() => {
@@ -449,14 +448,13 @@ export default function Chat({
           apiKeys={apiKeys}
           useWebSearch={useWebSearch}
           setUseWebSearch={setUseWebSearch}
-          setFiles={setFiles}
           selectedModelData={selectedModelData}
           status={status}
           value={input}
           setValue={(value) => setInput(value)}
           ref={ref}
           setHeight={setHeight}
-          onSubmit={(message) => {
+          onSubmit={(message, files) => {
             let modelProviders: string[] = []
             if (selectedModelData.modelId.startsWith("openrouter:")) {
               modelProviders = ["openrouter"]
@@ -484,11 +482,21 @@ export default function Chat({
             if (message.trim() === "" || status !== "ready") return
             setSentMessage(true)
             sendMessage({
-              text: message.trim(),
-              files: files && convertFileArrayToFileList(files),
+              role: "user",
+              parts: [
+                {
+                  text: message.trim(),
+                  type: "text",
+                },
+                ...files.map((f) => ({
+                  type: "file" as const,
+                  mediaType: f.mediaType,
+                  filename: f.filename,
+                  url: f.url,
+                })),
+              ],
             })
             setInput("")
-            setFiles([])
           }}
         />
       )}
