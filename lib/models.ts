@@ -235,3 +235,16 @@ export function effortToString(effort: "high" | "medium" | "low") {
       return "Medium";
   }
 }
+
+export function getGoogleThinkingBudget(effort: "high" | "medium" | "low") {
+  switch (effort) {
+    case "high":
+      return 16384;
+    case "medium":
+      return 8192;
+    case "low":
+      return 1024;
+    default:
+      return 1024;
+  }
+}

@@ -1,7 +1,6 @@
-import { generateText, tool } from 'ai';
-import { openai } from '@ai-sdk/openai';
-import { z } from 'zod';
+import { tool } from 'ai';
 import Exa from 'exa-js';
+import { z } from 'zod';
 
 export const exa = new Exa(process.env.EXA_API_KEY);
 

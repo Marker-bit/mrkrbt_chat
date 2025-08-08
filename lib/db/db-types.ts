@@ -8,3 +8,5 @@ export type Chat = typeof chat.$inferSelect;
 export type Message = UIMessage<{model: ModelData}, UIDataTypes, Tools>;
 
 export type Attachment = typeof attachment.$inferSelect;
+
+export type APIKeys = Record<string, string>;

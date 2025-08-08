@@ -1,15 +1,20 @@
-import { generateTitleFromUserMessage } from "@/lib/actions";
-import { auth } from "@/lib/auth";
-import { Message } from "@/lib/db/db-types";
-import { db } from "@/lib/db/drizzle";
-import { saveMessages } from "@/lib/db/queries";
-import { account, chat as chatTable } from "@/lib/db/schema";
-import { createModel, MODELS, PROVIDERS } from "@/lib/models";
-import { webSearch } from "@/lib/web-search";
-import { GoogleGenerativeAIProviderOptions } from "@ai-sdk/google";
-import { createOpenAI, OpenAIProvider, OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
-import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-import { put } from "@vercel/blob";
+import { generateTitleFromUserMessage } from "@/lib/actions"
+import { auth } from "@/lib/auth"
+import { APIKeys, Message } from "@/lib/db/db-types"
+import { db } from "@/lib/db/drizzle"
+import { saveMessages } from "@/lib/db/queries"
+import { account, chat as chatTable } from "@/lib/db/schema"
+import {
+  createModel,
+  getGoogleThinkingBudget,
+  MODELS,
+  PROVIDERS,
+} from "@/lib/models"
+import { webSearch } from "@/lib/web-search"
+import { GoogleGenerativeAIProviderOptions } from "@ai-sdk/google"
+import { createOpenAI, OpenAIResponsesProviderOptions } from "@ai-sdk/openai"
+import { createOpenRouter } from "@openrouter/ai-sdk-provider"
+import { put } from "@vercel/blob"
 import {
   APICallError,
   convertToModelMessages,
@@ -19,12 +24,14 @@ import {
   streamText,
   Tool,
   tool,
-} from "ai";
-import { eq } from "drizzle-orm";
-import { cookies, headers } from "next/headers";
-import { NextResponse } from "next/server";
-import { z } from "zod";
-import { PostRequestBody, postRequestBodySchema } from "./schema";
+} from "ai"
+import { eq } from "drizzle-orm"
+import { cookies, headers } from "next/headers"
+import { NextResponse } from "next/server"
+import { z } from "zod"
+import { PostRequestBody, postRequestBodySchema } from "./schema"
+import { getAPIKeys } from "@/lib/cookie-utils"
+import { getTools } from "@/lib/ai/tools"
 
 // Allow streaming responses up to 60 seconds
 export const maxDuration = 60
@@ -90,10 +97,10 @@ export async function POST(req: Request) {
     )
   }
 
-  let keys: any
+  let keys: APIKeys
 
   try {
-    keys = JSON.parse(apiKeys)
+    keys = await getAPIKeys()
   } catch (e) {
     return NextResponse.json(
       {
@@ -124,7 +131,7 @@ export async function POST(req: Request) {
       chosenProvider in keys &&
       keys[chosenProvider].length > 0
     ) {
-      const modelProvider = modelToRun.providers[chosenProvider];
+      const modelProvider = modelToRun.providers[chosenProvider]
       if (!modelProvider) {
         return NextResponse.json(
           {
@@ -266,54 +273,7 @@ export async function POST(req: Request) {
     )
   }
 
-  let tools: Record<string, Tool> = {
-    generateImage: tool({
-      description: "Generate an image",
-      inputSchema: z.object({
-        prompt: z.string().describe("The prompt to generate the image from"),
-      }),
-      execute: async ({ prompt }) => {
-        try {
-          if (!("openai" in keys) || keys.openai.length === 0) {
-            return {
-              message: "API key for OpenAI not found",
-            }
-          }
-          const openai = createOpenAI({
-            apiKey: keys.openai,
-          })
-          const { image } = await experimental_generateImage({
-            model: openai.image("dall-e-3"),
-            prompt,
-          })
-
-          const blob = await put(
-            crypto.randomUUID() + ".png",
-            new Blob([image.uint8Array as BlobPart], { type: "image/png" }),
-            {
-              access: "public",
-              addRandomSuffix: true,
-            }
-          )
-          // in production, save this image to blob storage and return a URL
-          return { image: blob.url }
-        } catch (e) {
-          if (e instanceof APICallError) {
-            return {
-              error: e.message,
-            }
-          }
-          return {
-            error: "Something happened",
-          }
-        }
-      },
-    }),
-  }
-
-  if (requestBody.useWebSearch) {
-    tools.webSearch = webSearch
-  }
+  const tools = getTools(keys, requestBody.useWebSearch)
 
   const providerTitle = PROVIDERS.find(
     (provider) => provider.id === providerData.id
@@ -340,29 +300,22 @@ export async function POST(req: Request) {
 
   let googleProviderOptions: GoogleGenerativeAIProviderOptions = {}
 
-  if (providerData.id === "google") {
-    if (
-      providerData.additionalData &&
-      "thinking" in providerData.additionalData &&
-      providerData.additionalData.thinking === true
-    ) {
-      if (requestBody.selectedChatModel.options.effort) {
-        let thinkingBudget = 1024
-        if (requestBody.selectedChatModel.options.effort === "high") {
-          thinkingBudget = 16384
-        } else if (requestBody.selectedChatModel.options.effort === "medium") {
-          thinkingBudget = 8192
-        } else if (requestBody.selectedChatModel.options.effort === "low") {
-          thinkingBudget = 1024
-        }
+  if (
+    providerData.id === "google" &&
+    providerData.additionalData &&
+    "thinking" in providerData.additionalData &&
+    providerData.additionalData.thinking === true &&
+    requestBody.selectedChatModel.options.effort
+  ) {
+    const thinkingBudget = getGoogleThinkingBudget(
+      requestBody.selectedChatModel.options.effort
+    )
 
-        googleProviderOptions = {
-          thinkingConfig: {
-            thinkingBudget,
-            includeThoughts: true,
-          },
-        }
-      }
+    googleProviderOptions = {
+      thinkingConfig: {
+        thinkingBudget,
+        includeThoughts: true,
+      },
     }
   }
 
@@ -375,13 +328,14 @@ export async function POST(req: Request) {
       providerOptions: {
         google: {
           ...googleProviderOptions,
-        },
+        } as GoogleGenerativeAIProviderOptions,
         openai: {
           reasoningEffort: requestBody.selectedChatModel.options.effort,
-        } as OpenAIResponsesProviderOptions
+        } as OpenAIResponsesProviderOptions,
       },
       experimental_transform: smoothStream({ chunking: "word" }),
       onError: async ({ error }) => {
+        console.error("onError in streamText", error)
         await db
           .update(chatTable)
           .set({
@@ -413,7 +367,7 @@ export async function POST(req: Request) {
         }
       },
       onError: (err) => {
-        console.error(err)
+        console.error("onError in toUIMessageStreamResponse", err)
         return "Failed to get response. Please try again later."
       },
       onFinish: async ({ responseMessage }) => {
@@ -431,7 +385,10 @@ export async function POST(req: Request) {
       generateMessageId: () => crypto.randomUUID(),
     })
   } catch (error) {
-    console.error(error)
+    console.error(
+      "caught error in streamText or toUIMessageStreamResponse",
+      error
+    )
     return NextResponse.json(
       {
         message: "Encountered an error while getting the response",

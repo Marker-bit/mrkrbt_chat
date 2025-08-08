@@ -1,7 +1,8 @@
 import { cookies } from "next/headers";
 import { DEFAULT_API_KEYS_COOKIE, ModelData, parseModelData } from "./models";
+import { APIKeys } from "./db/db-types";
 
-export async function getAPIKeys(): Promise<Record<string, string>> {
+export async function getAPIKeys(): Promise<APIKeys> {
   const cookiesInfo = await cookies();
   let apiKeys: Record<string, string>;
   try {
