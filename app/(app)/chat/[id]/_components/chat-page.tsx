@@ -1,6 +1,7 @@
 "use client";
 
 import Chat from "@/components/chat";
+import { ColorToggle } from "@/components/color-toggle";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
@@ -46,6 +47,7 @@ export default function ChatPage({
       </div>
       <div className="absolute top-4 right-4 p-1 flex gap-1 border bg-background rounded-md">
         <ModeToggle />
+        <ColorToggle />
         <Button variant="ghost" size="icon" className="size-7" asChild>
           <Link href="/settings">
             <Settings2Icon />
