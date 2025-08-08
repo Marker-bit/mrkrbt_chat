@@ -388,10 +388,10 @@ export const models: Model[] = [
         modelName: "openai/gpt-5",
         features: ["vision"],
       },
-      openai: {
-        modelName: "gpt-5",
-        features: ["vision"],
-      },
+      // openai: {
+      //   modelName: "gpt-5",
+      //   features: ["vision"],
+      // },
     },
     icon: OpenAI,
     supportsTools: true,
@@ -410,10 +410,10 @@ export const models: Model[] = [
         modelName: "openai/gpt-5-chat",
         features: ["vision"],
       },
-      openai: {
-        modelName: "gpt-5-chat",
-        features: ["vision"],
-      },
+      // openai: {
+      //   modelName: "gpt-5-chat",
+      //   features: ["vision"],
+      // },
     },
     icon: OpenAI,
     supportsTools: false,
@@ -432,10 +432,10 @@ export const models: Model[] = [
         modelName: "openai/gpt-5-nano",
         features: ["vision", "fast"],
       },
-      openai: {
-        modelName: "gpt-5-nano",
-        features: ["vision", "fast"],
-      },
+      // openai: {
+      //   modelName: "gpt-5-nano",
+      //   features: ["vision", "fast"],
+      // },
     },
     icon: OpenAI,
     supportsTools: true,
@@ -454,10 +454,10 @@ export const models: Model[] = [
         modelName: "openai/gpt-5-mini",
         features: ["vision"],
       },
-      openai: {
-        modelName: "gpt-5-mini",
-        features: ["vision"],
-      },
+      // openai: {
+      //   modelName: "gpt-5-mini",
+      //   features: ["vision"],
+      // },
     },
     icon: OpenAI,
     supportsTools: true,
