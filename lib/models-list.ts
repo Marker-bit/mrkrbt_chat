@@ -389,7 +389,7 @@ export const models: Model[] = [
         features: ["vision"],
       },
       openai: {
-        modelName: "gpt-5-latest",
+        modelName: "gpt-5",
         features: ["vision"],
       },
     },
@@ -411,7 +411,7 @@ export const models: Model[] = [
         features: ["vision"],
       },
       openai: {
-        modelName: "gpt-5-chat-latest",
+        modelName: "gpt-5-chat",
         features: ["vision"],
       },
     },
@@ -433,7 +433,7 @@ export const models: Model[] = [
         features: ["vision", "fast"],
       },
       openai: {
-        modelName: "gpt-5-nano-latest",
+        modelName: "gpt-5-nano",
         features: ["vision", "fast"],
       },
     },
@@ -455,7 +455,7 @@ export const models: Model[] = [
         features: ["vision"],
       },
       openai: {
-        modelName: "gpt-5-mini-latest",
+        modelName: "gpt-5-mini",
         features: ["vision"],
       },
     },
