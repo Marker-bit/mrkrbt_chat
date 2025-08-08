@@ -280,7 +280,7 @@ export async function POST(req: Request) {
 
           const blob = await put(
             crypto.randomUUID() + ".png",
-            new Blob([image.uint8Array], { type: "image/png" }),
+            new Blob([image.uint8Array as BlobPart], { type: "image/png" }),
             {
               access: "public",
               addRandomSuffix: true,
