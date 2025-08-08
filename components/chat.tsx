@@ -24,7 +24,7 @@ import { Button } from "./ui/button"
 import { TextShimmer } from "./ui/text-shimmer"
 import EditingMessage from "./editing-message"
 import { motion } from "motion/react"
-import { DefaultChatTransport } from "ai"
+import { DefaultChatTransport, PrepareSendMessagesRequest } from "ai"
 
 export default function Chat({
   isMain = false,
@@ -55,15 +55,13 @@ export default function Chat({
   const [onBottom, setOnBottom] = useState(false)
   const [input, setInput] = useState("")
 
-  console.log(selectedModelData)
-
   const { messages, setMessages, sendMessage, status, regenerate, error } =
     useChat<Message>({
       transport: new DefaultChatTransport({
         credentials: "include",
         api: "/api/chat",
         fetch: fetchWithErrorHandlers,
-        prepareSendMessagesRequest: ({ messages, trigger, messageId }) => {
+        prepareSendMessagesRequest: ({ messages, trigger, messageId, body }) => {
           const retryMessageId =
             trigger === "regenerate-message"
               ? messageId || messages.at(-1)?.id
@@ -80,7 +78,7 @@ export default function Chat({
               retryMessageId,
               selectedChatModel: selectedModelData,
               visibilityType,
-              useWebSearch,
+              ...body
             },
           }
         },
@@ -122,7 +120,7 @@ export default function Chat({
   )
 
   const retryMessage = (id: string) => {
-    regenerate({ messageId: id })
+    regenerate({ messageId: id, body: { useWebSearch } })
   }
 
   const empty = useMemo(() => input === "", [input])
@@ -432,7 +430,10 @@ export default function Chat({
                 <div className="text-muted-foreground text-xs mb-2">
                   {error.message}
                 </div>
-                <Button type="button" onClick={() => regenerate()}>
+                <Button
+                  type="button"
+                  onClick={() => regenerate({ body: { useWebSearch } })}
+                >
                   Retry
                 </Button>
               </div>
@@ -483,21 +484,24 @@ export default function Chat({
             }
             if (message.trim() === "" || status !== "ready") return
             setSentMessage(true)
-            sendMessage({
-              role: "user",
-              parts: [
-                {
-                  text: message.trim(),
-                  type: "text",
-                },
-                ...files.map((f) => ({
-                  type: "file" as const,
-                  mediaType: f.mediaType,
-                  filename: f.filename,
-                  url: f.url,
-                })),
-              ],
-            })
+            sendMessage(
+              {
+                role: "user",
+                parts: [
+                  {
+                    text: message.trim(),
+                    type: "text",
+                  },
+                  ...files.map((f) => ({
+                    type: "file" as const,
+                    mediaType: f.mediaType,
+                    filename: f.filename,
+                    url: f.url,
+                  })),
+                ],
+              },
+              { body: { useWebSearch } }
+            )
             setInput("")
           }}
         />
