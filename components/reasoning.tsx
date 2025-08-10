@@ -73,12 +73,17 @@ export function MessageReasoning({
         <div className="font-medium select-none">
           <AnimatePresence mode="popLayout">
             {isLoading ? (
-              <TextShimmer
-                duration={1}
-                className="w-fit"
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
+                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                exit={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
+                key="loading"
+                className="origin-left"
               >
-                Reasoning
-              </TextShimmer>
+                <TextShimmer duration={1} className="w-fit">
+                  Reasoning
+                </TextShimmer>
+              </motion.div>
             ) : isExpanded ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
