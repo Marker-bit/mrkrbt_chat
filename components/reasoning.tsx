@@ -68,33 +68,35 @@ export function MessageReasoning({
           </div>
         </div>
         <div className="font-medium select-none">
-          <AnimatePresence mode="popLayout" initial={false}>
-            {isLoading ? (
-              <TextShimmer duration={1} className="w-fit" key="loading">
-                Reasoning
-              </TextShimmer>
-            ) : isExpanded ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
-                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                exit={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
-                key="hide"
-                className="origin-left"
-              >
-                Hide reasoning
-              </motion.div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
-                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                exit={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
-                key="show"
-                className="origin-left"
-              >
-                Show reasoning
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {isLoading ? (
+            <TextShimmer duration={1} className="w-fit" key="loading">
+              Reasoning
+            </TextShimmer>
+          ) : (
+            <AnimatePresence mode="popLayout" initial={false}>
+              {isExpanded ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
+                  animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
+                  key="hide"
+                  className="origin-left"
+                >
+                  Hide reasoning
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
+                  animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
+                  key="show"
+                  className="origin-left"
+                >
+                  Show reasoning
+                </motion.div>
+              )}
+            </AnimatePresence>
+          )}
         </div>
       </div>
 

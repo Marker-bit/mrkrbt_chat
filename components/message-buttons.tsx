@@ -46,13 +46,6 @@ export default function MessageButtons({
   const router = useRouter();
 
   const retryMessageLocal = async () => {
-    setMessages((messages) => {
-      const index = messages.findIndex((m) => m.id === message.id);
-      return messages.slice(
-        0,
-        message.role === "assistant" ? index : index + 1
-      );
-    });
     retryMessage(message.id);
   };
 

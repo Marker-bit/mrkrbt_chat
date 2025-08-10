@@ -50,7 +50,6 @@ export default function Chat({
     initialVisibilityType: "private",
   })
   const [useWebSearch, setUseWebSearch] = useState(false)
-  const retryMessageId = useRef<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const [onBottom, setOnBottom] = useState(false)
   const [input, setInput] = useState("")
@@ -61,24 +60,38 @@ export default function Chat({
         credentials: "include",
         api: "/api/chat",
         fetch: fetchWithErrorHandlers,
-        prepareSendMessagesRequest: ({ messages, trigger, messageId, body }) => {
+        prepareSendMessagesRequest: ({
+          messages,
+          trigger,
+          messageId,
+          body,
+        }) => {
+          console.log("preparing with", messageId)
           const retryMessageId =
             trigger === "regenerate-message"
               ? messageId || messages.at(-1)?.id
               : null
+
+          const message =
+            trigger === "regenerate-message"
+              ? messages.find((m) => m.id === retryMessageId)
+              : messages.at(-1)
+
           return {
             body: {
               id,
-              message:
-                trigger === "regenerate-message"
-                  ? messageId
-                    ? messages.find((m) => m.id === messageId)
-                    : messages.at(-1)
-                  : messages.at(-1),
+              message: body?.messageText
+                ? {
+                    ...message,
+                    parts: message?.parts.map((p) =>
+                      p.type === "text" ? { ...p, text: body.messageText } : p
+                    ),
+                  }
+                : message,
               retryMessageId,
               selectedChatModel: selectedModelData,
               visibilityType,
-              ...body
+              ...body,
             },
           }
         },
@@ -97,7 +110,6 @@ export default function Chat({
       // }),
 
       onFinish: () => {
-        retryMessageId.current = null
         mutate(unstable_serialize(getChatHistoryPaginationKey))
         if (isMain) {
           router.push(`/chat/${id}`, { scroll: false })
@@ -105,7 +117,6 @@ export default function Chat({
       },
 
       onError: (error) => {
-        retryMessageId.current = null
         console.log(error)
         toast.error(error.message)
       },
@@ -119,8 +130,19 @@ export default function Chat({
     }
   )
 
-  const retryMessage = (id: string) => {
-    regenerate({ messageId: id, body: { useWebSearch } })
+  const retryMessage = (id: string, text?: string) => {
+    let messageIdx = messages.findIndex((m) => m.id === id)
+    if (messageIdx === -1) return
+    const message = messages[messageIdx]
+    if (message.role === "assistant") {
+      messageIdx--
+    }
+    setMessages((m) => m.slice(0, messageIdx + 1))
+    console.log(messageIdx, messages[messageIdx].id, messages[messageIdx].parts)
+    regenerate({
+      messageId: messages[messageIdx].id,
+      body: { useWebSearch, messageText: text },
+    })
   }
 
   const empty = useMemo(() => input === "", [input])
@@ -128,17 +150,11 @@ export default function Chat({
   const router = useRouter()
   const [editingMessage, setEditingMessage] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (chatState === "complete" && !sentMessage && !isMain) {
-      router.refresh()
-    }
-  }, [chatState, sentMessage])
-
-  useEffect(() => {
-    if (onBottom) {
-      bottomRef.current?.scrollIntoView({ behavior: "instant" })
-    }
-  }, [messages])
+  // useEffect(() => {
+  //   if (chatState === "complete" && !sentMessage && !isMain) {
+  //     router.refresh()
+  //   }
+  // }, [chatState, sentMessage])
 
   useEffect(() => {
     setTimeout(() => {
@@ -147,22 +163,20 @@ export default function Chat({
   }, [])
 
   const editMessage = (messageId: string, text: string) => {
-    const msgIndex = messages.findIndex((message) => message.id === messageId)
     setMessages((messages) =>
-      messages
-        .map((message) => {
-          if (message.id === messageId) {
-            return {
-              ...message,
-              content: text,
-              parts: [{ text, type: "text" as const }],
-            }
+      messages.map((message) => {
+        if (message.id === messageId) {
+          return {
+            ...message,
+            content: text,
+            parts: [{ text, type: "text" as const }],
           }
-          return message
-        })
-        .slice(0, msgIndex + 1)
+        }
+        return message
+      })
     )
-    retryMessage(messageId)
+    console.log("retry message id", messageId)
+    retryMessage(messageId, text)
     setEditingMessage(null)
   }
 
@@ -503,6 +517,7 @@ export default function Chat({
               { body: { useWebSearch } }
             )
             setInput("")
+            bottomRef.current?.scrollIntoView({ behavior: "smooth" })
           }}
         />
       )}

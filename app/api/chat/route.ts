@@ -224,6 +224,8 @@ export async function POST(req: Request) {
     }
 
     messages = chat.messages.slice(0, retryMessageIndex)
+
+    messages[retryMessageIndex - 1] = requestBody.message
   }
 
   // if (requestBody.message.id === messages.at(-1)?.id) {
