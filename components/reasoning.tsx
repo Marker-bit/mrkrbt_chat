@@ -61,29 +61,18 @@ export function MessageReasoning({
             <BrainIcon className="size-4" />
           )}
 
-          <div
-            className={cn(
-              "absolute top-0 left-0 w-full h-full bg-background opacity-0 group-hover/reasoning:opacity-100 transition",
-              isExpanded ? "rotate-90" : ""
-            )}
-          >
-            <ChevronRightIcon className="size-4" />
+          <div className="absolute top-0 left-0 w-full h-full bg-background opacity-0 group-hover/reasoning:opacity-100 transition">
+            <ChevronRightIcon
+              className={cn("size-4 transition", isExpanded && "rotate-90")}
+            />
           </div>
         </div>
         <div className="font-medium select-none">
-          <AnimatePresence mode="popLayout">
+          <AnimatePresence mode="popLayout" initial={false}>
             {isLoading ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
-                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                exit={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
-                key="loading"
-                className="origin-left"
-              >
-                <TextShimmer duration={1} className="w-fit">
-                  Reasoning
-                </TextShimmer>
-              </motion.div>
+              <TextShimmer duration={1} className="w-fit" key="loading">
+                Reasoning
+              </TextShimmer>
             ) : isExpanded ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
@@ -122,10 +111,12 @@ export function MessageReasoning({
             style={{ overflow: "hidden" }}
             className="pl-4 text-zinc-600 dark:text-zinc-400 border-l flex flex-col gap-4"
           >
-            <MemoizedMarkdown
-              id={`reasoning-${messageId}`}
-              content={reasoningText}
-            />
+            <div className="-my-4">
+              <MemoizedMarkdown
+                id={`reasoning-${messageId}`}
+                content={reasoningText}
+              />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
