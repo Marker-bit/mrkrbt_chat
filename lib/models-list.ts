@@ -464,5 +464,47 @@ export const models: Model[] = [
     tags: {
       new: true,
     }
+  },
+  {
+    id: "gpt-oss-20b",
+    title: "GPT OSS 20b",
+    model: "GPT",
+    version: "OSS 20b",
+    providers: {
+      openrouter: {
+        modelName: "openai/gpt-oss-20b",
+        features: ["fast"],
+      },
+      // openai: {
+      //   modelName: "gpt-5-mini",
+      //   features: ["vision"],
+      // },
+    },
+    icon: OpenAI,
+    supportsTools: true,
+    tags: {
+      new: true,
+    }
+  },
+  {
+    id: "gpt-oss-120b",
+    title: "GPT OSS 120b",
+    model: "GPT",
+    version: "OSS 120b",
+    providers: {
+      openrouter: {
+        modelName: "openai/gpt-oss-120b",
+        features: [],
+      },
+      // openai: {
+      //   modelName: "gpt-5-mini",
+      //   features: ["vision"],
+      // },
+    },
+    icon: OpenAI,
+    supportsTools: true,
+    tags: {
+      new: true,
+    }
   }
 ];
