@@ -1,20 +1,20 @@
-import { cn } from "@/lib/utils";
-import { useState, type ReactNode } from "react";
-import { isInlineCode, useShikiHighlighter, type Element } from "react-shiki";
-import { Button } from "./ui/button";
+import { cn } from "@/lib/utils"
+import { useState, type ReactNode } from "react"
+import { isInlineCode, useShikiHighlighter, type Element } from "react-shiki"
+import { Button } from "./ui/button"
 import {
   CheckIcon,
   CopyIcon,
   DownloadIcon,
   TextIcon,
   WrapTextIcon,
-} from "lucide-react";
-import { useTheme } from "next-themes";
+} from "lucide-react"
+import { useTheme } from "next-themes"
 
 interface CodeHighlightProps {
-  className?: string | undefined;
-  children?: ReactNode | undefined;
-  node?: Element | undefined;
+  className?: string | undefined
+  children?: ReactNode | undefined
+  node?: Element | undefined
 }
 
 const fileExtensions: Record<string, string> = {
@@ -26,7 +26,8 @@ const fileExtensions: Record<string, string> = {
   md: "md",
   markdown: "md",
   txt: "txt",
-  text: "txt"
+  text: "txt",
+  python: "py"
 }
 
 export const CodeHighlight = ({
@@ -35,15 +36,15 @@ export const CodeHighlight = ({
   node,
   ...props
 }: CodeHighlightProps) => {
-  const code = String(children);
-  const language = className?.match(/language-(\w+)/)?.[1];
+  const code = String(children)
+  const language = className?.match(/language-(\w+)/)?.[1]
   if (language === "math") {
     return code
   }
-  const [wordWrap, setWordWrap] = useState(false);
-  const {resolvedTheme} = useTheme()
+  const [wordWrap, setWordWrap] = useState(false)
+  const { resolvedTheme } = useTheme()
 
-  const isInline = node ? isInlineCode(node) : false;
+  const isInline = node ? isInlineCode(node) : false
 
   const highlightedCode = useShikiHighlighter(
     code,
@@ -57,9 +58,9 @@ export const CodeHighlight = ({
       delay: 150,
       defaultColor: resolvedTheme,
     }
-  );
+  )
 
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState(false)
 
   return !isInline ? (
     <div
@@ -68,21 +69,28 @@ export const CodeHighlight = ({
         wordWrap && "[&_pre]:whitespace-pre-wrap"
       )}
     >
-      <div className="p-2 px-4 flex gap-2 items-center justify-between bg-secondary text-black dark:text-white">
+      <div className="px-2 py-1 flex gap-2 items-center justify-between bg-primary/10 text-black dark:text-white">
         {language || "text"}
         <div className="flex gap-2 items-center">
-          <Button variant="ghost" size="icon" onClick={() => {
-            const link = document.createElement("a");
-            link.href = "data:text/plain;charset=utf-8," + encodeURIComponent(code);
-            const ext = fileExtensions[language || "text"];
-            link.download = "code." + (ext ?? language);
-            link.click();
-          }}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-7"
+            onClick={() => {
+              const link = document.createElement("a")
+              link.href =
+                "data:text/plain;charset=utf-8," + encodeURIComponent(code)
+              const ext = fileExtensions[language || "text"]
+              link.download = "code." + (ext ?? language)
+              link.click()
+            }}
+          >
             <DownloadIcon />
           </Button>
           <Button
             variant="ghost"
             size="icon"
+            className="size-7"
             onClick={() => setWordWrap(!wordWrap)}
           >
             {wordWrap ? <WrapTextIcon /> : <TextIcon />}
@@ -90,11 +98,12 @@ export const CodeHighlight = ({
           <Button
             variant="ghost"
             size="icon"
+            className="size-7"
             onClick={() => {
-              navigator.clipboard.writeText(code);
-              if (copied) return;
-              setCopied(true);
-              setTimeout(() => setCopied(false), 1000);
+              navigator.clipboard.writeText(code)
+              if (copied) return
+              setCopied(true)
+              setTimeout(() => setCopied(false), 1000)
             }}
           >
             {copied ? <CheckIcon /> : <CopyIcon />}
@@ -107,5 +116,5 @@ export const CodeHighlight = ({
     <code className={className} {...props}>
       {children}
     </code>
-  );
-};
+  )
+}
