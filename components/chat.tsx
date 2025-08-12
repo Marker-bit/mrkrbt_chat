@@ -255,6 +255,7 @@ export default function Chat({
                                 }
                                 messageId={message.id}
                                 reasoningText={part.text}
+                                metadata={message.metadata}
                               />
                             )
                           case "tool-webSearch":

@@ -358,15 +358,19 @@ export async function POST(req: Request) {
 
     return result.toUIMessageStreamResponse<Message>({
       messageMetadata: ({ part }) => {
-        if (part.type === "start") {
-          return {
-            model: requestBody.selectedChatModel,
-            createdAt: new Date(),
-          }
-        }
-        return {
+        let metadata: Record<string, unknown> = {
           model: requestBody.selectedChatModel,
         }
+        if (part.type === "start") {
+          metadata.createdAt = new Date()
+        }
+        if (part.type === "reasoning-start") {
+          metadata.reasoningStartDate = new Date()
+        }
+        if (part.type === "reasoning-end") {
+          metadata.reasoningEndDate = new Date()
+        }
+        return metadata as any
       },
       onError: (err) => {
         console.error("onError in toUIMessageStreamResponse", err)
