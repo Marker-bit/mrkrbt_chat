@@ -7,14 +7,11 @@ import Link from "next/link"
 import { ModeToggle } from "../../../components/mode-toggle"
 import Chat from "../../../components/chat"
 import VisibilitySelector from "@/components/visibility-selector"
-import { ModelData } from "@/lib/models"
 import { ColorToggle } from "@/components/color-toggle"
 
 export default function MainPage({
-  selectedModelData,
   apiKeys,
 }: {
-  selectedModelData: ModelData
   apiKeys: Record<string, string>
 }) {
   const chatId = crypto.randomUUID()
@@ -43,7 +40,6 @@ export default function MainPage({
         readOnly={false}
         state="complete"
         apiKeys={apiKeys}
-        selectedModelData={selectedModelData}
         id={chatId}
         isMain
       />

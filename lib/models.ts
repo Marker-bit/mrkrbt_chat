@@ -210,7 +210,7 @@ export function createModel(
   }
 }
 
-const DEFAULT_MODEL_DATA: ModelData = {
+export const DEFAULT_MODEL_DATA: ModelData = {
   modelId: "gemini-2.5-flash",
   options: { effort: "medium", provider: "openrouter" },
 };

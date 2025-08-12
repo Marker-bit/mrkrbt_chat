@@ -1,6 +1,5 @@
 "use client";
 
-import { useSelectedModelData } from "@/hooks/use-selected-model-data";
 import { authClient } from "@/lib/auth-client";
 import {
   effortToString,
@@ -46,12 +45,11 @@ import {
 } from "./ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { useSelectedModelData } from "./model-context";
 
 export default function ModelPopover({
-  selectedModelData,
   apiKeys,
 }: {
-  selectedModelData: ModelData;
   apiKeys: Record<string, string>;
 }) {
   const [open, setOpen] = useState(false);
@@ -92,9 +90,7 @@ export default function ModelPopover({
     );
   }
 
-  const { modelData, setModelData } = useSelectedModelData({
-    initialModelData: selectedModelData,
-  });
+  const { modelData, setModelData } = useSelectedModelData();
 
   const openRouterModel =
     modelData.modelId.startsWith("openrouter:") && modelData.modelId.slice(11);
@@ -380,7 +376,7 @@ export default function ModelPopover({
                             )
                           );
                         })}
-                        {selectedModelData.modelId === model.id && (
+                        {modelData.modelId === model.id && (
                           <CheckIcon className="size-4" />
                         )}
                       </div>
@@ -534,7 +530,7 @@ export default function ModelPopover({
             <Button variant="outline" className="rounded-full">
               <BrainCogIcon />
               <div className="max-sm:hidden">
-                {effortToString(selectedModelData.options.effort)}
+                {effortToString(modelData.options.effort)}
               </div>
             </Button>
           </DropdownMenuTrigger>

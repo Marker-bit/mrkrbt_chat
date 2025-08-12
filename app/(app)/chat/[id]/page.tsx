@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { getAPIKeys, getModelData } from "@/lib/cookie-utils";
+import { getAPIKeys } from "@/lib/cookie-utils";
 import { db } from "@/lib/db/drizzle";
 import { and, or } from "drizzle-orm";
 import { headers } from "next/headers";
@@ -34,14 +34,12 @@ export default async function Home({
   }
 
   const apiKeys = await getAPIKeys()
-  const selectedModelData = await getModelData();
 
   return (
     <ChatPage
       id={id}
       chat={chat}
       readOnly={chat.visibility === "public" && session.user.id !== chat.userId}
-      selectedModelData={selectedModelData}
       initialVisibilityType={chat.visibility}
       apiKeys={apiKeys}
     />

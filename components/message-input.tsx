@@ -18,6 +18,7 @@ import {
 import { RefObject, useEffect, useMemo, useRef, useState } from "react"
 import useMeasure from "react-use-measure"
 import ModelPopover from "./model-popover"
+import { useSelectedModelData } from "./model-context";
 
 export type SuccessFile = {
   filename: string
@@ -35,7 +36,6 @@ export default function MessageInput({
   setHeight,
   onSubmit,
   status,
-  selectedModelData,
   useWebSearch,
   setUseWebSearch,
   apiKeys,
@@ -46,7 +46,6 @@ export default function MessageInput({
   setHeight?: (height: number) => void
   onSubmit?: (message: string, files: SuccessFile[]) => void
   status: "submitted" | "streaming" | "ready" | "error"
-  selectedModelData: ModelData
   useWebSearch: boolean
   setUseWebSearch: (value: boolean) => void
   apiKeys: Record<string, string>
@@ -61,6 +60,7 @@ export default function MessageInput({
     ))[]
   >([])
   const [measureRef, bounds] = useMeasure()
+  const {modelData} = useSelectedModelData()
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter") {
@@ -80,16 +80,16 @@ export default function MessageInput({
 
   const selectedChatModel = useMemo(
     () =>
-      MODELS.find((chatModel) => chatModel.id === selectedModelData.modelId),
-    [selectedModelData, MODELS]
+      MODELS.find((chatModel) => chatModel.id === modelData.modelId),
+    [modelData, MODELS]
   )
 
   const selectedProvider = useMemo(
     () =>
-      selectedModelData.options.provider
-        ? selectedChatModel?.providers[selectedModelData.options.provider]
+      modelData.options.provider
+        ? selectedChatModel?.providers[modelData.options.provider]
         : null,
-    [selectedChatModel, selectedModelData]
+    [selectedChatModel, modelData]
   )
 
   useEffect(() => {
@@ -224,7 +224,6 @@ export default function MessageInput({
           <div className="flex gap-2">
             <ModelPopover
               apiKeys={apiKeys}
-              selectedModelData={selectedModelData}
             />
             {selectedChatModel?.supportsTools && (
               <Button

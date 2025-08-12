@@ -7,21 +7,18 @@ import { Button } from "@/components/ui/button";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import VisibilitySelector from "@/components/visibility-selector";
 import { Chat as ChatType } from "@/lib/db/db-types";
-import { ModelData } from "@/lib/models";
 import { PlusIcon, Settings2Icon } from "lucide-react";
 import Link from "next/link";
 
 export default function ChatPage({
   id,
   chat,
-  selectedModelData,
   apiKeys,
   initialVisibilityType,
   readOnly,
 }: {
   id: string;
   chat: ChatType;
-  selectedModelData: ModelData;
   apiKeys: Record<string, string>;
   initialVisibilityType: "public" | "private";
   readOnly: boolean;
@@ -55,7 +52,6 @@ export default function ChatPage({
         </Button>
       </div>
       <Chat
-        selectedModelData={selectedModelData}
         id={id}
         initialMessages={chat.messages}
         apiKeys={apiKeys}

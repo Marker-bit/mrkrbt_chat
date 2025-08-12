@@ -4,9 +4,11 @@ import { useChatVisibility } from "@/hooks/use-chat-visibility"
 import { Message } from "@/lib/db/db-types"
 import { fetchWithErrorHandlers } from "@/lib/fetch"
 import { ModelData, MODELS } from "@/lib/models"
-import { cn, convertFileArrayToFileList, fetcher } from "@/lib/utils"
+import { cn, fetcher } from "@/lib/utils"
 import { useChat } from "@ai-sdk/react"
+import { DefaultChatTransport } from "ai"
 import { CircleAlertIcon, DownloadIcon, Loader2Icon } from "lucide-react"
+import { motion } from "motion/react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -16,21 +18,19 @@ import useSWR, { mutate } from "swr"
 import { unstable_serialize } from "swr/infinite"
 import WelcomeScreen from "../app/(app)/_components/welcome-screen"
 import { getChatHistoryPaginationKey } from "./chat-list"
+import EditingMessage from "./editing-message"
 import MessageButtons from "./message-buttons"
 import MessageInput from "./message-input"
 import MessageWebSearch from "./message-web-search"
 import { MessageReasoning } from "./reasoning"
 import { Button } from "./ui/button"
 import { TextShimmer } from "./ui/text-shimmer"
-import EditingMessage from "./editing-message"
-import { motion } from "motion/react"
-import { DefaultChatTransport, PrepareSendMessagesRequest } from "ai"
+import { useSelectedModelData } from "./model-context"
 
 export default function Chat({
   isMain = false,
   id,
   initialMessages,
-  selectedModelData,
   apiKeys,
   state,
   readOnly,
@@ -38,7 +38,6 @@ export default function Chat({
   isMain?: boolean
   id: string
   initialMessages?: Message[]
-  selectedModelData: ModelData
   apiKeys: Record<string, string>
   state: "loading" | "complete"
   readOnly: boolean
@@ -53,6 +52,7 @@ export default function Chat({
   const bottomRef = useRef<HTMLDivElement>(null)
   const [onBottom, setOnBottom] = useState(false)
   const [input, setInput] = useState("")
+  const { getModelData } = useSelectedModelData()
 
   const { messages, setMessages, sendMessage, status, regenerate, error } =
     useChat<Message>({
@@ -66,7 +66,7 @@ export default function Chat({
           messageId,
           body,
         }) => {
-          console.log("preparing with", messageId)
+          const selectedModelData = getModelData()
           const retryMessageId =
             trigger === "regenerate-message"
               ? messageId || messages.at(-1)?.id
@@ -466,19 +466,19 @@ export default function Chat({
           apiKeys={apiKeys}
           useWebSearch={useWebSearch}
           setUseWebSearch={setUseWebSearch}
-          selectedModelData={selectedModelData}
           status={status}
           value={input}
           setValue={(value) => setInput(value)}
           ref={ref}
           setHeight={setHeight}
           onSubmit={(message, files) => {
+            const modelData = getModelData()
             let modelProviders: string[] = []
-            if (selectedModelData.modelId.startsWith("openrouter:")) {
+            if (modelData.modelId.startsWith("openrouter:")) {
               modelProviders = ["openrouter"]
             } else {
               const prov = MODELS.find(
-                (m) => m.id === selectedModelData.modelId
+                (m) => m.id === modelData.modelId
               )!.providers
               modelProviders = Object.keys(prov)
             }
