@@ -20,7 +20,9 @@ import { mutate } from "swr";
 import { unstable_serialize } from "swr/infinite";
 import { getChatHistoryPaginationKey } from "./chat-list";
 import { Message } from "@/lib/db/db-types";
-import { MODELS, PROVIDERS } from "@/lib/models";
+import { MODELS } from "@/lib/models";
+import { findProviderById } from "@/lib/ai/providers/actions";
+import { ProviderId } from "@/lib/ai/providers/types";
 
 export default function MessageButtons({
   message,
@@ -74,7 +76,7 @@ export default function MessageButtons({
   );
 
   const generatedByProvider = useMemo(
-    () => PROVIDERS.find((p) => p.id === model?.options?.provider),
+    () => findProviderById(model?.options?.provider as ProviderId),
     [model?.options?.provider]
   );
 

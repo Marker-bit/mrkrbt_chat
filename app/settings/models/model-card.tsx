@@ -6,7 +6,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Model, PROVIDERS } from "@/lib/models";
+import { findProviderById } from "@/lib/ai/providers/actions";
+import { ProviderId } from "@/lib/ai/providers/types";
+import { Model } from "@/lib/models";
 import React from "react";
 
 export default function ModelCard({
@@ -35,8 +37,9 @@ export default function ModelCard({
         )}
         {model.providers && Object.keys(model.providers).length > 0 && (
           <div className="flex gap-2 items-center">
-            {Object.keys(model.providers).map((provider) => {
-              const found = PROVIDERS.find((p) => p.id === provider)!;
+            {Object.keys(model.providers).map((p) => {
+              const provider = p as ProviderId
+              const found = findProviderById(provider)!;
               return (
                 <Tooltip key={provider}>
                   <TooltipTrigger>

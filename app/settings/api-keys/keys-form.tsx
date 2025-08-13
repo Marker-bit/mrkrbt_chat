@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { setApiKeysAsCookie } from "@/lib/actions";
-import { PROVIDERS } from "@/lib/models";
+import { PROVIDERS } from "@/lib/ai/providers/providers";
 import { cn } from "@/lib/utils";
 import { CircleAlert, Loader2Icon, SaveIcon } from "lucide-react";
 import { useSearchParams } from "next/navigation";
@@ -77,11 +77,11 @@ export default function KeysForm({
               Get API Key
             </a>
           )}
-          {provider?.apiKeyDescription && (
+          {/* {provider?.apiKeyDescription && (
             <div className="text-muted-foreground/80 text-xs">
               {provider.apiKeyDescription}
             </div>
-          )}
+          )} */}
         </div>
       ))}
       <Button type="submit" disabled={loading}>

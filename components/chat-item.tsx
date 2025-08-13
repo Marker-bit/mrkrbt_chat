@@ -1,5 +1,8 @@
+import { regenerateChatTitle } from "@/lib/actions"
+import { findProviderById } from "@/lib/ai/providers/actions"
 import type { Chat } from "@/lib/db/db-types"
-import { cn } from "@/lib/utils"
+import { MODELS } from "@/lib/models"
+import { format } from "date-fns"
 import {
   DownloadIcon,
   MoreHorizontalIcon,
@@ -11,6 +14,10 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { memo, useEffect, useState } from "react"
+import { toast } from "sonner"
+import { mutate } from "swr"
+import { unstable_serialize } from "swr/infinite"
+import { getChatHistoryPaginationKey } from "./chat-list"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,13 +30,7 @@ import {
   SidebarMenuItem,
 } from "./ui/sidebar"
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
-import { format } from "date-fns"
-import { MODELS, PROVIDERS } from "@/lib/models"
-import { toast } from "sonner"
-import { regenerateChatTitle } from "@/lib/actions"
-import { mutate } from "swr"
-import { unstable_serialize } from "swr/infinite"
-import { getChatHistoryPaginationKey } from "./chat-list"
+import { ProviderId } from "@/lib/ai/providers/types"
 
 const PureChatItem = ({
   chat,
@@ -75,10 +76,9 @@ Last updated: **${updatedAt}**
         ? MODELS.find((model) => model.id === modelId)
         : null
       const generatedByModel = MODELS.find((m) => m.id === modelData?.modelId)
-
-      const generatedByProvider = PROVIDERS.find(
-        (p) => p.id === modelData?.options?.provider
-      )
+      const generatedByProvider = modelData?.options.provider
+        ? findProviderById(modelData.options.provider as ProviderId)
+        : null
       const modelText = generatedByModel?.title
         ? ` (${generatedByModel?.title}${
             generatedByModel?.additionalTitle &&

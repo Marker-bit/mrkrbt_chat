@@ -1,98 +1,49 @@
-import DeepSeek from "@/components/icons/deepseek";
-import Google from "@/components/icons/google";
-import MistralAI from "@/components/icons/mistral";
-import OpenAI from "@/components/icons/openai";
-import OpenRouter from "@/components/icons/openrouter";
-import { createDeepSeek } from "@ai-sdk/deepseek";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { createMistral } from "@ai-sdk/mistral";
-import { createOpenAI } from "@ai-sdk/openai";
-import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-import { createGroq } from "@ai-sdk/groq";
-import { LanguageModel } from "ai";
-import { Brain, Eye, FileText, GiftIcon, Settings2, ZapIcon } from "lucide-react";
-import { models } from "./models-list";
-import Groq from "@/components/icons/groq";
+import { ProviderId } from "@/lib/ai/providers/types"
+import { createDeepSeek } from "@ai-sdk/deepseek"
+import { createGoogleGenerativeAI } from "@ai-sdk/google"
+import { createGroq } from "@ai-sdk/groq"
+import { createMistral } from "@ai-sdk/mistral"
+import { createOpenAI } from "@ai-sdk/openai"
+import { createOpenRouter } from "@openrouter/ai-sdk-provider"
+import { LanguageModel } from "ai"
+import {
+  Brain,
+  Eye,
+  FileText,
+  GiftIcon,
+  Settings2,
+  ZapIcon,
+} from "lucide-react"
+import { models } from "./models-list"
 
 export type Model = {
-  id: string;
-  title: string;
-  model: string;
-  version: string;
-  additionalTitle?: string;
-  providers: Record<
-    string,
+  id: string
+  title: string
+  model: string
+  version: string
+  additionalTitle?: string
+  providers: Partial<Record<
+    ProviderId,
     {
-      modelName: string;
-      features: FeatureId[];
-      additionalData?: Record<string, unknown>;
+      modelName: string
+      features: FeatureId[]
+      additionalData?: Record<string, unknown>
     }
-  >;
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  supportsTools: boolean;
+  >>
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
+  supportsTools: boolean
   tags?: {
-    new?: boolean;
+    new?: boolean
   }
-};
+}
 
 export type ModelData = {
-  modelId: string;
+  modelId: string
   options: {
-    effort: "high" | "medium" | "low";
-    provider?: string;
-  };
-};
-
-export const PROVIDERS: {
-  id: string;
-  title: string;
-  apiKeyDescription?: string;
-  apiKeyLink?: string;
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-}[] = [
-  {
-    title: "OpenRouter",
-    id: "openrouter",
-    icon: OpenRouter,
-    apiKeyLink: "https://openrouter.ai/settings/keys",
-  },
-  {
-    title: "Google Generative AI",
-    id: "google",
-    icon: Google,
-    apiKeyLink: "https://aistudio.google.com/apikey",
-  },
-  {
-    title: "OpenAI",
-    id: "openai",
-    apiKeyDescription: "Required for generating images with other models",
-    icon: OpenAI,
-    apiKeyLink: "https://platform.openai.com/settings/organization/api-keys",
-  },
-  {
-    title: "DeepSeek",
-    id: "deepseek",
-    icon: DeepSeek,
-    apiKeyLink: "https://platform.deepseek.com/api_keys",
-  },
-  {
-    title: "Mistral",
-    id: "mistral",
-    icon: MistralAI,
-    apiKeyLink: "https://console.mistral.ai/api-keys",
-  },
-  {
-    title: "Groq",
-    id: "groq",
-    icon: Groq,
-    apiKeyLink: "https://console.groq.com/keys",
-  },
-];
-
-export const DEFAULT_API_KEYS_COOKIE = PROVIDERS.reduce(
-  (acc, provider) => ({ ...acc, [provider.id]: "" }),
-  {}
-);
+    effort: "high" | "medium" | "low"
+    provider?: string
+  }
+}
 
 export const FEATURES = [
   {
@@ -143,34 +94,32 @@ export const FEATURES = [
     name: "Free",
     description: "Free to use (only OpenRouter)",
   },
-] as const;
+] as const
 
-export type FeatureId = (typeof FEATURES)[number]["id"];
+export type FeatureId = (typeof FEATURES)[number]["id"]
 
 const extractModelFeatures = (model: Model) => {
-  let features: FeatureId[] = [];
+  let features: FeatureId[] = []
   for (const provider in model.providers) {
-    for (const feature of model.providers[provider].features) {
+    for (const feature of model.providers[provider as ProviderId]!.features) {
       if (!features.includes(feature)) {
-        features.push(feature);
+        features.push(feature)
       }
     }
   }
-  return features;
-};
+  return features
+}
 
 export const MODELS = models.map((model) => ({
   ...model,
   features: extractModelFeatures(model),
-}));
+}))
 
-export const TITLEGEN_MODELS: string[] = [
-  "gemini-2.0-flash-lite",
-]
+export const TITLEGEN_MODELS: string[] = ["gemini-2.0-flash-lite"]
 
 export function createModel(
   model: Model,
-  providerId: string,
+  providerId: ProviderId,
   apiKey: string,
   additionalData: Record<string, unknown>
 ): LanguageModel | undefined {
@@ -179,30 +128,30 @@ export function createModel(
     (!(typeof additionalData.effort === "string") ||
       !["high", "medium", "low"].includes(additionalData.effort))
   ) {
-    throw new Error("Invalid effort");
+    throw new Error("Invalid effort")
   }
 
-  const provider = model.providers[providerId];
+  const provider = model.providers[providerId]!
 
-  const modelId = provider.modelName;
+  const modelId = provider.modelName
 
   switch (providerId) {
     case "openrouter":
-      const openRouter = createOpenRouter({ apiKey });
+      const openRouter = createOpenRouter({ apiKey })
       return openRouter.chat(modelId, {
         reasoning: additionalData.effort
           ? { effort: additionalData.effort as "high" | "medium" | "low" }
           : undefined,
-      });
+      })
 
     case "google":
-      const google = createGoogleGenerativeAI({ apiKey });
-      return google.chat(modelId);
+      const google = createGoogleGenerativeAI({ apiKey })
+      return google.chat(modelId)
 
     case "openai":
-      const openAI = createOpenAI({ apiKey });
+      const openAI = createOpenAI({ apiKey })
       return openAI.chat(
-        modelId,
+        modelId
         // (additionalData.effort && provider.features.includes("reasoning"))
         //   ? {
         //       reasoningEffort: additionalData.effort as
@@ -211,60 +160,60 @@ export function createModel(
         //         | "low",
         //     }
         //   : undefined
-      );
+      )
 
     case "mistral":
-      const mistral = createMistral({ apiKey });
-      return mistral.chat(modelId);
+      const mistral = createMistral({ apiKey })
+      return mistral.chat(modelId)
 
     case "deepseek":
-      const deepseek = createDeepSeek({ apiKey });
-      return deepseek.chat(modelId);
-    
+      const deepseek = createDeepSeek({ apiKey })
+      return deepseek.chat(modelId)
+
     case "groq":
-      const groq = createGroq({ apiKey });
-      return groq(modelId);
+      const groq = createGroq({ apiKey })
+      return groq(modelId)
 
     default:
-      break;
+      break
   }
 }
 
 export const DEFAULT_MODEL_DATA: ModelData = {
   modelId: "gemini-2.5-flash",
   options: { effort: "medium", provider: "openrouter" },
-};
+}
 
 export function parseModelData(modelData: string) {
   try {
-    return JSON.parse(modelData);
+    return JSON.parse(modelData)
   } catch {
-    return DEFAULT_MODEL_DATA;
+    return DEFAULT_MODEL_DATA
   }
 }
 
 export function effortToString(effort: "high" | "medium" | "low") {
   switch (effort) {
     case "high":
-      return "High";
+      return "High"
     case "medium":
-      return "Medium";
+      return "Medium"
     case "low":
-      return "Low";
+      return "Low"
     default:
-      return "Medium";
+      return "Medium"
   }
 }
 
 export function getGoogleThinkingBudget(effort: "high" | "medium" | "low") {
   switch (effort) {
     case "high":
-      return 16384;
+      return 16384
     case "medium":
-      return 8192;
+      return 8192
     case "low":
-      return 1024;
+      return 1024
     default:
-      return 1024;
+      return 1024
   }
 }

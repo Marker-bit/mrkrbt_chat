@@ -4,12 +4,7 @@ import { APIKeys, Message } from "@/lib/db/db-types"
 import { db } from "@/lib/db/drizzle"
 import { saveMessages } from "@/lib/db/queries"
 import { account, chat as chatTable } from "@/lib/db/schema"
-import {
-  createModel,
-  getGoogleThinkingBudget,
-  MODELS,
-  PROVIDERS,
-} from "@/lib/models"
+import { createModel, getGoogleThinkingBudget, MODELS } from "@/lib/models"
 import { webSearch } from "@/lib/web-search"
 import { GoogleGenerativeAIProviderOptions } from "@ai-sdk/google"
 import { createOpenAI, OpenAIResponsesProviderOptions } from "@ai-sdk/openai"
@@ -34,6 +29,8 @@ import { z } from "zod"
 import { PostRequestBody, postRequestBodySchema } from "./schema"
 import { getAPIKeys } from "@/lib/cookie-utils"
 import { getTools } from "@/lib/ai/tools"
+import { findProviderById } from "@/lib/ai/providers/actions"
+import { ProviderId } from "@/lib/ai/providers/types";
 
 // Allow streaming responses up to 60 seconds
 export const maxDuration = 60
@@ -128,49 +125,47 @@ export async function POST(req: Request) {
   } else {
     const chosenProvider = requestBody.selectedChatModel.options.provider
 
-    if (
-      chosenProvider &&
-      chosenProvider in keys &&
-      keys[chosenProvider].length > 0
-    ) {
-      const modelProvider = modelToRun.providers[chosenProvider]
-      if (!modelProvider) {
-        return NextResponse.json(
-          {
-            message: "Failed to find provider",
-          },
-          { status: 400 }
-        )
-      }
-      providerData = {
-        id: chosenProvider,
-        apiKey: keys[chosenProvider],
-        modelName: modelProvider.modelName,
-        additionalData: modelProvider.additionalData,
-      }
-    } else {
-      for (const provider in modelToRun.providers) {
-        if (provider in keys) {
-          const providerApiKey = keys[provider]
+    if (!chosenProvider) {
+      return NextResponse.json(
+        {
+          message: "No provider selected",
+        },
+        { status: 400 }
+      )
+    }
 
-          providerData = {
-            id: provider,
-            apiKey: providerApiKey,
-            modelName: modelToRun.providers[provider].modelName,
-            additionalData: modelToRun.providers[provider].additionalData,
-          }
-          break
-        }
-      }
+    if (!Object.keys(modelToRun.providers).includes(chosenProvider)) {
+      return NextResponse.json(
+        {
+          message: "Model doesn't have selected provider",
+        },
+        { status: 400 }
+      )
+    }
 
-      if (!providerData) {
-        return NextResponse.json(
-          {
-            message: "Failed to find a provider with an API key",
-          },
-          { status: 400 }
-        )
-      }
+    if (!(chosenProvider in keys) || keys[chosenProvider].length === 0) {
+      return NextResponse.json(
+        {
+          message: "You don't have an API key for this provider",
+        },
+        { status: 400 }
+      )
+    }
+
+    const modelProvider = modelToRun.providers[chosenProvider as ProviderId]
+    if (!modelProvider) {
+      return NextResponse.json(
+        {
+          message: "Failed to find provider",
+        },
+        { status: 400 }
+      )
+    }
+    providerData = {
+      id: chosenProvider,
+      apiKey: keys[chosenProvider],
+      modelName: modelProvider.modelName,
+      additionalData: modelProvider.additionalData,
     }
   }
 
@@ -279,9 +274,7 @@ export async function POST(req: Request) {
 
   const tools = getTools(keys, requestBody.useWebSearch)
 
-  const providerTitle = PROVIDERS.find(
-    (provider) => provider.id === providerData.id
-  )?.title
+  const providerTitle = findProviderById(providerData.id)?.title
 
   const modelTitle = isOpenRouter
     ? requestBody.selectedChatModel.modelId.slice(11)

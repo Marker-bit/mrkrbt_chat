@@ -7,7 +7,6 @@ import {
   FEATURES,
   ModelData,
   MODELS,
-  PROVIDERS,
 } from "@/lib/models";
 import { cn, fetcher } from "@/lib/utils";
 import {
@@ -46,6 +45,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { useSelectedModelData } from "./model-context";
+import { findProviderById } from "@/lib/ai/providers/actions";
 
 export default function ModelPopover({
   apiKeys,
@@ -152,11 +152,9 @@ export default function ModelPopover({
   const selectedProvider = useMemo(
     () =>
       modelData.options.provider
-        ? PROVIDERS.find(
-            (provider) => provider.id === modelData.options.provider
-          )!
+        ? findProviderById(modelData.options.provider)
         : null,
-    [modelData, PROVIDERS]
+    [modelData]
   );
 
   const setPinned = async (pinned: boolean, modelId: string) => {
@@ -488,7 +486,7 @@ export default function ModelPopover({
             <DropdownMenuContent className="min-w-72">
               {selectedChatModel &&
                 Object.keys(selectedChatModel.providers).map((providerId) => {
-                  const provider = PROVIDERS.find((p) => p.id === providerId)!;
+                  const provider = findProviderById(providerId)!;
                   const hasApiKey =
                     provider.id in apiKeys && apiKeys[provider.id].length > 0;
                   return (

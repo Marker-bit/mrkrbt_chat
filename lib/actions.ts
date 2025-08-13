@@ -8,12 +8,13 @@ import { db } from "./db/drizzle"
 import { attachment, chat } from "./db/schema"
 import {
   createModel,
-  DEFAULT_API_KEYS_COOKIE,
   ModelData,
   MODELS,
   TITLEGEN_MODELS,
 } from "./models"
 import { del } from "@vercel/blob"
+import { ProviderId } from "@/lib/ai/providers/types";
+import { generateDefaultApiKeys } from "@/lib/ai/providers/actions";
 
 export async function setApiKeysAsCookie(
   apiKeys: Record<string, string>
@@ -79,7 +80,7 @@ export async function generateTitleFromUserMessage({
       ) {
         continue
       }
-      model = createModel(modelFound, provider, apiKeys[provider], {})
+      model = createModel(modelFound, provider as ProviderId, apiKeys[provider], {})
       if (model) {
         break
       }
@@ -153,7 +154,7 @@ export async function regenerateChatTitle(chatId: string) {
   try {
     apiKeys = JSON.parse(cookiesInfo.get("apiKeys")?.value || "")
   } catch {
-    apiKeys = DEFAULT_API_KEYS_COOKIE
+    apiKeys = generateDefaultApiKeys()
   }
   const title = await generateTitleFromUserMessage({
     message: chatFound.messages as unknown as UIMessage[],
