@@ -17,6 +17,9 @@ importers:
       '@ai-sdk/google':
         specifier: ^2.0.3
         version: 2.0.3(zod@4.0.15)
+      '@ai-sdk/groq':
+        specifier: ^2.0.6
+        version: 2.0.6(zod@4.0.15)
       '@ai-sdk/mistral':
         specifier: ^2.0.1
         version: 2.0.1(zod@4.0.15)
@@ -273,6 +276,12 @@ packages:
     peerDependencies:
       zod: ^3.25.76 || ^4
 
+  '@ai-sdk/groq@2.0.6':
+    resolution: {integrity: sha512-669flAKA+2swTQXHwcUj3x+s7vus0Mo5fkTFdcw1czUZpi/fjaxeTgJaRmGrSjhgOZEXo6ICsn1WVI3V+y2mWg==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4
+
   '@ai-sdk/mistral@2.0.1':
     resolution: {integrity: sha512-GuX/5JXMiiTRBYIl3VJSUQQ3Zd6r/StnA94U/nkOL3Zd36LAhaM+RTTfumwj0BDgE2ou4OXiGD9qHn7V9+0dUw==}
     engines: {node: '>=18'}
@@ -293,6 +302,12 @@ packages:
 
   '@ai-sdk/provider-utils@3.0.1':
     resolution: {integrity: sha512-/iP1sKc6UdJgGH98OCly7sWJKv+J9G47PnTjIj40IJMUQKwDrUMyf7zOOfRtPwSuNifYhSoJQ4s1WltI65gJ/g==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4
+
+  '@ai-sdk/provider-utils@3.0.2':
+    resolution: {integrity: sha512-0a5a6VafkV6+0irdpqnub8WE6qzG2VMsDBpXb9NQIz8c4TG8fI+GSTFIL9sqrLEwXrHdiRj7fwJsrir4jClL0w==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4
@@ -4102,6 +4117,12 @@ snapshots:
       '@ai-sdk/provider-utils': 3.0.1(zod@4.0.15)
       zod: 4.0.15
 
+  '@ai-sdk/groq@2.0.6(zod@4.0.15)':
+    dependencies:
+      '@ai-sdk/provider': 2.0.0
+      '@ai-sdk/provider-utils': 3.0.2(zod@4.0.15)
+      zod: 4.0.15
+
   '@ai-sdk/mistral@2.0.1(zod@4.0.15)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
@@ -4121,6 +4142,14 @@ snapshots:
       zod: 4.0.15
 
   '@ai-sdk/provider-utils@3.0.1(zod@4.0.15)':
+    dependencies:
+      '@ai-sdk/provider': 2.0.0
+      '@standard-schema/spec': 1.0.0
+      eventsource-parser: 3.0.3
+      zod: 4.0.15
+      zod-to-json-schema: 3.24.6(zod@4.0.15)
+
+  '@ai-sdk/provider-utils@3.0.2(zod@4.0.15)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@standard-schema/spec': 1.0.0

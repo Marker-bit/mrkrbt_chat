@@ -8,9 +8,11 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createMistral } from "@ai-sdk/mistral";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { createGroq } from "@ai-sdk/groq";
 import { LanguageModel } from "ai";
 import { Brain, Eye, FileText, GiftIcon, Settings2, ZapIcon } from "lucide-react";
 import { models } from "./models-list";
+import Groq from "@/components/icons/groq";
 
 export type Model = {
   id: string;
@@ -78,6 +80,12 @@ export const PROVIDERS: {
     id: "mistral",
     icon: MistralAI,
     apiKeyLink: "https://console.mistral.ai/api-keys",
+  },
+  {
+    title: "Groq",
+    id: "groq",
+    icon: Groq,
+    apiKeyLink: "https://console.groq.com/keys",
   },
 ];
 
@@ -212,6 +220,10 @@ export function createModel(
     case "deepseek":
       const deepseek = createDeepSeek({ apiKey });
       return deepseek.chat(modelId);
+    
+    case "groq":
+      const groq = createGroq({ apiKey });
+      return groq(modelId);
 
     default:
       break;

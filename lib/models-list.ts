@@ -475,6 +475,10 @@ export const models: Model[] = [
         modelName: "openai/gpt-oss-20b",
         features: ["fast"],
       },
+      groq: {
+        modelName: "openai/gpt-oss-20b",
+        features: ["fast"]
+      }
       // openai: {
       //   modelName: "gpt-5-mini",
       //   features: ["vision"],
@@ -517,6 +521,10 @@ export const models: Model[] = [
         modelName: "openai/gpt-oss-120b",
         features: [],
       },
+      groq: {
+        modelName: "openai/gpt-oss-120b",
+        features: []
+      }
       // openai: {
       //   modelName: "gpt-5-mini",
       //   features: ["vision"],
