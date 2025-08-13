@@ -6,7 +6,6 @@ import KeysForm from "./keys-form";
 import { getAPIKeys } from "@/lib/cookie-utils";
 
 export default async function Page() {
-  const cookiesInfo = await cookies();
   const apiKeys = await getAPIKeys()
   const data = JSON.stringify(apiKeys, null, 2);
   const {encrypted, secret} = await encryptData(data);

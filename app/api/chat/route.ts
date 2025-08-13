@@ -30,7 +30,7 @@ import { PostRequestBody, postRequestBodySchema } from "./schema"
 import { getAPIKeys } from "@/lib/cookie-utils"
 import { getTools } from "@/lib/ai/tools"
 import { findProviderById } from "@/lib/ai/providers/actions"
-import { ProviderId } from "@/lib/ai/providers/types";
+import { ProviderId } from "@/lib/ai/providers/types"
 
 // Allow streaming responses up to 60 seconds
 export const maxDuration = 60

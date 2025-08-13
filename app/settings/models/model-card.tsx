@@ -50,7 +50,7 @@ export default function ModelCard({
                   </TooltipTrigger>
                   <TooltipContent className="bg-secondary">
                     <div className="flex gap-2 items-center">
-                      {model.providers[provider].features.map((feature) => (
+                      {model.providers[provider]!.features.map((feature) => (
                         <FeatureIcon noTooltip key={feature} id={feature} />
                       ))}
                     </div>
