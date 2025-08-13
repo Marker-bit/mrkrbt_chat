@@ -1,20 +1,13 @@
 import { cookies } from "next/headers";
-import KeysForm from "./keys-form";
-import { DEFAULT_API_KEYS_COOKIE } from "@/lib/models";
-import ExportKeysDialog from "./export-keys";
-import * as crypto from "crypto";
-import ImportKeysDialog from "./import-keys";
 import { encryptData } from "./encryption";
+import ExportKeysDialog from "./export-keys";
+import ImportKeysDialog from "./import-keys";
+import KeysForm from "./keys-form";
+import { getAPIKeys } from "@/lib/cookie-utils";
 
 export default async function Page() {
   const cookiesInfo = await cookies();
-  let apiKeys: Record<string, string>;
-  try {
-    apiKeys = JSON.parse(cookiesInfo.get("apiKeys")?.value || "");
-  } catch {
-    apiKeys = DEFAULT_API_KEYS_COOKIE;
-    // cookiesInfo.set("apiKeys", JSON.stringify(apiKeys));
-  }
+  const apiKeys = await getAPIKeys()
   const data = JSON.stringify(apiKeys, null, 2);
   const {encrypted, secret} = await encryptData(data);
 
