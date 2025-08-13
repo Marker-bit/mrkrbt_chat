@@ -487,6 +487,27 @@ export const models: Model[] = [
     }
   },
   {
+    id: "gpt-oss-20b-free",
+    title: "GPT OSS 20b (free)",
+    model: "GPT",
+    version: "OSS 20b (free)",
+    providers: {
+      openrouter: {
+        modelName: "openai/gpt-oss-20b:free",
+        features: ["fast", "free"],
+      },
+      // openai: {
+      //   modelName: "gpt-5-mini",
+      //   features: ["vision"],
+      // },
+    },
+    icon: OpenAI,
+    supportsTools: true,
+    tags: {
+      new: true,
+    }
+  },
+  {
     id: "gpt-oss-120b",
     title: "GPT OSS 120b",
     model: "GPT",

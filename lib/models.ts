@@ -9,7 +9,7 @@ import { createMistral } from "@ai-sdk/mistral";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { LanguageModel } from "ai";
-import { Brain, Eye, FileText, Settings2, ZapIcon } from "lucide-react";
+import { Brain, Eye, FileText, GiftIcon, Settings2, ZapIcon } from "lucide-react";
 import { models } from "./models-list";
 
 export type Model = {
@@ -126,6 +126,14 @@ export const FEATURES = [
     color: "#d946ef",
     name: "Effort Control",
     description: "Has effort control capabilities",
+  },
+  {
+    id: "free",
+    icon: GiftIcon,
+    displayInModels: true,
+    color: "#0ea5e9",
+    name: "Free",
+    description: "Free to use (only OpenRouter)",
   },
 ] as const;
 
