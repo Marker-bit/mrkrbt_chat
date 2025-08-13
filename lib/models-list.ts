@@ -502,7 +502,7 @@ export const models: Model[] = [
       // },
     },
     icon: OpenAI,
-    supportsTools: true,
+    supportsTools: false,
     tags: {
       new: true,
     }
