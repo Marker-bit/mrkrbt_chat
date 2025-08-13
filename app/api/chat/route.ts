@@ -19,7 +19,9 @@ import {
   APICallError,
   convertToModelMessages,
   experimental_generateImage,
+  InvalidToolInputError,
   LanguageModel,
+  NoSuchToolError,
   smoothStream,
   streamText,
   Tool,
@@ -336,8 +338,7 @@ export async function POST(req: Request) {
         } as OpenAIResponsesProviderOptions,
       },
       experimental_transform: smoothStream({ chunking: "word" }),
-      onError: async ({ error }) => {
-        console.error("onError in streamText", error)
+      onError: async () => {
         await db
           .update(chatTable)
           .set({
@@ -374,7 +375,13 @@ export async function POST(req: Request) {
       },
       onError: (err) => {
         console.error("onError in toUIMessageStreamResponse", err)
-        return "Failed to get response. Please try again later."
+        if (NoSuchToolError.isInstance(err)) {
+          return `The model tried to call a unknown tool: ${err.toolName}`
+        } else if (InvalidToolInputError.isInstance(err)) {
+          return `The model called a tool with invalid input: ${err.toolName}.`
+        } else {
+          return "Failed to get response. Please try again later."
+        }
       },
       onFinish: async ({ responseMessage }) => {
         if (session.user?.id) {
