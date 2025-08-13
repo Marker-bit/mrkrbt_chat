@@ -110,7 +110,7 @@ export async function POST(req: Request) {
   }
 
   let providerData: {
-    id: string
+    id: ProviderId
     apiKey: string
     modelName: string
     additionalData?: Record<string, unknown>
@@ -162,7 +162,7 @@ export async function POST(req: Request) {
       )
     }
     providerData = {
-      id: chosenProvider,
+      id: chosenProvider as ProviderId,
       apiKey: keys[chosenProvider],
       modelName: modelProvider.modelName,
       additionalData: modelProvider.additionalData,
