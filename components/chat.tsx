@@ -261,25 +261,27 @@ export default function Chat({
                           case "tool-webSearch":
                             if (part.state === "output-available") {
                               return (
-                                <div key={part.toolCallId}>
-                                  {/* <pre>
-                                {JSON.stringify(part.toolInvocation, null, 2)}
-                              </pre> */}
-                                  <MessageWebSearch
-                                    result={part.output}
-                                    query={part.input.query}
-                                  />
-                                </div>
+                                <MessageWebSearch
+                                  result={part.output}
+                                  query={part.input.query}
+                                  key={part.toolCallId}
+                                />
                               )
                             } else {
                               return (
-                                <TextShimmer
-                                  className="text-sm"
-                                  duration={1}
+                                <div
+                                  className="flex gap-2 items-center"
                                   key={part.toolCallId}
                                 >
-                                  Searching the web...
-                                </TextShimmer>
+                                  <Loader2Icon className="animate-spin size-4" />
+                                  <TextShimmer
+                                    className="text-sm"
+                                    duration={1}
+                                    key={part.toolCallId}
+                                  >
+                                    Searching the web...
+                                  </TextShimmer>
+                                </div>
                               )
                             }
                           case "tool-generateImage":

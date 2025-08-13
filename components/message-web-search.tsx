@@ -1,21 +1,31 @@
-import { ChevronDownIcon, GlobeIcon, Search, SearchIcon } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
-import React, { useState } from "react";
-import { MemoizedMarkdown } from "./memoized-markdown";
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  GlobeIcon,
+  Loader2Icon,
+  Search,
+  SearchIcon,
+  SquareArrowOutUpRightIcon,
+} from "lucide-react"
+import { AnimatePresence, motion } from "motion/react"
+import React, { useState } from "react"
+import { MemoizedMarkdown } from "./memoized-markdown"
+import { cn } from "@/lib/utils"
+import { TextShimmer } from "./ui/text-shimmer"
 
 export default function MessageWebSearch({
   result,
   query,
 }: {
   result: {
-    title: string | null;
-    url: string;
-    content: string;
-    publishedDate: string | undefined;
-  }[];
-  query: string;
+    title: string | null
+    url: string
+    content: string
+    publishedDate: string | undefined
+  }[]
+  query: string
 }) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false)
 
   const variants = {
     collapsed: {
@@ -30,22 +40,51 @@ export default function MessageWebSearch({
       marginTop: "1rem",
       marginBottom: "0.5rem",
     },
-  };
+  }
 
   return (
     <div className="flex flex-col">
-      <div className="flex flex-row gap-2 items-center">
-        <GlobeIcon className="size-4" />
-        <div className="font-medium">Searched the web</div>
-        <button
-          type="button"
-          className="cursor-pointer"
-          onClick={() => {
-            setIsExpanded(!isExpanded);
-          }}
-        >
-          <ChevronDownIcon className="size-4" />
-        </button>
+      <div
+        className="flex flex-row gap-2 items-center group/reasoning cursor-pointer"
+        onClick={() => {
+          setIsExpanded((a) => !a)
+        }}
+      >
+        <div className="relative">
+          <GlobeIcon className="size-4 group-hover/reasoning:scale-0 transition" />
+
+          <div className="absolute top-0 left-0 w-full h-full bg-background opacity-0 group-hover/reasoning:opacity-100 transition">
+            <ChevronRightIcon
+              className={cn("size-4 transition", isExpanded && "rotate-90")}
+            />
+          </div>
+        </div>
+        <div className="font-medium select-none flex flex-col leading-tight">
+          <AnimatePresence mode="popLayout" initial={false}>
+            {isExpanded ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
+                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                exit={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
+                key="hide-search-results"
+                className="origin-left overflow-hidden"
+              >
+                Hide search results
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
+                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                exit={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
+                key="show-search-results"
+                className="origin-left overflow-hidden"
+              >
+                Show search results
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <div className="text-muted-foreground text-xs">{query}</div>
+        </div>
       </div>
       <AnimatePresence initial={false}>
         {isExpanded && (
@@ -59,29 +98,29 @@ export default function MessageWebSearch({
             style={{ overflow: "hidden" }}
           >
             <div className="flex flex-col gap-2">
-              <div className="p-2 border rounded-xl flex gap-2 items-center">
-                <SearchIcon className="size-4" /> {query}
-              </div>
               {result.map((item) => (
-                <div
+                <a
                   key={item.url}
-                  className="flex flex-col gap-2 p-2 border rounded-xl"
+                  className="flex gap-2 p-2 px-3 border rounded-xl items-center no-underline!"
+                  href={item.url}
                 >
-                  <a href={item.url} target="_blank" rel="noopener noreferrer">
-                    {item.title}
-                  </a>
-                  <div className="text-xs text-muted-foreground">
-                    {new URL(item.url).hostname}
+                  <img
+                    src={`https://www.google.com/s2/favicons?domain=${item.url}`}
+                    className="size-6 rounded-md m-0!"
+                  />
+                  <div className="flex flex-col leading-tight">
+                    <div>{item.title}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {new URL(item.url).hostname}
+                    </div>
                   </div>
-                  <div className="prose prose-sm dark:prose-invert line-clamp-3">
-                    <MemoizedMarkdown id={item.url} content={item.content} />
-                  </div>
-                </div>
+                  <SquareArrowOutUpRightIcon className="size-4 ml-auto" />
+                </a>
               ))}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
-  );
+  )
 }
