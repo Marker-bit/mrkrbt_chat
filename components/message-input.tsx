@@ -19,6 +19,7 @@ import { RefObject, useEffect, useMemo, useRef, useState } from "react"
 import useMeasure from "react-use-measure"
 import ModelPopover from "./model-popover"
 import { useSelectedModelData } from "./model-context";
+import { ProviderId } from "@/lib/ai/providers/types"
 
 export type SuccessFile = {
   filename: string
@@ -87,7 +88,7 @@ export default function MessageInput({
   const selectedProvider = useMemo(
     () =>
       modelData.options.provider
-        ? selectedChatModel?.providers[modelData.options.provider]
+        ? selectedChatModel?.providers[modelData.options.provider as ProviderId]
         : null,
     [selectedChatModel, modelData]
   )
@@ -228,7 +229,6 @@ export default function MessageInput({
             {selectedChatModel?.supportsTools && (
               <Button
                 variant={useWebSearch ? "default" : "outline"}
-                className="rounded-full"
                 aria-label="Toggle search"
                 onClick={() => setUseWebSearch(!useWebSearch)}
               >

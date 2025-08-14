@@ -23,13 +23,9 @@ import {
   Tally1Icon,
   Tally2Icon,
   Tally3Icon,
+  XIcon,
 } from "lucide-react";
-import {
-  startTransition,
-  useMemo,
-  useRef,
-  useState
-} from "react";
+import { startTransition, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
 import FeatureIcon from "./feature-icon";
@@ -46,6 +42,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { useSelectedModelData } from "./model-context";
 import { findProviderById } from "@/lib/ai/providers/actions";
+import OpenRouter from "./icons/openrouter";
 
 export default function ModelPopover({
   apiKeys,
@@ -182,24 +179,34 @@ export default function ModelPopover({
     <div className="flex gap-2 items-center">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button variant="ghost" size="sm" className="text-sm" ref={buttonRef}>
+          <Button variant="outline" ref={buttonRef}>
             <div className="hidden sm:flex gap-2 items-center">
               {openRouterModel ? (
                 <div className="font-mono">{openRouterModel}</div>
-              ) : (
+              ) : selectedChatModel ? (
                 <>
-                  <div>{selectedChatModel?.title}</div>
-                  {selectedChatModel?.additionalTitle && (
+                  <selectedChatModel.icon className="size-4" />
+                  <div>{selectedChatModel.title}</div>
+                  {selectedChatModel.additionalTitle && (
                     <div className="text-xs text-muted-foreground max-sm:hidden">
                       ({selectedChatModel.additionalTitle})
                     </div>
                   )}
                 </>
+              ) : (
+                <>
+                  <XIcon className="size-4" /> No model selected
+                </>
               )}
-              <ChevronUpIcon className="size-4" />
             </div>
             <div className="sm:hidden">
-              <BrainCircuitIcon />
+              {openRouterModel ? (
+                <OpenRouter />
+              ) : selectedChatModel ? (
+                <selectedChatModel.icon />
+              ) : (
+                <BrainCircuitIcon />
+              )}
             </div>
           </Button>
         </PopoverTrigger>
@@ -466,7 +473,7 @@ export default function ModelPopover({
           <Tooltip>
             <TooltipTrigger asChild>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="rounded-full">
+                <Button variant="outline">
                   {selectedProvider ? (
                     <>
                       <selectedProvider.icon />
@@ -498,7 +505,7 @@ export default function ModelPopover({
                       <provider.icon className="size-4" />
                       {provider.title}
                       <div className="ml-auto flex gap-2 items-center">
-                        {selectedChatModel.providers[provider.id].features.map(
+                        {selectedChatModel.providers[provider.id]!.features.map(
                           (feature) => {
                             const realFeature = FEATURES.find(
                               (f) => f.id === feature
@@ -525,7 +532,7 @@ export default function ModelPopover({
       {selectedChatModel?.features.includes("effort-control") && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="rounded-full">
+            <Button variant="outline">
               <BrainCogIcon />
               <div className="max-sm:hidden">
                 {effortToString(modelData.options.effort)}
