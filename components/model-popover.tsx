@@ -1,5 +1,6 @@
 "use client";
 
+import { findProviderById } from "@/lib/ai/providers/actions";
 import { authClient } from "@/lib/auth-client";
 import {
   effortToString,
@@ -20,6 +21,7 @@ import {
   PinOffIcon,
   RouteIcon,
   SearchIcon,
+  Settings2Icon,
   Tally1Icon,
   Tally2Icon,
   Tally3Icon,
@@ -29,6 +31,8 @@ import { startTransition, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
 import FeatureIcon from "./feature-icon";
+import OpenRouter from "./icons/openrouter";
+import { useSelectedModelData } from "./model-context";
 import OpenRouterModel from "./openrouter-model";
 import { Button } from "./ui/button";
 import {
@@ -40,9 +44,7 @@ import {
 } from "./ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { useSelectedModelData } from "./model-context";
-import { findProviderById } from "@/lib/ai/providers/actions";
-import OpenRouter from "./icons/openrouter";
+import { ProviderId } from "@/lib/ai/providers/types";
 
 export default function ModelPopover({
   apiKeys,
@@ -146,6 +148,14 @@ export default function ModelPopover({
     });
   };
 
+  const selectedModelProvider = useMemo(
+    () =>
+      modelData.options.provider && selectedChatModel
+        ? selectedChatModel.providers[modelData.options.provider as ProviderId]
+        : null,
+    [modelData, selectedChatModel]
+  );
+
   const selectedProvider = useMemo(
     () =>
       modelData.options.provider
@@ -178,38 +188,54 @@ export default function ModelPopover({
   return (
     <div className="flex gap-2 items-center">
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button variant="outline" ref={buttonRef}>
-            <div className="hidden sm:flex gap-2 items-center">
-              {openRouterModel ? (
-                <div className="font-mono">{openRouterModel}</div>
-              ) : selectedChatModel ? (
-                <>
-                  <selectedChatModel.icon className="size-4" />
-                  <div>{selectedChatModel.title}</div>
-                  {selectedChatModel.additionalTitle && (
-                    <div className="text-xs text-muted-foreground max-sm:hidden">
-                      ({selectedChatModel.additionalTitle})
-                    </div>
-                  )}
-                </>
-              ) : (
-                <>
-                  <XIcon className="size-4" /> No model selected
-                </>
-              )}
-            </div>
-            <div className="sm:hidden">
-              {openRouterModel ? (
-                <OpenRouter />
-              ) : selectedChatModel ? (
-                <selectedChatModel.icon />
-              ) : (
-                <BrainCircuitIcon />
-              )}
-            </div>
-          </Button>
-        </PopoverTrigger>
+        <div className="inline-flex -space-x-px rounded-md shadow-xs rtl:space-x-reverse">
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              ref={buttonRef}
+              className="rounded-none shadow-none first:rounded-s-md last:rounded-e-md focus-visible:z-10 max-sm:p-0 max-sm:size-9"
+            >
+              <div className="hidden sm:flex gap-2 items-center">
+                {openRouterModel ? (
+                  <div className="font-mono">{openRouterModel}</div>
+                ) : selectedChatModel ? (
+                  <>
+                    <selectedChatModel.icon className="size-4" />
+                    <div>{selectedChatModel.title}</div>
+                    {selectedChatModel.additionalTitle && (
+                      <div className="text-xs text-muted-foreground max-sm:hidden">
+                        ({selectedChatModel.additionalTitle})
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <XIcon className="size-4" /> No model selected
+                  </>
+                )}
+              </div>
+              <div className="sm:hidden">
+                {openRouterModel ? (
+                  <OpenRouter />
+                ) : selectedChatModel ? (
+                  <selectedChatModel.icon />
+                ) : (
+                  <BrainCircuitIcon />
+                )}
+              </div>
+            </Button>
+          </PopoverTrigger>
+          {selectedModelProvider && (
+            <Button
+              className="rounded-none shadow-none first:rounded-s-md last:rounded-e-md focus-visible:z-10"
+              variant="outline"
+              size="icon"
+              aria-label="Open model settings"
+            >
+              <Settings2Icon size={16} aria-hidden="true" />
+            </Button>
+          )}
+        </div>
         <PopoverContent
           className={cn(
             big ? "w-[680px]" : "w-[420px]",
@@ -473,7 +499,7 @@ export default function ModelPopover({
           <Tooltip>
             <TooltipTrigger asChild>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline">
+                <Button variant="outline" className="max-sm:p-0 max-sm:size-9">
                   {selectedProvider ? (
                     <>
                       <selectedProvider.icon />
