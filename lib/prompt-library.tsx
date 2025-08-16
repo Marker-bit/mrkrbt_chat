@@ -22,6 +22,7 @@ import {
   LibraryIcon,
   LucideIcon,
   PlusIcon,
+  SearchIcon,
   TextCursorInputIcon,
   TrashIcon,
   TriangleAlertIcon,
@@ -38,6 +39,7 @@ import {
 } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { cn } from "./utils";
+import { Input } from "@/components/ui/input";
 
 export type Library = {
   prompts: Prompt[];
@@ -170,6 +172,7 @@ export default function PromptLibrary({
   const [library, setLibrary] = useLocalStorage<Library>("promptLibrary", {
     prompts: [],
   });
+  const [searchText, setSearchText] = useState("");
 
   const addPrompt = (prompt: string) => {
     setLibrary((l) => ({
@@ -205,6 +208,18 @@ export default function PromptLibrary({
           >
             <PlusIcon />
           </Button>
+        </div>
+        <div className="relative my-2">
+          <Input
+            className="peer ps-9"
+            placeholder="Search..."
+            type="search"
+            value={searchText}
+            onChange={(evt) => setSearchText(evt.target.value)}
+          />
+          <div className="text-muted-foreground/80 pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 peer-disabled:opacity-50">
+            <SearchIcon size={16} />
+          </div>
         </div>
         <div className="max-h-[60vh] overflow-auto mt-2 flex flex-col space-y-2">
           <AnimatePresence>
@@ -252,19 +267,25 @@ export default function PromptLibrary({
               </motion.div>
             )}
           </AnimatePresence>
-          {library.prompts.map((p) => (
-            <Prompt
-              deletePrompt={() =>
-                setLibrary((l) => ({
-                  ...l,
-                  prompts: l.prompts.filter((pr) => pr.id !== p.id),
-                }))
-              }
-              key={p.id}
-              prompt={p}
-              setInput={setInput}
-            />
-          ))}
+          {library.prompts
+            .filter((a) =>
+              searchText
+                ? a.prompt.toLowerCase().includes(searchText.toLowerCase())
+                : true
+            )
+            .map((p) => (
+              <Prompt
+                deletePrompt={() =>
+                  setLibrary((l) => ({
+                    ...l,
+                    prompts: l.prompts.filter((pr) => pr.id !== p.id),
+                  }))
+                }
+                key={p.id}
+                prompt={p}
+                setInput={setInput}
+              />
+            ))}
           {library.prompts.length === 0 && (
             <div className="rounded-md border px-4 py-3">
               <div className="flex gap-3">
