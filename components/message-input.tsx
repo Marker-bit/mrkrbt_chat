@@ -15,11 +15,12 @@ import {
   PlusIcon,
   XIcon,
 } from "lucide-react";
-import { RefObject, useEffect, useMemo, useRef, useState } from "react";
+import { Dispatch, RefObject, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
 import useMeasure from "react-use-measure";
 import ModelPopover from "./model-popover";
 import { useSelectedModelData } from "./model-context";
 import { ProviderId } from "@/lib/ai/providers/types";
+import PromptLibrary from "@/lib/prompt-library";
 
 export type SuccessFile = {
   filename: string;
@@ -42,7 +43,7 @@ export default function MessageInput({
   apiKeys,
 }: {
   value: string;
-  setValue: (value: string) => void;
+  setValue: Dispatch<SetStateAction<string>>;
   ref?: RefObject<AutosizeTextAreaRef | null>;
   setHeight?: (height: number) => void;
   onSubmit?: (message: string, files: SuccessFile[]) => void;
@@ -234,6 +235,7 @@ export default function MessageInput({
                 <div className="max-sm:hidden">Search</div>
               </Button>
             )}
+            <PromptLibrary setInput={setValue} />
           </div>
           <div className="flex gap-2">
             {selectedProvider &&
