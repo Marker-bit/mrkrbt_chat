@@ -70,11 +70,11 @@ export const CodeHighlight = ({
   return !isInline ? (
     <div
       className={cn(
-        "shiki not-prose relative [&_pre]:overflow-auto [&_pre]:rounded-lg [&_pre]:bg-transparent!",
+        "shiki not-prose relative",
         wordWrap && "[&_pre]:whitespace-pre-wrap"
       )}
     >
-      <div className="px-2 py-1 flex gap-2 items-center justify-between bg-primary/10 text-black dark:text-white">
+      <div className="px-2 py-1 flex gap-2 items-center justify-between bg-primary/10">
         {language || "text"}
         <div className="flex gap-2 items-center">
           <Button
@@ -116,8 +116,7 @@ export const CodeHighlight = ({
         </div>
       </div>
       <div
-        className="p-2 px-4 wrap-anywhere text-wrap"
-        dangerouslySetInnerHTML={{ __html: isHighlighting ? `<pre><code>${code}</code></pre>` : highlightedCode }}
+        dangerouslySetInnerHTML={{ __html: !highlightedCode ? `<pre className="p-2 px-4 overflow-auto"><code>${code}</code></pre>` : highlightedCode }}
       ></div>
     </div>
   ) : (

@@ -129,6 +129,13 @@ export const useCodeHighlighter = ({
           //         }
           //     }
           // ]
+          transformers: [
+            {
+                pre(node) {
+                    node.properties.class = "p-2 px-4 overflow-auto"
+                },
+            }
+          ]
         });
 
         setHighlightedCode(highlighted);
