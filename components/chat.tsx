@@ -1,31 +1,31 @@
-import { MemoizedMarkdown } from "@/components/memoized-markdown"
-import { AutosizeTextAreaRef } from "@/components/ui/autosize-textarea"
-import { useChatVisibility } from "@/hooks/use-chat-visibility"
-import { Message } from "@/lib/db/db-types"
-import { fetchWithErrorHandlers } from "@/lib/fetch"
-import { ModelData, MODELS } from "@/lib/models"
-import { cn, fetcher } from "@/lib/utils"
-import { useChat } from "@ai-sdk/react"
-import { DefaultChatTransport } from "ai"
-import { CircleAlertIcon, DownloadIcon, Loader2Icon } from "lucide-react"
-import { motion } from "motion/react"
-import Image from "next/image"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useEffect, useMemo, useRef, useState } from "react"
-import { toast } from "sonner"
-import useSWR, { mutate } from "swr"
-import { unstable_serialize } from "swr/infinite"
-import WelcomeScreen from "../app/(app)/_components/welcome-screen"
-import { getChatHistoryPaginationKey } from "./chat-list"
-import EditingMessage from "./editing-message"
-import MessageButtons from "./message-buttons"
-import MessageInput from "./message-input"
-import MessageWebSearch from "./message-web-search"
-import { MessageReasoning } from "./reasoning"
-import { Button } from "./ui/button"
-import { TextShimmer } from "./ui/text-shimmer"
-import { useSelectedModelData } from "./model-context"
+import { MemoizedMarkdown } from "@/components/memoized-markdown";
+import { AutosizeTextAreaRef } from "@/components/ui/autosize-textarea";
+import { useChatVisibility } from "@/hooks/use-chat-visibility";
+import { Message } from "@/lib/db/db-types";
+import { fetchWithErrorHandlers } from "@/lib/fetch";
+import { ModelData, MODELS } from "@/lib/models";
+import { cn, fetcher } from "@/lib/utils";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
+import { CircleAlertIcon, DownloadIcon, Loader2Icon } from "lucide-react";
+import { motion } from "motion/react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
+import useSWR, { mutate } from "swr";
+import { unstable_serialize } from "swr/infinite";
+import WelcomeScreen from "../app/(app)/_components/welcome-screen";
+import { getChatHistoryPaginationKey } from "./chat-list";
+import EditingMessage from "./editing-message";
+import MessageButtons from "./message-buttons";
+import MessageInput from "./message-input";
+import MessageWebSearch from "./message-web-search";
+import { MessageReasoning } from "./reasoning";
+import { Button } from "./ui/button";
+import { TextShimmer } from "./ui/text-shimmer";
+import { useSelectedModelData } from "./model-context";
 
 export default function Chat({
   isMain = false,
@@ -35,24 +35,24 @@ export default function Chat({
   state,
   readOnly,
 }: {
-  isMain?: boolean
-  id: string
-  initialMessages?: Message[]
-  apiKeys: Record<string, string>
-  state: "loading" | "complete"
-  readOnly: boolean
+  isMain?: boolean;
+  id: string;
+  initialMessages?: Message[];
+  apiKeys: Record<string, string>;
+  state: "loading" | "complete";
+  readOnly: boolean;
 }) {
-  const [height, setHeight] = useState(0)
-  const ref = useRef<AutosizeTextAreaRef>(null)
+  const [height, setHeight] = useState(0);
+  const ref = useRef<AutosizeTextAreaRef>(null);
   const { visibilityType } = useChatVisibility({
     chatId: id,
     initialVisibilityType: "private",
-  })
-  const [useWebSearch, setUseWebSearch] = useState(false)
-  const bottomRef = useRef<HTMLDivElement>(null)
-  const [onBottom, setOnBottom] = useState(false)
-  const [input, setInput] = useState("")
-  const { getModelData } = useSelectedModelData()
+  });
+  const [useWebSearch, setUseWebSearch] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const [onBottom, setOnBottom] = useState(false);
+  const [input, setInput] = useState("");
+  const { getModelData } = useSelectedModelData();
 
   const { messages, setMessages, sendMessage, status, regenerate, error } =
     useChat<Message>({
@@ -66,16 +66,16 @@ export default function Chat({
           messageId,
           body,
         }) => {
-          const selectedModelData = getModelData()
+          const selectedModelData = getModelData();
           const retryMessageId =
             trigger === "regenerate-message"
               ? messageId || messages.at(-1)?.id
-              : null
+              : null;
 
           const message =
             trigger === "regenerate-message"
               ? messages.find((m) => m.id === retryMessageId)
-              : messages.at(-1)
+              : messages.at(-1);
 
           return {
             body: {
@@ -93,7 +93,7 @@ export default function Chat({
               visibilityType,
               ...body,
             },
-          }
+          };
         },
       }),
       experimental_throttle: 50,
@@ -110,17 +110,17 @@ export default function Chat({
       // }),
 
       onFinish: () => {
-        mutate(unstable_serialize(getChatHistoryPaginationKey))
+        mutate(unstable_serialize(getChatHistoryPaginationKey));
         if (isMain) {
-          router.push(`/chat/${id}`, { scroll: false })
+          router.push(`/chat/${id}`, { scroll: false });
         }
       },
 
       onError: (error) => {
-        console.log(error)
-        toast.error(error.message)
+        console.log(error);
+        toast.error(error.message);
       },
-    })
+    });
 
   const { data: chatState } = useSWR(
     `/api/state/${id}`,
@@ -128,39 +128,37 @@ export default function Chat({
     {
       refreshInterval: 1000,
     }
-  )
+  );
 
   const retryMessage = (id: string, text?: string) => {
-    let messageIdx = messages.findIndex((m) => m.id === id)
-    if (messageIdx === -1) return
-    const message = messages[messageIdx]
+    let messageIdx = messages.findIndex((m) => m.id === id);
+    if (messageIdx === -1) return;
+    const message = messages[messageIdx];
     if (message.role === "assistant") {
-      messageIdx--
+      messageIdx--;
     }
-    setMessages((m) => m.slice(0, messageIdx + 1))
-    console.log(messageIdx, messages[messageIdx].id, messages[messageIdx].parts)
+    setMessages((m) => m.slice(0, messageIdx + 1));
+    console.log(
+      messageIdx,
+      messages[messageIdx].id,
+      messages[messageIdx].parts
+    );
     regenerate({
       messageId: messages[messageIdx].id,
       body: { useWebSearch, messageText: text },
-    })
-  }
+    });
+  };
 
-  const empty = useMemo(() => input === "", [input])
-  const [sentMessage, setSentMessage] = useState(false)
-  const router = useRouter()
-  const [editingMessage, setEditingMessage] = useState<string | null>(null)
+  const empty = useMemo(() => input === "", [input]);
+  const router = useRouter();
+  const [editingMessage, setEditingMessage] = useState<string | null>(null);
 
-  // useEffect(() => {
-  //   if (chatState === "complete" && !sentMessage && !isMain) {
-  //     router.refresh()
-  //   }
-  // }, [chatState, sentMessage])
+  const [isHydrated, setIsHydrated] = useState(true);
 
   useEffect(() => {
-    setTimeout(() => {
-      bottomRef.current?.scrollIntoView({ behavior: "instant" })
-    }, 200) // for the code blocks to load
-  }, [])
+    setIsHydrated(false);
+    bottomRef.current?.scrollIntoView({ behavior: "instant" });
+  }, []);
 
   const editMessage = (messageId: string, text: string) => {
     setMessages((messages) =>
@@ -170,15 +168,21 @@ export default function Chat({
             ...message,
             content: text,
             parts: [{ text, type: "text" as const }],
-          }
+          };
         }
-        return message
+        return message;
       })
-    )
-    console.log("retry message id", messageId)
-    retryMessage(messageId, text)
-    setEditingMessage(null)
-  }
+    );
+    console.log("retry message id", messageId);
+    retryMessage(messageId, text);
+    setEditingMessage(null);
+  };
+
+  useEffect(() => {
+    if (messages.length > 0 && messages.at(-1)?.role === "user") {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
 
   return (
     <>
@@ -195,8 +199,8 @@ export default function Chat({
           >
             <WelcomeScreen
               onSelect={(item) => {
-                setInput(item)
-                ref.current?.textArea.focus()
+                setInput(item);
+                ref.current?.textArea.focus();
               }}
             />
           </div>
@@ -244,7 +248,7 @@ export default function Chat({
                                 id={id}
                                 content={part.text}
                               />
-                            )
+                            );
                           case "reasoning":
                             return (
                               <MessageReasoning
@@ -257,7 +261,7 @@ export default function Chat({
                                 reasoningText={part.text}
                                 metadata={message.metadata}
                               />
-                            )
+                            );
                           case "tool-webSearch":
                             if (part.state === "output-available") {
                               return (
@@ -266,7 +270,7 @@ export default function Chat({
                                   query={part.input.query}
                                   key={part.toolCallId}
                                 />
-                              )
+                              );
                             } else {
                               return (
                                 <div
@@ -282,7 +286,7 @@ export default function Chat({
                                     Searching the web...
                                   </TextShimmer>
                                 </div>
-                              )
+                              );
                             }
                           case "tool-generateImage":
                             if (part.state === "output-available") {
@@ -302,7 +306,7 @@ export default function Chat({
                                       </div>
                                     </div>
                                   </div>
-                                )
+                                );
                               }
                               if ("message" in part.output) {
                                 return (
@@ -320,7 +324,7 @@ export default function Chat({
                                       </div>
                                     </div>
                                   </div>
-                                )
+                                );
                               }
                               return (
                                 <div
@@ -351,7 +355,7 @@ export default function Chat({
                                     </Button>
                                   </div>
                                 </div>
-                              )
+                              );
                             } else {
                               return (
                                 <TextShimmer
@@ -361,7 +365,7 @@ export default function Chat({
                                 >
                                   Generating the image...
                                 </TextShimmer>
-                              )
+                              );
                             }
                         }
                       })}
@@ -408,7 +412,9 @@ export default function Chat({
                           </div>
                         ))}
                     </div>
-                    {(status === "ready" || msgIndex < messages.length - 1) && (
+                    {(isHydrated ||
+                      status === "ready" ||
+                      msgIndex < messages.length - 1) && (
                       <MessageButtons
                         chatId={id}
                         retryMessage={retryMessage}
@@ -474,33 +480,32 @@ export default function Chat({
           ref={ref}
           setHeight={setHeight}
           onSubmit={(message, files) => {
-            const modelData = getModelData()
-            let modelProviders: string[] = []
+            const modelData = getModelData();
+            let modelProviders: string[] = [];
             if (modelData.modelId.startsWith("openrouter:")) {
-              modelProviders = ["openrouter"]
+              modelProviders = ["openrouter"];
             } else {
               const prov = MODELS.find(
                 (m) => m.id === modelData.modelId
-              )!.providers
-              modelProviders = Object.keys(prov)
+              )!.providers;
+              modelProviders = Object.keys(prov);
             }
-            let foundKey: boolean = false
-            let providers = new URLSearchParams()
+            let foundKey: boolean = false;
+            let providers = new URLSearchParams();
             for (const provider of modelProviders) {
-              providers.append("providers", provider)
+              providers.append("providers", provider);
               if (apiKeys[provider]) {
-                foundKey = true
+                foundKey = true;
               }
             }
             if (!foundKey) {
-              router.push("/settings/api-keys?" + providers.toString())
-              return
+              router.push("/settings/api-keys?" + providers.toString());
+              return;
             }
             if (messages.length === 0) {
-              window.history.replaceState({}, "", `/chat/${id}`)
+              window.history.replaceState({}, "", `/chat/${id}`);
             }
-            if (message.trim() === "" || status !== "ready") return
-            setSentMessage(true)
+            if (message.trim() === "" || status !== "ready") return;
             sendMessage(
               {
                 role: "user",
@@ -518,12 +523,11 @@ export default function Chat({
                 ],
               },
               { body: { useWebSearch } }
-            )
-            setInput("")
-            bottomRef.current?.scrollIntoView({ behavior: "smooth" })
+            );
+            setInput("");
           }}
         />
       )}
     </>
-  )
+  );
 }

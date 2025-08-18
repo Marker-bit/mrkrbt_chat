@@ -1,20 +1,21 @@
-import { cn } from "@/lib/utils"
-import { useState, type ReactNode } from "react"
-import { isInlineCode, useShikiHighlighter, type Element } from "react-shiki"
-import { Button } from "./ui/button"
+import { cn } from "@/lib/utils";
+import { useState, type ReactNode } from "react";
+import { isInlineCode, useShikiHighlighter, type Element } from "react-shiki";
+import { Button } from "./ui/button";
 import {
   CheckIcon,
   CopyIcon,
   DownloadIcon,
   TextIcon,
   WrapTextIcon,
-} from "lucide-react"
-import { useTheme } from "next-themes"
+} from "lucide-react";
+import { useTheme } from "next-themes";
+import { useCodeHighlighter } from "@/hooks/use-code-higlighter";
 
 interface CodeHighlightProps {
-  className?: string | undefined
-  children?: ReactNode | undefined
-  node?: Element | undefined
+  className?: string | undefined;
+  children?: ReactNode | undefined;
+  node?: Element | undefined;
 }
 
 const fileExtensions: Record<string, string> = {
@@ -27,8 +28,8 @@ const fileExtensions: Record<string, string> = {
   markdown: "md",
   txt: "txt",
   text: "txt",
-  python: "py"
-}
+  python: "py",
+};
 
 export const CodeHighlight = ({
   className,
@@ -36,31 +37,35 @@ export const CodeHighlight = ({
   node,
   ...props
 }: CodeHighlightProps) => {
-  const code = String(children)
-  const language = className?.match(/language-(\w+)/)?.[1]
+  const code = String(children);
+  const language = className?.match(/language-(\w+)/)?.[1];
   if (language === "math") {
-    return code
+    return code;
   }
-  const [wordWrap, setWordWrap] = useState(false)
-  const { resolvedTheme } = useTheme()
+  const [wordWrap, setWordWrap] = useState(false);
 
-  const isInline = node ? isInlineCode(node) : false
+  const isInline = node ? isInlineCode(node) : false;
 
-  const highlightedCode = useShikiHighlighter(
-    code,
-    language,
-    {
-      light: "vitesse-light",
-      dark: "vitesse-dark",
-      dim: "vitesse-black",
-    },
-    {
-      delay: 150,
-      defaultColor: resolvedTheme,
-    }
-  )
+  // const highlightedCode = useShikiHighlighter(
+  //   code,
+  //   language,
+  //   {
+  //     light: "vitesse-light",
+  //     dark: "vitesse-dark",
+  //     dim: "vitesse-black",
+  //   },
+  //   {
+  //     delay: 150,
+  //     defaultColor: resolvedTheme,
+  //   }
+  // )
+  const { isHighlighting, highlightedCode } = useCodeHighlighter({
+    codeString: code,
+    language: language ?? "text",
+    shouldHighlight: !isInline,
+  });
 
-  const [copied, setCopied] = useState(false)
+  const [copied, setCopied] = useState(false);
 
   return !isInline ? (
     <div
@@ -77,12 +82,12 @@ export const CodeHighlight = ({
             size="icon"
             className="size-7"
             onClick={() => {
-              const link = document.createElement("a")
+              const link = document.createElement("a");
               link.href =
-                "data:text/plain;charset=utf-8," + encodeURIComponent(code)
-              const ext = fileExtensions[language || "text"]
-              link.download = "code." + (ext ?? language)
-              link.click()
+                "data:text/plain;charset=utf-8," + encodeURIComponent(code);
+              const ext = fileExtensions[language || "text"];
+              link.download = "code." + (ext ?? language);
+              link.click();
             }}
           >
             <DownloadIcon />
@@ -100,21 +105,24 @@ export const CodeHighlight = ({
             size="icon"
             className="size-7"
             onClick={() => {
-              navigator.clipboard.writeText(code)
-              if (copied) return
-              setCopied(true)
-              setTimeout(() => setCopied(false), 1000)
+              navigator.clipboard.writeText(code);
+              if (copied) return;
+              setCopied(true);
+              setTimeout(() => setCopied(false), 1000);
             }}
           >
             {copied ? <CheckIcon /> : <CopyIcon />}
           </Button>
         </div>
       </div>
-      <div className="p-2 px-4 wrap-anywhere text-wrap">{highlightedCode}</div>
+      <div
+        className="p-2 px-4 wrap-anywhere text-wrap"
+        dangerouslySetInnerHTML={{ __html: isHighlighting ? `<pre><code>${code}</code></pre>` : highlightedCode }}
+      ></div>
     </div>
   ) : (
     <code className={className} {...props}>
       {children}
     </code>
-  )
-}
+  );
+};

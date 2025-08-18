@@ -26,7 +26,7 @@ export function MessageReasoning({
   messageId,
   metadata,
 }: MessageReasoningProps) {
-  const [isExpanded, setIsExpanded] = useState(true)
+  const [isExpanded, setIsExpanded] = useState(false)
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null)
   const [reasoningSeconds, setReasoningSeconds] = useState(0)
 
@@ -56,6 +56,12 @@ export function MessageReasoning({
       return () => clearInterval(interval)
     }
   }, [metadata?.reasoningStartDate, metadata?.reasoningEndDate])
+
+  useEffect(() => {
+    if (!metadata?.reasoningEndDate) {
+      setIsExpanded(true)
+    }
+  }, [metadata?.reasoningEndDate])
 
   const variants = {
     collapsed: {

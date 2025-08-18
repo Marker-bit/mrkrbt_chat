@@ -88,7 +88,9 @@ export default function MessageButtons({
             size="icon"
             variant="ghost"
             onClick={() => {
-              navigator.clipboard.writeText(message.parts.find((p) => p.type === "text")?.text || "");
+              navigator.clipboard.writeText(
+                message.parts.find((p) => p.type === "text")?.text || ""
+              );
               if (copied) return;
               setCopied(true);
               setTimeout(() => setCopied(false), 1000);
