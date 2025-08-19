@@ -1,10 +1,11 @@
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fira_Code, Inter } from "next/font/google";
 import "./globals.css";
 import { ColorProvider } from "@/components/color-provider";
 import ViewportResizeProvider from "@/components/viewport-resize-provider";
+import Head from "next/head";
 
 const mainFont = Inter({
   subsets: ["latin"],
@@ -19,6 +20,15 @@ const codeFont = Fira_Code({
 export const metadata: Metadata = {
   title: "mrkrbt.chat",
   description: "A clone of T3 Chat",
+  applicationName: "mrkrbt.chat",
+  appleWebApp: {
+    capable: true,
+    title: "mrkrbt.chat",
+  },
+};
+
+export const viewport: Viewport = {
+  interactiveWidget: "resizes-content",
 };
 
 export default function RootLayout({
@@ -28,10 +38,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <meta name="apple-mobile-web-app-title" content="mrkrbt.chat" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content" />
-      </head>
       <body
         className={`${mainFont.className} ${codeFont.variable} antialiased font-sans overflow-hidden `}
       >
