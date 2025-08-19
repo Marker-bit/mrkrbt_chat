@@ -1,7 +1,5 @@
+import { useCodeHighlighter } from "@/hooks/use-code-higlighter";
 import { cn } from "@/lib/utils";
-import { useState, type ReactNode } from "react";
-import { isInlineCode, useShikiHighlighter, type Element } from "react-shiki";
-import { Button } from "./ui/button";
 import {
   CheckIcon,
   CopyIcon,
@@ -9,8 +7,9 @@ import {
   TextIcon,
   WrapTextIcon,
 } from "lucide-react";
-import { useTheme } from "next-themes";
-import { useCodeHighlighter } from "@/hooks/use-code-higlighter";
+import { useState, type ReactNode } from "react";
+import { isInlineCode, type Element } from "react-shiki";
+import { Button } from "./ui/button";
 
 interface CodeHighlightProps {
   className?: string | undefined;
@@ -59,7 +58,7 @@ export const CodeHighlight = ({
   //     defaultColor: resolvedTheme,
   //   }
   // )
-  const { isHighlighting, highlightedCode } = useCodeHighlighter({
+  const { highlightedCode } = useCodeHighlighter({
     codeString: code,
     language: language ?? "text",
     shouldHighlight: !isInline,
@@ -74,7 +73,7 @@ export const CodeHighlight = ({
         wordWrap && "[&_pre]:whitespace-pre-wrap"
       )}
     >
-      <div className="px-2 py-1 flex gap-2 items-center justify-between bg-primary/10">
+      <div className="px-2 py-1 flex gap-2 items-center justify-between bg-primary/20">
         {language || "text"}
         <div className="flex gap-2 items-center">
           <Button
@@ -116,8 +115,12 @@ export const CodeHighlight = ({
         </div>
       </div>
       <div
-        dangerouslySetInnerHTML={{ __html: !highlightedCode ? `<pre className="p-2 px-4 overflow-auto"><code>${code}</code></pre>` : highlightedCode }}
-      ></div>
+        dangerouslySetInnerHTML={{
+          __html: !highlightedCode
+            ? `<pre className="p-2 px-4 overflow-auto"><code>${code}</code></pre>`
+            : highlightedCode,
+        }}
+      />
     </div>
   ) : (
     <code className={className} {...props}>

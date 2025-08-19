@@ -24,8 +24,8 @@ const getHighlighter = async (): Promise<Highlighter> => {
     themes: [
       "vitesse-dark",
       "vitesse-light",
-      "catppuccin-latte",
-      "catppuccin-frappe",
+      "rose-pine-dawn",
+      "rose-pine-moon",
     ],
     langs: [
       "javascript",
@@ -105,10 +105,10 @@ export const useCodeHighlighter = ({
           theme:
             resolvedTheme === "dark"
               ? color === "pink"
-                ? "catppuccin-frappe"
+                ? "rose-pine-moon"
                 : "vitesse-dark"
               : color === "pink"
-                ? "catppuccin-latte"
+                ? "rose-pine-dawn"
                 : "vitesse-light",
           // transformers: [
           //     {

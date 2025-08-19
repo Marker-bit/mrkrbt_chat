@@ -290,17 +290,17 @@ export const models: Model[] = [
     supportsTools: false,
   },
   {
-    id: "devstral-small-2506",
-    title: "Devstral Small",
+    id: "devstral-small-1.1",
+    title: "Devstral Small 1.1",
     model: "Devstral",
-    version: "Small",
+    version: "Small 1.1",
     providers: {
       openrouter: {
-        modelName: "mistralai/devstral-small-2506",
+        modelName: "mistralai/devstral-small",
         features: [],
       },
       mistral: {
-        modelName: "devstral-small-2506",
+        modelName: "devstral-small-2507",
         features: [],
       },
     },
