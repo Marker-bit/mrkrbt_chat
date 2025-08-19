@@ -188,7 +188,7 @@ export default function Chat({
     <>
       {isMain && messages.length === 0 ? (
         <div
-          className="flex grow items-center justify-center w-full overflow-auto"
+          className="flex grow items-center-safe justify-center w-full overflow-auto"
           style={{ paddingBottom: `${height}px` }}
         >
           <div

@@ -30,9 +30,10 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="apple-mobile-web-app-title" content="mrkrbt.chat" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content" />
       </head>
       <body
-        className={`${mainFont.className} ${codeFont.variable} antialiased font-sans`}
+        className={`${mainFont.className} ${codeFont.variable} antialiased font-sans overflow-hidden `}
       >
         <ThemeProvider
           attribute="class"
