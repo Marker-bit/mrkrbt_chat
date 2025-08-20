@@ -148,24 +148,29 @@ export function MessageReasoning({
 
       <AnimatePresence initial={false}>
         {isExpanded && (
-          <motion.div
-            data-testid="message-reasoning"
-            key="content"
-            initial="collapsed"
-            animate="expanded"
-            exit="collapsed"
-            variants={variants}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-            style={{ overflow: "hidden" }}
-            className="pl-4 text-zinc-600 dark:text-zinc-400 border-l flex flex-col gap-4"
-          >
-            <div className="-my-4">
-              <MemoizedMarkdown
-                id={`reasoning-${messageId}`}
-                content={reasoningText}
-              />
-            </div>
-          </motion.div>
+          <div className="relative group/reasoning">
+            <motion.div
+              data-testid="message-reasoning"
+              key="content"
+              initial="collapsed"
+              animate="expanded"
+              exit="collapsed"
+              variants={variants}
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+              style={{ overflow: "hidden" }}
+              className="pl-4 text-zinc-600 dark:text-zinc-400 flex flex-col gap-4"
+            >
+              <div className="-my-4">
+                <MemoizedMarkdown
+                  id={`reasoning-${messageId}`}
+                  content={reasoningText}
+                />
+              </div>
+            </motion.div>
+            <button className="absolute top-2 bottom-0 left-0 w-8 translate-x-[-50%] flex justify-center group/border" onClick={() => setIsExpanded(false)}>
+              <div className="h-full w-0.5 bg-white/10 group-hover/border:w-3 group-hover/border:bg-white/20 transition-[width,background]" />
+            </button>
+          </div>
         )}
       </AnimatePresence>
     </div>

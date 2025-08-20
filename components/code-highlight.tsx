@@ -1,15 +1,11 @@
 import { useCodeHighlighter } from "@/hooks/use-code-higlighter";
 import { cn } from "@/lib/utils";
-import {
-  CheckIcon,
-  CopyIcon,
-  DownloadIcon,
-  TextIcon,
-  WrapTextIcon,
-} from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { CheckIcon, CopyIcon, DownloadIcon } from "lucide-react";
+import { useRef, useState, type ReactNode } from "react";
 import { isInlineCode, type Element } from "react-shiki";
 import { Button } from "./ui/button";
+import { TextIcon } from "./icons/lucide-animated/text";
+import { WrapTextIcon } from "./icons/lucide-animated/wrap-text";
 
 interface CodeHighlightProps {
   className?: string | undefined;
@@ -64,6 +60,11 @@ export const CodeHighlight = ({
     shouldHighlight: !isInline,
   });
 
+  const animationRef = useRef<{
+    startAnimation: () => void;
+    stopAnimation: () => void;
+  }>(null);
+
   const [copied, setCopied] = useState(false);
 
   return !isInline ? (
@@ -97,7 +98,7 @@ export const CodeHighlight = ({
             className="size-7"
             onClick={() => setWordWrap(!wordWrap)}
           >
-            {wordWrap ? <WrapTextIcon /> : <TextIcon />}
+            <WrapTextIcon wrapEnabled={wordWrap} />
           </Button>
           <Button
             variant="ghost"
