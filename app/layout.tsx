@@ -48,10 +48,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <ColorProvider>
-            <ViewportResizeProvider>
+            {/* <ViewportResizeProvider> */}
               <Toaster />
               {children}
-            </ViewportResizeProvider>
+            {/* </ViewportResizeProvider> */}
           </ColorProvider>
         </ThemeProvider>
       </body>
