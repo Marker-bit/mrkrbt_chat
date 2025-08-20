@@ -1,23 +1,23 @@
-"use client"
+"use client";
 
-import { useEffect, useMemo, useState } from "react"
-import { motion, AnimatePresence } from "motion/react"
+import { useEffect, useMemo, useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import {
   BrainIcon,
   ChevronDownIcon,
   ChevronRightIcon,
   Loader2Icon,
-} from "lucide-react"
-import { MemoizedMarkdown } from "./memoized-markdown"
-import { TextShimmer } from "./ui/text-shimmer"
-import { cn } from "@/lib/utils"
-import { Message } from "@/lib/db/db-types"
+} from "lucide-react";
+import { MemoizedMarkdown } from "./memoized-markdown";
+import { TextShimmer } from "./ui/text-shimmer";
+import { cn } from "@/lib/utils";
+import { Message } from "@/lib/db/db-types";
 
 interface MessageReasoningProps {
-  isLoading: boolean
-  reasoningText: string
-  messageId: string
-  metadata: Message["metadata"]
+  isLoading: boolean;
+  reasoningText: string;
+  messageId: string;
+  metadata: Message["metadata"];
 }
 
 export function MessageReasoning({
@@ -26,42 +26,42 @@ export function MessageReasoning({
   messageId,
   metadata,
 }: MessageReasoningProps) {
-  const [isExpanded, setIsExpanded] = useState(false)
-  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null)
-  const [reasoningSeconds, setReasoningSeconds] = useState(0)
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
+  const [reasoningSeconds, setReasoningSeconds] = useState(0);
 
   useEffect(() => {
     if (metadata?.reasoningStartDate && metadata?.reasoningEndDate) {
-      if (intervalId) clearInterval(intervalId)
+      if (intervalId) clearInterval(intervalId);
       setReasoningSeconds(
         (new Date(metadata?.reasoningEndDate).getTime() -
           new Date(metadata?.reasoningStartDate).getTime()) /
           1000
-      )
+      );
     } else if (metadata?.reasoningStartDate) {
       const interval = setInterval(() => {
         if (!metadata?.reasoningStartDate) {
-          clearInterval(interval)
-          return
+          clearInterval(interval);
+          return;
         }
         setReasoningSeconds(
           (new Date().getTime() -
             new Date(metadata.reasoningStartDate).getTime()) /
             1000
-        )
-      }, 50)
+        );
+      }, 50);
 
-      setIntervalId(interval)
+      setIntervalId(interval);
 
-      return () => clearInterval(interval)
+      return () => clearInterval(interval);
     }
-  }, [metadata?.reasoningStartDate, metadata?.reasoningEndDate])
+  }, [metadata?.reasoningStartDate, metadata?.reasoningEndDate]);
 
   useEffect(() => {
     if (!metadata?.reasoningEndDate) {
-      setIsExpanded(true)
+      setIsExpanded(true);
     }
-  }, [metadata?.reasoningEndDate])
+  }, [metadata?.reasoningEndDate]);
 
   const variants = {
     collapsed: {
@@ -76,20 +76,20 @@ export function MessageReasoning({
       marginTop: "1rem",
       marginBottom: "0.5rem",
     },
-  }
+  };
 
   useEffect(() => {
     if (!isLoading) {
-      setIsExpanded(false)
+      setIsExpanded(false);
     }
-  }, [reasoningText, isLoading])
+  }, [reasoningText, isLoading]);
 
   return (
     <div className="flex flex-col">
       <div
         className="flex flex-row gap-2 items-center group/reasoning cursor-pointer"
         onClick={() => {
-          setIsExpanded((a) => !a)
+          setIsExpanded((a) => !a);
         }}
       >
         <div className="relative">
@@ -105,35 +105,40 @@ export function MessageReasoning({
             />
           </div>
         </div>
-        <div className="font-medium select-none flex flex-col leading-tight">
+        <div className="font-medium select-none leading-tight w-full">
           {isLoading ? (
             <TextShimmer duration={1} className="w-fit my-0!" key="loading">
               Reasoning...
             </TextShimmer>
           ) : (
-            <AnimatePresence mode="popLayout" initial={false}>
-              {isExpanded ? (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
-                  animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
-                  key="hide"
-                  className="origin-left overflow-hidden"
-                >
-                  Hide reasoning
-                </motion.div>
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
-                  animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
-                  key="show"
-                  className="origin-left overflow-hidden"
-                >
-                  Show reasoning
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <div className="relative w-full">
+              <div className="pointer-events-none opacity-0">a</div>
+              <div className="absolute top-0 left-0">
+                <AnimatePresence mode="popLayout" initial={false}>
+                  {isExpanded ? (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
+                      animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                      exit={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
+                      key="hide"
+                      className="origin-left overflow-hidden"
+                    >
+                      Hide reasoning
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
+                      animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                      exit={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
+                      key="show"
+                      className="origin-left overflow-hidden"
+                    >
+                      Show reasoning
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
           )}
           <div className="text-muted-foreground text-xs">
             {reasoningSeconds.toFixed(2)}s
@@ -164,5 +169,5 @@ export function MessageReasoning({
         )}
       </AnimatePresence>
     </div>
-  )
+  );
 }

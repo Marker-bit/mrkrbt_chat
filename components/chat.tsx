@@ -244,7 +244,7 @@ export default function Chat({
                           case "text":
                             return (
                               <MemoizedMarkdown
-                                key={index}
+                                key={`${message.id}-${index}`}
                                 id={id}
                                 content={part.text}
                               />
@@ -252,7 +252,7 @@ export default function Chat({
                           case "reasoning":
                             return (
                               <MessageReasoning
-                                key={index}
+                                key={`${message.id}-${index}`}
                                 isLoading={
                                   status === "streaming" &&
                                   messages.length - 1 === msgIndex
@@ -268,14 +268,14 @@ export default function Chat({
                                 <MessageWebSearch
                                   result={part.output}
                                   query={part.input.query}
-                                  key={part.toolCallId}
+                                  key={`${message.id}-${part.toolCallId}`}
                                 />
                               );
                             } else {
                               return (
                                 <div
                                   className="flex gap-2 items-center"
-                                  key={part.toolCallId}
+                                  key={`${message.id}-${part.toolCallId}`}
                                 >
                                   <Loader2Icon className="animate-spin size-4" />
                                   <TextShimmer
@@ -294,7 +294,7 @@ export default function Chat({
                                 return (
                                   <div
                                     className="bg-red-500/20 text-red-500 p-4 rounded-xl flex gap-4 items-center"
-                                    key={part.toolCallId}
+                                    key={`${message.id}-${part.toolCallId}`}
                                   >
                                     <CircleAlertIcon className="size-5" />
                                     <div className="flex flex-col leading-tight">
@@ -312,7 +312,7 @@ export default function Chat({
                                 return (
                                   <div
                                     className="bg-red-500/20 text-red-500 p-4 rounded-xl flex gap-4 items-center"
-                                    key={part.toolCallId}
+                                    key={`${message.id}-${part.toolCallId}`}
                                   >
                                     <CircleAlertIcon className="size-5" />
                                     <div className="flex flex-col leading-tight">
@@ -329,7 +329,7 @@ export default function Chat({
                               return (
                                 <div
                                   className="relative rounded-xl overflow-hidden size-[400px] max-w-full group/image"
-                                  key={part.toolCallId}
+                                  key={`${message.id}-${part.toolCallId}`}
                                 >
                                   <Image
                                     src={part.output.image}
@@ -361,7 +361,7 @@ export default function Chat({
                                 <TextShimmer
                                   className="text-sm"
                                   duration={1}
-                                  key={part.toolCallId}
+                                  key={`${message.id}-${part.toolCallId}`}
                                 >
                                   Generating the image...
                                 </TextShimmer>
@@ -376,7 +376,7 @@ export default function Chat({
                         .map((attachment, index) => (
                           <div
                             className="border rounded-xl flex gap-2 items-center p-2 group/attachment"
-                            key={`${message.id}-${index}`}
+                            key={`${message.id}-file-${index}`}
                           >
                             {attachment.mediaType.startsWith("image/") && (
                               <div className="bg-accent aspect-square shrink-0 rounded-lg overflow-hidden relative">
