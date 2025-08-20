@@ -1,11 +1,12 @@
 import { useCodeHighlighter } from "@/hooks/use-code-higlighter";
 import { cn } from "@/lib/utils";
-import { CheckIcon, CopyIcon, DownloadIcon } from "lucide-react";
+import { CheckIcon } from "lucide-react";
 import { useRef, useState, type ReactNode } from "react";
 import { isInlineCode, type Element } from "react-shiki";
-import { Button } from "./ui/button";
-import { TextIcon } from "./icons/lucide-animated/text";
 import { WrapTextIcon } from "./icons/lucide-animated/wrap-text";
+import { Button } from "./ui/button";
+import { DownloadIcon } from "./icons/lucide-animated/download";
+import { CopyIcon } from "./icons/lucide-animated/copy";
 
 interface CodeHighlightProps {
   className?: string | undefined;
@@ -65,6 +66,11 @@ export const CodeHighlight = ({
     stopAnimation: () => void;
   }>(null);
 
+  const copyAnimationRef = useRef<{
+    startAnimation: () => void;
+    stopAnimation: () => void;
+  }>(null);
+
   const [copied, setCopied] = useState(false);
 
   return !isInline ? (
@@ -81,6 +87,8 @@ export const CodeHighlight = ({
             variant="ghost"
             size="icon"
             className="size-7"
+            onMouseEnter={() => animationRef.current?.startAnimation()}
+            onMouseLeave={() => animationRef.current?.stopAnimation()}
             onClick={() => {
               const link = document.createElement("a");
               link.href =
@@ -90,7 +98,7 @@ export const CodeHighlight = ({
               link.click();
             }}
           >
-            <DownloadIcon />
+            <DownloadIcon ref={animationRef} />
           </Button>
           <Button
             variant="ghost"
@@ -104,6 +112,8 @@ export const CodeHighlight = ({
             variant="ghost"
             size="icon"
             className="size-7"
+            onMouseEnter={() => copyAnimationRef.current?.startAnimation()}
+            onMouseLeave={() => copyAnimationRef.current?.stopAnimation()}
             onClick={() => {
               navigator.clipboard.writeText(code);
               if (copied) return;
@@ -111,7 +121,7 @@ export const CodeHighlight = ({
               setTimeout(() => setCopied(false), 1000);
             }}
           >
-            {copied ? <CheckIcon /> : <CopyIcon />}
+            {copied ? <CheckIcon /> : <CopyIcon ref={copyAnimationRef} />}
           </Button>
         </div>
       </div>
