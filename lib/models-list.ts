@@ -4,6 +4,7 @@ import MistralAI from "@/components/icons/mistral";
 import OpenAI from "@/components/icons/openai";
 import Qwen from "@/components/icons/qwen";
 import { Model } from "./models";
+import ClaudeAI from "@/components/icons/claude";
 
 export const models: Model[] = [
   {
@@ -535,5 +536,41 @@ export const models: Model[] = [
     tags: {
       new: true,
     }
-  }
+  },
+  {
+    id: "claude-sonnet-4",
+    title: "Claude Sonnet 4",
+    model: "Claude",
+    version: "Sonnet 4",
+    providers: {
+      openrouter: {
+        modelName: "anthropic/claude-sonnet-4",
+        features: ["reasoning"],
+      }
+      // openai: {
+      //   modelName: "gpt-5-mini",
+      //   features: ["vision"],
+      // },
+    },
+    icon: ClaudeAI,
+    supportsTools: true
+  },
+  {
+    id: "claude-opus-4.1",
+    title: "Claude Opus 4.1",
+    model: "Claude",
+    version: "Opus 4.1",
+    providers: {
+      openrouter: {
+        modelName: "anthropic/claude-opus-4.1",
+        features: ["reasoning"],
+      }
+      // openai: {
+      //   modelName: "gpt-5-mini",
+      //   features: ["vision"],
+      // },
+    },
+    icon: ClaudeAI,
+    supportsTools: true
+  },
 ];
