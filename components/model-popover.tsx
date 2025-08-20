@@ -43,7 +43,12 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import {
+  SimpleTooltip,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "./ui/tooltip";
 import { ProviderId } from "@/lib/ai/providers/types";
 
 export default function ModelPopover({
@@ -188,54 +193,59 @@ export default function ModelPopover({
   return (
     <div className="flex gap-2 items-center">
       <Popover open={open} onOpenChange={setOpen}>
-        <div className="inline-flex -space-x-px rounded-md shadow-xs rtl:space-x-reverse">
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              ref={buttonRef}
-              className="rounded-none shadow-none first:rounded-s-md last:rounded-e-md focus-visible:z-10 max-sm:p-0 max-sm:size-9"
-            >
-              <div className="hidden sm:flex gap-2 items-center">
-                {openRouterModel ? (
-                  <div className="font-mono">{openRouterModel}</div>
-                ) : selectedChatModel ? (
-                  <>
-                    <selectedChatModel.icon className="size-4" />
-                    <div>{selectedChatModel.title}</div>
-                    {selectedChatModel.additionalTitle && (
-                      <div className="text-xs text-muted-foreground max-sm:hidden">
-                        ({selectedChatModel.additionalTitle})
-                      </div>
+        <Tooltip>
+          <div className="inline-flex -space-x-px rounded-md shadow-xs rtl:space-x-reverse">
+            <PopoverTrigger asChild>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  ref={buttonRef}
+                  className="rounded-none shadow-none first:rounded-s-md last:rounded-e-md focus-visible:z-10 max-sm:p-0 max-sm:size-9"
+                >
+                  <div className="hidden sm:flex gap-2 items-center">
+                    {openRouterModel ? (
+                      <div className="font-mono">{openRouterModel}</div>
+                    ) : selectedChatModel ? (
+                      <>
+                        <selectedChatModel.icon className="size-4" />
+                        <div>{selectedChatModel.title}</div>
+                        {selectedChatModel.additionalTitle && (
+                          <div className="text-xs text-muted-foreground max-sm:hidden">
+                            ({selectedChatModel.additionalTitle})
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <XIcon className="size-4" /> No model selected
+                      </>
                     )}
-                  </>
-                ) : (
-                  <>
-                    <XIcon className="size-4" /> No model selected
-                  </>
-                )}
-              </div>
-              <div className="sm:hidden">
-                {openRouterModel ? (
-                  <OpenRouter />
-                ) : selectedChatModel ? (
-                  <selectedChatModel.icon />
-                ) : (
-                  <BrainCircuitIcon />
-                )}
-              </div>
-            </Button>
-          </PopoverTrigger>
-          {selectedModelProvider && (
-            <Button
-              className="rounded-none shadow-none first:rounded-s-md last:rounded-e-md focus-visible:z-10"
-              variant="outline"
-              size="icon"
-              aria-label="Open model settings"
-            >
-              <Settings2Icon size={16} aria-hidden="true" />
-            </Button>
-          )}
-        </div>
+                  </div>
+                  <div className="sm:hidden">
+                    {openRouterModel ? (
+                      <OpenRouter />
+                    ) : selectedChatModel ? (
+                      <selectedChatModel.icon />
+                    ) : (
+                      <BrainCircuitIcon />
+                    )}
+                  </div>
+                </Button>
+              </TooltipTrigger>
+            </PopoverTrigger>
+            {selectedModelProvider && (
+              <Button
+                className="rounded-none shadow-none first:rounded-s-md last:rounded-e-md focus-visible:z-10"
+                variant="outline"
+                size="icon"
+                aria-label="Open model settings"
+              >
+                <Settings2Icon size={16} aria-hidden="true" />
+              </Button>
+            )}
+          </div>
+          <TooltipContent>Model</TooltipContent>
+        </Tooltip>
         <PopoverContent
           className={cn(
             big ? "w-[680px]" : "w-[420px]",
