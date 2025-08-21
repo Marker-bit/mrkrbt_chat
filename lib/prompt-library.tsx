@@ -27,7 +27,7 @@ import {
   TrashIcon,
   TriangleAlertIcon,
 } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useAnimation } from "motion/react";
 import { nanoid } from "nanoid";
 import {
   Dispatch,
@@ -62,7 +62,7 @@ export type PromptAction = {
     prompt: Prompt;
     setInput: Dispatch<SetStateAction<string>>;
     deletePrompt: () => void;
-  }) => void;
+  }) => Promise<void>;
 };
 
 const promptActions: PromptAction[] = [
@@ -95,6 +95,49 @@ const promptActions: PromptAction[] = [
     },
   },
 ];
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function PromptAction({
+  action,
+  actionArgs,
+}: {
+  action: PromptAction;
+  actionArgs: Parameters<PromptAction["execute"]>[0];
+}) {
+  const controls = useAnimation();
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="outline"
+          className="size-7"
+          size="icon"
+          onClick={async () => {
+            let stop = false;
+            action.execute(actionArgs).then(() => (stop = true));
+
+            while (!stop) {
+              await controls.start({
+                y: [0, -15, 0, -4, 0],
+                transition: { duration: 0.6, ease: "easeOut" },
+              });
+              await sleep(400);
+            }
+          }}
+        >
+          <motion.div animate={controls}>
+            <action.icon className="size-3" />
+          </motion.div>
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>{action.title}</TooltipContent>
+    </Tooltip>
+  );
+}
 
 function Prompt(actionArgs: Parameters<PromptAction["execute"]>[0]) {
   const textRef = useRef<HTMLDivElement | null>(null);
@@ -143,19 +186,11 @@ function Prompt(actionArgs: Parameters<PromptAction["execute"]>[0]) {
       )}
       <div className="flex gap-2 items-center mt-2 ml-auto">
         {promptActions.map((a) => (
-          <Tooltip key={`${prompt.id}-${a.title}`}>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                className="size-7"
-                size="icon"
-                onClick={() => a.execute({ ...actionArgs, prompt })}
-              >
-                <a.icon className="size-3" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>{a.title}</TooltipContent>
-          </Tooltip>
+          <PromptAction
+            action={a}
+            actionArgs={{ ...actionArgs, prompt }}
+            key={`${prompt.id}-${a.title}`}
+          />
         ))}
       </div>
     </div>
