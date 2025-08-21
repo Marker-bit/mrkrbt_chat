@@ -80,7 +80,7 @@ export const CodeHighlight = ({
         wordWrap && "[&_pre]:whitespace-pre-wrap"
       )}
     >
-      <div className="px-2 py-1 flex gap-2 items-center justify-between bg-primary/20">
+      <div className="px-2 py-1 flex gap-2 items-center justify-between bg-primary/20 text-foreground">
         {language || "text"}
         <div className="flex gap-2 items-center">
           <Button

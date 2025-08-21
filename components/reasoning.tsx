@@ -168,7 +168,7 @@ export function MessageReasoning({
               </div>
             </motion.div>
             <button className="absolute top-2 bottom-0 left-0 w-8 translate-x-[-50%] flex justify-center group/border" onClick={() => setIsExpanded(false)}>
-              <div className="h-full w-0.5 bg-white/10 group-hover/border:w-3 group-hover/border:bg-white/20 transition-[width,background]" />
+              <div className="h-full w-0.5 bg-black/10 dark:bg-white/10 group-hover/border:w-3 group-hover/border:bg-black/20 group-hover/border:dark:bg-white/20 transition-[width,background]" />
             </button>
           </div>
         )}
