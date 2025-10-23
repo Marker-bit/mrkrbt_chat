@@ -70,27 +70,27 @@ export default function ModelPopover({
   // let favouriteModels = MODELS.slice(0, 6);
 
   let filteredModels = MODELS.filter((model) =>
-    favouriteModels ? !favouriteModels?.includes(model.id) : true
+    favouriteModels ? !favouriteModels?.includes(model.id) : true,
   );
   let filteredFavouriteModels = favouriteModels!.map(
-    (model) => MODELS.find((m) => m.id === model)!
+    (model) => MODELS.find((m) => m.id === model)!,
   );
 
   if (selectedFeatures.length > 0) {
     filteredModels = filteredModels.filter((model) =>
-      selectedFeatures.some((feature) => model.features.includes(feature))
+      selectedFeatures.some((feature) => model.features.includes(feature)),
     );
     filteredFavouriteModels = filteredFavouriteModels.filter((model) =>
-      selectedFeatures.some((feature) => model.features.includes(feature))
+      selectedFeatures.some((feature) => model.features.includes(feature)),
     );
   }
 
   if (search) {
     filteredModels = filteredModels.filter((model) =>
-      model.title.toLowerCase().includes(search.toLowerCase())
+      model.title.toLowerCase().includes(search.toLowerCase()),
     );
     filteredFavouriteModels = filteredFavouriteModels.filter((model) =>
-      model.title.toLowerCase().includes(search.toLowerCase())
+      model.title.toLowerCase().includes(search.toLowerCase()),
     );
   }
 
@@ -101,7 +101,7 @@ export default function ModelPopover({
 
   const selectedChatModel = useMemo(
     () => MODELS.find((chatModel) => chatModel.id === modelData.modelId),
-    [modelData, MODELS]
+    [modelData, MODELS],
   );
 
   const setModel = (modelId: string) => {
@@ -112,7 +112,7 @@ export default function ModelPopover({
     let provider: string | undefined;
     if (!modelAvailableProviders.includes(modelData.options.provider || "")) {
       provider = Object.keys(chosenModel.providers).find(
-        (provider) => provider in apiKeys && apiKeys[provider].length > 0
+        (provider) => provider in apiKeys && apiKeys[provider].length > 0,
       );
     } else {
       provider = modelData.options.provider;
@@ -158,7 +158,7 @@ export default function ModelPopover({
       modelData.options.provider && selectedChatModel
         ? selectedChatModel.providers[modelData.options.provider as ProviderId]
         : null,
-    [modelData, selectedChatModel]
+    [modelData, selectedChatModel],
   );
 
   const selectedProvider = useMemo(
@@ -166,7 +166,7 @@ export default function ModelPopover({
       modelData.options.provider
         ? findProviderById(modelData.options.provider)
         : null,
-    [modelData]
+    [modelData],
   );
 
   const setPinned = async (pinned: boolean, modelId: string) => {
@@ -182,7 +182,7 @@ export default function ModelPopover({
         mutate(() =>
           pinned
             ? [...favouriteModels!, modelId]
-            : favouriteModels!.filter((model) => model !== modelId)
+            : favouriteModels!.filter((model) => model !== modelId),
         );
         return "Saved successfully";
       },
@@ -200,14 +200,33 @@ export default function ModelPopover({
                 <Button
                   variant="outline"
                   ref={buttonRef}
-                  className="rounded-none shadow-none first:rounded-s-md last:rounded-e-md focus-visible:z-10 max-sm:p-0 max-sm:size-9"
+                  className="group rounded-none shadow-none first:rounded-s-md last:rounded-e-md focus-visible:z-10 max-sm:p-0 max-sm:size-9"
                 >
                   <div className="hidden sm:flex gap-2 items-center">
                     {openRouterModel ? (
                       <div className="font-mono">{openRouterModel}</div>
                     ) : selectedChatModel ? (
                       <>
-                        <selectedChatModel.icon className="size-4" />
+                        <div className="size-4 relative">
+                          <selectedChatModel.icon
+                            className={cn(
+                              "size-full transition-all",
+                              !open
+                                ? "opacity-100 group-hover:opacity-0 scale-100 group-hover:scale-2"
+                                : "opacity-0",
+                            )}
+                          />
+                          <div
+                            className={cn(
+                              "absolute top-0 left-0 transition-all",
+                              open
+                                ? "rotate-180"
+                                : "opacity-0 scale-20 group-hover:opacity-100 group-hover:scale-100",
+                            )}
+                          >
+                            <ChevronUpIcon />
+                          </div>
+                        </div>
                         <div>{selectedChatModel.title}</div>
                         {selectedChatModel.additionalTitle && (
                           <div className="text-xs text-muted-foreground max-sm:hidden">
@@ -249,7 +268,7 @@ export default function ModelPopover({
         <PopoverContent
           className={cn(
             big ? "w-[680px]" : "w-[420px]",
-            "max-w-screen max-h-[calc(100vh-80px)] p-0 flex flex-col"
+            "max-w-screen max-h-[calc(100vh-80px)] p-0 flex flex-col",
           )}
           style={{
             height: big
@@ -308,7 +327,7 @@ export default function ModelPopover({
                       <div className="flex flex-wrap gap-2 items-center justify-center mt-auto">
                         {model.features.map((feature) => {
                           const realFeature = FEATURES.find(
-                            (f) => f.id === feature
+                            (f) => f.id === feature,
                           );
                           return (
                             realFeature?.displayInModels && (
@@ -361,7 +380,7 @@ export default function ModelPopover({
                       <div className="flex flex-wrap gap-2 items-center justify-center mt-auto">
                         {model.features.map((feature) => {
                           const realFeature = FEATURES.find(
-                            (f) => f.id === feature
+                            (f) => f.id === feature,
                           );
                           return (
                             realFeature?.displayInModels && (
@@ -409,7 +428,7 @@ export default function ModelPopover({
                         )}
                         {model.features.map((feature) => {
                           const realFeature = FEATURES.find(
-                            (f) => f.id === feature
+                            (f) => f.id === feature,
                           );
                           return (
                             realFeature?.displayInModels && (
@@ -485,7 +504,7 @@ export default function ModelPopover({
                         setSelectedFeatures((prev) =>
                           prev.includes(feature.id)
                             ? prev.filter((id) => id !== feature.id)
-                            : [...prev, feature.id]
+                            : [...prev, feature.id],
                         );
                       }}
                     >
@@ -544,14 +563,14 @@ export default function ModelPopover({
                         {selectedChatModel.providers[provider.id]!.features.map(
                           (feature) => {
                             const realFeature = FEATURES.find(
-                              (f) => f.id === feature
+                              (f) => f.id === feature,
                             );
                             return (
                               realFeature?.displayInModels && (
                                 <FeatureIcon key={feature} id={feature} />
                               )
                             );
-                          }
+                          },
                         )}
                         {modelData.options.provider === provider.id && (
                           <CheckIcon className="size-4" />
